@@ -3339,6 +3339,7 @@
       }
     }
 
+    const IS_IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
     function onDeviceMotion(e) {
       if (!gyro.active) return;
       const ag = e.accelerationIncludingGravity;
@@ -3348,12 +3349,17 @@
 
       const ang = getScreenAngle();
       const RAD2DEG = 180 / Math.PI;
+      // Normalize iOS inverted gravity sign vs Android Chrome (Pixel 6a)
+      const osSign = IS_IOS ? -1 : 1;
+      const gx = ag.x * osSign;
+      const gy = ag.y * osSign;
+      const gz = ag.z * osSign;
+
       // Landscape gravity vector (100% immune to Euler ±90° gimbal flip!)
-      // angle 90 (top of phone on left): +y points left/down when steering left; +z points out of screen
       const sign = (ang === -90 || ang === 270) ? -1 : 1;
-      const steerRad = Math.asin(THREE.MathUtils.clamp((sign * ag.y) / gMag, -1, 1));
-      // Tilting top of phone away from face (forward) decreases z / increases x -> positive throttle!
-      const pitchRad = Math.atan2(-ag.z, sign * ag.x);
+      const steerRad = Math.asin(THREE.MathUtils.clamp((sign * gy) / gMag, -1, 1));
+      // Flipped pitch sign so natural forward tilt accelerates and back tilt brakes on Pixel 6a!
+      const pitchRad = Math.atan2(gz, sign * gx);
       processGyroAngles(steerRad * RAD2DEG, pitchRad * RAD2DEG);
     }
 
