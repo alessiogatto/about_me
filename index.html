@@ -935,7 +935,7 @@
     #btn-nfsmw-proceed.ready:hover { filter: brightness(1.14); transform: scale(1.06); }
 
     /* Compact Mobile Responsive HUD (Placed last so it cleanly overrides desktop rules!) */
-    @media (max-width: 900px), (pointer: coarse) {
+    @media (max-width: 960px), (max-height: 520px), (pointer: coarse) {
       .gyro-only { display: inline-flex; }
       #hud { padding: 8px 10px; gap: 6px; }
       .top-bar { gap: 4px; }
@@ -1287,7 +1287,7 @@
   <script>
     window.__IS_MOBILE_DEVICE = /Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry|IEMobile/i.test(navigator.userAgent)
       || (window.matchMedia && (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(hover: none)').matches))
-      || window.innerWidth <= 900;
+      || window.innerWidth <= 960 || window.innerHeight <= 520;
     window.__GAME_BOOTED = false;
     window.__loadPct = 8;
     window.__setLoadProgress = function (pct, status) {
