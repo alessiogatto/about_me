@@ -1179,7 +1179,7 @@
       <div class="mobile-guard-icon">📱</div>
       <div class="brand-title" style="font-size:1.22rem;margin-bottom:-4px;">ALESSIO GATTO</div>
       <h2>Mobile Gyro Drive Ready</h2>
-      <p>Hold your phone in <strong>landscape</strong>: tilt <strong>left / right</strong> like a steering wheel, tilt <strong>forward / back</strong> to accelerate &amp; brake!</p>
+      <p>Hold your phone in <strong>landscape</strong>: auto-accelerates like Asphalt / Real Racing — <strong>tilt left / right</strong> to steer, tap <strong>🛑 Brake</strong>, <strong>🔥 Nitro</strong> &amp; <strong>🚀 Flip</strong>!</p>
       <div class="rotate-tip">🔄 Rotate your phone to Landscape for the best view!</div>
       <div class="mobile-guard-actions">
         <button class="action-btn primary" id="btn-mobile-gyro">🧭 START WITH GYROSCOPE</button>
@@ -1218,7 +1218,6 @@
       <div class="top-actions interactive">
         <div id="gyro-hud-pill">
           <div class="gyro-axis-rail"><div class="gyro-axis-center"></div><div id="gyro-steer-dot"></div></div>
-          <button id="btn-gyro-zero" title="Re-center Gyro to Current Grip">🎯 ZERO</button>
         </div>
         <button class="action-btn gyro-only" id="btn-gyro" title="Toggle Gyroscope">
           <span>🧭</span> <span id="gyro-label">GYRO</span>
@@ -3401,80 +3400,20 @@
     document.getElementById('btn-pause-cv').addEventListener('click', openCVModal);
     document.getElementById('btn-close-modal').addEventListener('click', closeCVModal);
 
-    // Gimbal-Lock-Free Landscape Gyroscope Engine (Gravity Vector via devicemotion + 5-sample auto-zero!)
+    // Zero-Calibration Arcade Gyro Engine (Real Mobile Racing Standard: Horizon Tilt Steer + Auto-Gas!)
     const mobileGuard = document.getElementById('mobile-guard');
     const gyroDotEl = document.getElementById('gyro-steer-dot');
     const gyro = {
       active: false,
-      calSamples: 0,
-      calSteerSum: 0,
-      calPitchSum: 0,
-      neutralSteer: 0,
-      neutralPitch: 0,
-      smoothSteer: 0,
-      smoothPitch: 0,
-      steer: 0,       // -1 (left) .. +1 (right)
-      throttle: 0,    // -1 (brake) .. +1 (accelerate)
+      smoothSteerDeg: 0,
+      steer: 0,       // -1 (left) .. +1 (right), 0° = level horizon!
       listenerAttached: false,
       receivedEvent: false
     };
 
-    function resetGyroCalibration(silent = false) {
-      gyro.calSamples = 0;
-      gyro.calSteerSum = 0;
-      gyro.calPitchSum = 0;
-      gyro.steer = 0;
-      gyro.throttle = 0;
-      if (gyroDotEl) gyroDotEl.style.left = '50%';
-      if (!silent) showToast('🎯 GYRO CALIBRATED TO CURRENT GRIP');
-    }
-
     function getScreenAngle() {
       if (screen.orientation && typeof screen.orientation.angle === 'number') return screen.orientation.angle;
       return typeof window.orientation === 'number' ? window.orientation : 90;
-    }
-
-    function processGyroAngles(rawSteerDeg, rawPitchDeg) {
-      gyro.receivedEvent = true;
-      // Average first 5 samples to lock neutral grip with zero drift
-      if (gyro.calSamples < 5) {
-        gyro.calSteerSum += rawSteerDeg;
-        gyro.calPitchSum += rawPitchDeg;
-        gyro.calSamples++;
-        if (gyro.calSamples === 5) {
-          gyro.neutralSteer = gyro.calSteerSum / 5;
-          gyro.neutralPitch = gyro.calPitchSum / 5;
-          gyro.smoothSteer = gyro.neutralSteer;
-          gyro.smoothPitch = gyro.neutralPitch;
-        }
-        return;
-      }
-
-      // Exponential low-pass filter removes hand tremor while keeping razor-sharp response
-      gyro.smoothSteer += (rawSteerDeg - gyro.smoothSteer) * 0.24;
-      gyro.smoothPitch += (rawPitchDeg - gyro.smoothPitch) * 0.22;
-
-      // Steering relative to calibrated neutral grip (±3.2° deadzone, 24° = full lock, smooth power curve)
-      const sDelta = gyro.smoothSteer - gyro.neutralSteer;
-      if (Math.abs(sDelta) < 3.2) {
-        gyro.steer = 0;
-      } else {
-        const lin = THREE.MathUtils.clamp((sDelta - Math.sign(sDelta) * 3.2) / 22.0, -1, 1);
-        gyro.steer = Math.sign(lin) * Math.pow(Math.abs(lin), 1.35);
-      }
-
-      // Forward/Back tilt relative to calibrated neutral grip (±4.5° deadzone, 16° = full throttle/brake)
-      const pDelta = gyro.smoothPitch - gyro.neutralPitch;
-      if (Math.abs(pDelta) < 4.5) {
-        gyro.throttle = 0;
-      } else {
-        gyro.throttle = THREE.MathUtils.clamp((pDelta - Math.sign(pDelta) * 4.5) / 16.0, -1, 1);
-      }
-
-      if (gyroDotEl) {
-        gyroDotEl.style.left = `${50 + gyro.steer * 44}%`;
-        gyroDotEl.style.background = gyro.throttle > 0.1 ? '#00ff9d' : (gyro.throttle < -0.15 ? '#ff2a85' : '#00e5ff');
-      }
     }
 
     const IS_IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -3485,20 +3424,29 @@
       const gMag = Math.hypot(ag.x, ag.y, ag.z);
       if (gMag < 1.0) return;
 
+      gyro.receivedEvent = true;
       const ang = getScreenAngle();
-      const RAD2DEG = 180 / Math.PI;
-      // Normalize iOS inverted gravity sign vs Android Chrome (Pixel 6a)
       const osSign = IS_IOS ? -1 : 1;
-      const gx = ag.x * osSign;
       const gy = ag.y * osSign;
-      const gz = ag.z * osSign;
 
-      // Landscape gravity vector (100% immune to Euler ±90° gimbal flip!)
+      // Pure gravity horizon steering (0° = level phone, ZERO calibration needed, ZERO drift!)
       const sign = (ang === -90 || ang === 270) ? -1 : 1;
-      const steerRad = Math.asin(THREE.MathUtils.clamp((sign * gy) / gMag, -1, 1));
-      // Flipped pitch sign so natural forward tilt accelerates and back tilt brakes on Pixel 6a!
-      const pitchRad = Math.atan2(gz, sign * gx);
-      processGyroAngles(steerRad * RAD2DEG, pitchRad * RAD2DEG);
+      const rawSteerDeg = Math.asin(THREE.MathUtils.clamp((sign * gy) / gMag, -1, 1)) * (180 / Math.PI);
+
+      // Smooth low-pass filter removes hand shake while keeping crisp arcade wheel feel
+      gyro.smoothSteerDeg += (rawSteerDeg - gyro.smoothSteerDeg) * 0.28;
+
+      // ±3.5° deadzone around level horizon, ±26° = full lock, progressive curve for pinpoint precision
+      if (Math.abs(gyro.smoothSteerDeg) < 3.5) {
+        gyro.steer = 0;
+      } else {
+        const lin = THREE.MathUtils.clamp((gyro.smoothSteerDeg - Math.sign(gyro.smoothSteerDeg) * 3.5) / 22.5, -1, 1);
+        gyro.steer = Math.sign(lin) * Math.pow(Math.abs(lin), 1.3);
+      }
+
+      if (gyroDotEl) {
+        gyroDotEl.style.left = `${50 + gyro.steer * 44}%`;
+      }
     }
 
     function updateGyroUI() {
@@ -3526,9 +3474,10 @@
         }
         gyro.active = true;
         gyro.receivedEvent = false;
-        resetGyroCalibration(true);
+        gyro.steer = 0;
+        gyro.smoothSteerDeg = 0;
         updateGyroUI();
-        showToast('🧭 GYRO CALIBRATED · TILT WHEEL TO STEER & GAS!');
+        showToast('🧭 AUTO-GAS + TILT WHEEL STEERING ON!');
         setTimeout(() => {
           if (gyro.active && !gyro.receivedEvent) {
             gyro.active = false;
@@ -3545,13 +3494,10 @@
       }
     }
 
-    // Auto-recalibrate gyro neutral grip whenever the phone rotates
     window.addEventListener('orientationchange', () => {
-      resetGyroCalibration(true);
+      gyro.steer = 0;
+      gyro.smoothSteerDeg = 0;
     });
-
-    const btnGyroZero = document.getElementById('btn-gyro-zero');
-    if (btnGyroZero) btnGyroZero.addEventListener('click', () => resetGyroCalibration(false));
 
     // Show Mobile Gyro Launch Splash on smartphones when ready
     if (IS_MOBILE && mobileGuard) mobileGuard.classList.add('show');
