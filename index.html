@@ -71,14 +71,14 @@
     #boot-fallback h2 { font-family: 'Orbitron', sans-serif; color: var(--neon-cyan); font-size: 1.35rem; }
     #boot-fallback p { color: #c4d3ee; max-width: 520px; line-height: 1.5; font-size: 0.92rem; }
 
-    /* Smartphone / Narrow Screen Full-Page Blocker (100% compatible CSS Level 3 media queries!) */
+    /* Smartphone Mobile Gyro Launch Splash */
     #mobile-guard {
       position: fixed;
       inset: 0;
       width: 100vw;
       height: 100dvh;
       z-index: 120;
-      background: radial-gradient(circle at top, #101630, #050710 72%);
+      background: radial-gradient(circle at top, rgba(16, 22, 48, 0.96), rgba(5, 7, 16, 0.98) 72%);
       display: none;
       flex-direction: column;
       align-items: center;
@@ -89,9 +89,37 @@
       -webkit-overflow-scrolling: touch;
     }
     #mobile-guard.show { display: flex !important; }
-    @media (max-width: 1024px), (pointer: coarse), (hover: none) {
-      #mobile-guard { display: flex !important; }
-      #loading-screen, #hud, #canvas-container, #nfsmw-overlay { display: none !important; }
+    .gyro-only { display: none; }
+    body.gyro-active .gyro-hide { display: none !important; }
+
+    /* Compact Mobile Responsive HUD (Phone Portrait & Landscape — Zero Overflow!) */
+    @media (max-width: 900px), (pointer: coarse) {
+      .gyro-only { display: inline-flex; }
+      #hud { padding: 8px 10px; gap: 6px; }
+      .top-bar { gap: 5px; }
+      .stepper-pill, .brand-sub, #onboarding-hint, #btn-tour, #btn-pause { display: none !important; }
+      .brand-badge { padding: 5px 9px; flex-shrink: 1; min-width: 0; }
+      .brand-title { font-size: 0.76rem; letter-spacing: 0.8px; }
+      .top-actions { gap: 4px; }
+      .action-btn { padding: 6px 8px; font-size: 0.58rem; gap: 4px; }
+      .mid-section { align-items: flex-start; padding-top: 2px; }
+      .cv-card.compact { width: 100%; max-width: 100%; padding: 7px 10px; gap: 3px; }
+      .cv-title { font-size: 0.78rem; }
+      .cv-subtitle, .cv-card.compact .cv-tags, .cv-card-footer { display: none !important; }
+      .cv-impact { font-size: 0.72rem; padding: 4px 7px; line-height: 1.3; }
+      .bottom-bar { flex-direction: column-reverse; align-items: stretch; gap: 6px; }
+      .controls-bar { width: 100%; padding: 6px; justify-content: center; }
+      .touch-controls { width: 100%; justify-content: space-between; gap: 5px; }
+      .touch-btn { flex: 1; padding: 12px 4px; font-size: 0.7rem; text-align: center; touch-action: none; }
+      .telemetry-cluster { width: 100%; padding: 6px 10px; justify-content: space-between; gap: 10px; }
+      .gauges-col { flex: 1; min-width: 0; gap: 2px; }
+      .speed-box { min-width: 58px; }
+      .speed-val { font-size: 1.28rem; }
+      .nfsmw-bar { padding: 10px 14px; flex-wrap: wrap; gap: 8px; }
+      .nfsmw-alert { font-size: 0.72rem; letter-spacing: 1.2px; }
+      .nfsmw-bottom-title { font-size: 0.86rem; }
+      .nfsmw-bottom-sub { font-size: 0.76rem; }
+      #btn-nfsmw-proceed { min-width: 180px; padding: 10px 14px; font-size: 0.7rem; width: 100%; }
     }
     .mobile-guard-card {
       width: 100%;
@@ -997,16 +1025,17 @@
     </div>
   </div>
 
-  <!-- SMARTPHONE / BROADER SCREEN REQUIRED PAGE -->
+  <!-- SMARTPHONE MOBILE GYROSCOPE LAUNCH SPLASH -->
   <div id="mobile-guard" class="interactive">
     <div class="mobile-guard-card">
-      <div class="mobile-guard-icon">🖥️</div>
-      <div class="brand-title" style="font-size:1.15rem;margin-bottom:-4px;">ALESSIO GATTO</div>
-      <h2>Broader Screen Required</h2>
-      <p>This interactive 3D driving CV needs a <strong>broader screen (notebook or desktop)</strong> to run properly.</p>
-      <p style="font-size:0.82rem;color:#93aed8;">Open this link on a laptop or PC to drive the Neon Tokyo track — or read the complete CV right here:</p>
+      <div class="mobile-guard-icon">📱</div>
+      <div class="brand-title" style="font-size:1.22rem;margin-bottom:-4px;">ALESSIO GATTO</div>
+      <h2>Mobile Gyro Drive Ready</h2>
+      <p>Tilt your phone <strong>left / right</strong> to steer, and tilt <strong>forward / back</strong> to accelerate &amp; brake — optimized for mobile GPUs!</p>
       <div class="mobile-guard-actions">
-        <button class="action-btn primary" id="btn-mobile-cv" onclick="document.getElementById('cv-modal').classList.add('open')">📄 READ FULL CV</button>
+        <button class="action-btn primary" id="btn-mobile-gyro">🧭 START WITH GYROSCOPE</button>
+        <button class="action-btn" id="btn-mobile-touch">👆 START WITH TOUCH CONTROLS</button>
+        <button class="action-btn" id="btn-mobile-cv" onclick="document.getElementById('cv-modal').classList.add('open')">📄 READ FULL CV</button>
       </div>
     </div>
   </div>
@@ -1038,6 +1067,9 @@
 
       <!-- CRISP TOP-RIGHT CONTROLS -->
       <div class="top-actions interactive">
+        <button class="action-btn gyro-only" id="btn-gyro" title="Toggle / Calibrate Gyroscope">
+          <span>🧭</span> <span id="gyro-label">GYRO</span>
+        </button>
         <button class="action-btn" id="btn-tour" title="Auto-Drive Guided Tour (G)">
           <span>▶</span> <span id="tour-label">GUIDED TOUR</span>
         </button>
@@ -1097,10 +1129,11 @@
           <div class="key-item"><span class="kbd">R</span> Reset</div>
         </div>
         <div class="touch-controls">
-          <button class="touch-btn" id="t-gas">▲</button>
-          <button class="touch-btn" id="t-left">◀</button>
-          <button class="touch-btn" id="t-right">▶</button>
-          <button class="touch-btn" id="t-turbo">🔥 TURBO</button>
+          <button class="touch-btn gyro-hide" id="t-left">◀</button>
+          <button class="touch-btn gyro-hide" id="t-right">▶</button>
+          <button class="touch-btn gyro-hide" id="t-gas">▲</button>
+          <button class="touch-btn" id="t-brake">🛑</button>
+          <button class="touch-btn" id="t-turbo">🔥 NITRO</button>
           <button class="touch-btn" id="t-jump">🚀 FLIP</button>
         </div>
       </div>
@@ -1216,7 +1249,8 @@
   <!-- Mobile Detection, CDN Boot Watchdog & Smooth Loading Bar Controller -->
   <script>
     window.__IS_MOBILE_DEVICE = /Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry|IEMobile/i.test(navigator.userAgent)
-      || (window.matchMedia && (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(hover: none)').matches));
+      || (window.matchMedia && (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(hover: none)').matches))
+      || window.innerWidth <= 900;
     window.__GAME_BOOTED = false;
     window.__loadPct = 8;
     window.__setLoadProgress = function (pct, status) {
@@ -1235,26 +1269,17 @@
       setTimeout(() => { ls.style.display = 'none'; }, 480);
     };
 
-    if (window.__IS_MOBILE_DEVICE) {
-      // Immediately show Broader Screen Required page on phones (e.g. Pixel 6a portrait/landscape/desktop-mode)
-      window.__GAME_BOOTED = true;
-      const mg = document.getElementById('mobile-guard');
-      const ls = document.getElementById('loading-screen');
-      if (mg) mg.classList.add('show');
-      if (ls) ls.style.display = 'none';
-    } else {
-      const __bootTick = setInterval(() => {
-        if (window.__GAME_BOOTED || window.__loadPct >= 34) { clearInterval(__bootTick); return; }
-        window.__setLoadProgress(window.__loadPct + 4, 'Loading 3D Engine...');
-      }, 120);
-      setTimeout(() => {
-        if (!window.__GAME_BOOTED && window.innerWidth > 1024) {
-          clearInterval(__bootTick);
-          window.__hideLoadingScreen();
-          document.getElementById('boot-fallback').classList.add('show');
-        }
-      }, 8000);
-    }
+    const __bootTick = setInterval(() => {
+      if (window.__GAME_BOOTED || window.__loadPct >= 34) { clearInterval(__bootTick); return; }
+      window.__setLoadProgress(window.__loadPct + 4, 'Loading 3D Engine...');
+    }, 120);
+    setTimeout(() => {
+      if (!window.__GAME_BOOTED) {
+        clearInterval(__bootTick);
+        window.__hideLoadingScreen();
+        document.getElementById('boot-fallback').classList.add('show');
+      }
+    }, 9000);
   </script>
 
   <script type="module">
@@ -1264,13 +1289,9 @@
     import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-    if (window.__IS_MOBILE_DEVICE) {
-      // Skip heavy WebGL initialization entirely on smartphones
-      throw new Error('Mobile device detected — 3D engine skipped cleanly.');
-    }
-
+    const IS_MOBILE = Boolean(window.__IS_MOBILE_DEVICE);
     window.__GAME_BOOTED = true;
-    window.__setLoadProgress(42, 'Initializing WebGL & PBR Lighting...');
+    window.__setLoadProgress(42, IS_MOBILE ? 'Optimizing 3D Engine for Mobile...' : 'Initializing WebGL & PBR Lighting...');
 
     // ============================================================================
     // 1. CV MILESTONE DATA (DE-DUPLICATED & FAITHFUL TO Curriculum_vitae.pdf)
@@ -1531,19 +1552,22 @@
 
     const camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 1.2, 2600);
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+    renderer.setPixelRatio(IS_MOBILE ? 1.0 : Math.min(window.devicePixelRatio, 1.25));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.02;
+    renderer.toneMappingExposure = IS_MOBILE ? 1.08 : 1.02;
     container.appendChild(renderer.domElement);
 
-    // Subtle Studio IBL Reflections
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04);
-    scene.environment = envRT.texture;
-    pmrem.dispose();
+    // Subtle Studio IBL Reflections (skipped on mobile for faster boot & higher FPS)
+    let envRT = null;
+    if (!IS_MOBILE) {
+      const pmrem = new THREE.PMREMGenerator(renderer);
+      envRT = pmrem.fromScene(new RoomEnvironment(), 0.04);
+      scene.environment = envRT.texture;
+      pmrem.dispose();
+    }
 
     // Moody Shinjuku Tokyo Night Lighting (deep shadows + crisp cyan/magenta/amber accents)
-    scene.add(new THREE.HemisphereLight(0x5288c4, 0x160a22, 0.72));
+    scene.add(new THREE.HemisphereLight(0x5288c4, 0x160a22, IS_MOBILE ? 0.95 : 0.72));
     const keyLight = new THREE.DirectionalLight(0xffdfc2, 1.15);
     keyLight.position.set(160, 260, 140);
     scene.add(keyLight);
@@ -1551,7 +1575,7 @@
     rimLight.position.set(-220, 140, -240);
     scene.add(rimLight);
 
-    // Half-Resolution Selective Bloom (~4x faster GPU fill-rate with identical smooth neon glow!)
+    // Half-Resolution Selective Bloom on Desktop; Direct Fast WebGL Render on Smartphones (3x GPU speedup!)
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
     const bloomPass = new UnrealBloomPass(
@@ -1559,7 +1583,7 @@
       0.30, 0.38, 0.88
     );
     composer.addPass(bloomPass);
-    let usePostFX = true;
+    let usePostFX = !IS_MOBILE;
 
     // ============================================================================
     // 4. EXCITING BANKED TOKYO EXPRESSWAY ROLLER-COASTER CIRCUIT (ZERO OVERLAPS!)
@@ -1594,7 +1618,7 @@
     ];
 
     const trackCurve = new THREE.CatmullRomCurve3(trackControlPoints, true, 'catmullrom', 0.5);
-    const TRACK_SEGMENTS = 1260;
+    const TRACK_SEGMENTS = IS_MOBILE ? 680 : 1260;
     const upVec = new THREE.Vector3(0, 1, 0);
 
     // Scratch vectors for zero-allocation banked track frame computation
@@ -1963,8 +1987,9 @@
     }
 
     // Inner Tokyo Downtown Core (inside the highway loop, far from track) + Outer Metropolis Skyline
-    for (let attempt = 0; attempt < 1100 && placedBuildings.length < 126; attempt++) {
-      const isInner = placedBuildings.length < 36;
+    const MAX_BUILDINGS = IS_MOBILE ? 56 : 126;
+    for (let attempt = 0; attempt < 1100 && placedBuildings.length < MAX_BUILDINGS; attempt++) {
+      const isInner = placedBuildings.length < (IS_MOBILE ? 18 : 36);
       const angle = Math.random() * Math.PI * 2;
       const radius = isInner ? (45 + Math.random() * 255) : (590 + Math.random() * 380);
       const bx = Math.cos(angle) * radius;
@@ -2069,7 +2094,7 @@
     signMaterials.forEach((mat, idx) => {
       animatedSigns.push({ mat, phase: idx * 0.9, speed: 1.8 + (idx % 4) * 0.55 });
     });
-    const signCount = Math.min(36, B_COUNT);
+    const signCount = Math.min(IS_MOBILE ? 16 : 36, B_COUNT);
     for (let i = 0; i < signCount; i++) {
       const b = placedBuildings[i];
       const sign = new THREE.Mesh(signGeo, signMaterials[i % signMaterials.length]);
@@ -2085,8 +2110,8 @@
       scene.add(sign);
     }
 
-    // Animated Flying Cyber-Traffic Spinners (64 Instanced Flying Cars — 1 Draw Call!)
-    const TRAFFIC_COUNT = 64;
+    // Animated Flying Cyber-Traffic Spinners (Instanced Flying Cars — 1 Draw Call!)
+    const TRAFFIC_COUNT = IS_MOBILE ? 24 : 64;
     const trafficGeo = new THREE.BoxGeometry(1.7, 0.55, 5.2);
     const trafficMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
     const trafficIMesh = new THREE.InstancedMesh(trafficGeo, trafficMat, TRAFFIC_COUNT);
@@ -2129,7 +2154,7 @@
     }
 
     // Animated Falling Shinjuku Neon Rain Streaks (LineSegments — 1 Draw Call!)
-    const RAIN_COUNT = 280;
+    const RAIN_COUNT = IS_MOBILE ? 80 : 280;
     const rainPos = new Float32Array(RAIN_COUNT * 6);
     const rainSpeeds = new Float32Array(RAIN_COUNT);
     for (let i = 0; i < RAIN_COUNT; i++) {
@@ -2149,7 +2174,7 @@
     scene.add(rainLines);
 
     // Floating Rising Neon Atmospheric Dust / Embers around the Highway (1 Draw Call!)
-    const MOTE_COUNT = 70;
+    const MOTE_COUNT = IS_MOBILE ? 25 : 70;
     const motePos = new Float32Array(MOTE_COUNT * 3);
     for (let i = 0; i < MOTE_COUNT; i++) {
       motePos[i * 3] = (Math.random() - 0.5) * 140;
@@ -3070,8 +3095,143 @@
     document.getElementById('btn-pause-cv').addEventListener('click', openCVModal);
     document.getElementById('btn-close-modal').addEventListener('click', closeCVModal);
 
-    // Smartphone / Narrow Screen Guard (handled immediately by CSS @media <= 1024px + JS sync)
-    const isNarrowScreen = () => window.innerWidth <= 1024 || window.__IS_MOBILE_DEVICE;
+    // Mobile Gyroscope Tilt Steering + Tilt Acceleration Engine (Portrait & Landscape!)
+    const mobileGuard = document.getElementById('mobile-guard');
+    const gyro = {
+      active: false,
+      calibrated: false,
+      neutralPitch: 45,
+      steer: 0,       // -1 (left) .. +1 (right)
+      throttle: 0,    // -1 (brake) .. +1 (accelerate)
+      listenerAttached: false,
+      receivedEvent: false
+    };
+
+    function getScreenAngle() {
+      if (screen.orientation && typeof screen.orientation.angle === 'number') return screen.orientation.angle;
+      return typeof window.orientation === 'number' ? window.orientation : 0;
+    }
+
+    function onDeviceOrientation(e) {
+      if (e.beta === null || e.gamma === null) return;
+      gyro.receivedEvent = true;
+      const ang = getScreenAngle();
+      let rawSteer = 0;
+      let rawPitch = 0;
+
+      if (ang === 90) {
+        // Landscape-primary (home/USB on right): tilt wheel left/right = beta, forward/back = -gamma
+        rawSteer = e.beta;
+        rawPitch = -e.gamma;
+      } else if (ang === -90 || ang === 270) {
+        // Landscape-secondary: invert axes
+        rawSteer = -e.beta;
+        rawPitch = e.gamma;
+      } else {
+        // Portrait: tilt left/right = gamma, forward/back = beta (smaller beta = tilted forward away from face)
+        rawSteer = e.gamma;
+        rawPitch = -e.beta;
+      }
+
+      if (!gyro.calibrated) {
+        gyro.neutralPitch = rawPitch;
+        gyro.calibrated = true;
+      }
+
+      // Smooth analog steering with ±4° deadzone (±28° = full steer)
+      const sDead = 4.0;
+      if (Math.abs(rawSteer) < sDead) gyro.steer = 0;
+      else gyro.steer = THREE.MathUtils.clamp((rawSteer - Math.sign(rawSteer) * sDead) / 24.0, -1, 1);
+
+      // Smooth analog acceleration / braking relative to holding angle (±5° deadzone)
+      const pDelta = rawPitch - gyro.neutralPitch;
+      if (Math.abs(pDelta) < 5.0) gyro.throttle = 0;
+      else gyro.throttle = THREE.MathUtils.clamp((pDelta - Math.sign(pDelta) * 5.0) / 18.0, -1, 1);
+    }
+
+    function updateGyroUI() {
+      document.body.classList.toggle('gyro-active', gyro.active);
+      const btn = document.getElementById('btn-gyro');
+      const lbl = document.getElementById('gyro-label');
+      if (btn) btn.classList.toggle('active-toggle', gyro.active);
+      if (lbl) lbl.textContent = gyro.active ? 'GYRO: ON' : 'GYRO';
+    }
+
+    async function enableGyroscope() {
+      try {
+        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+          const res = await DeviceOrientationEvent.requestPermission();
+          if (res !== 'granted') {
+            showToast('📱 GYRO PERMISSION DENIED · USING TOUCH');
+            gyro.active = false;
+            updateGyroUI();
+            return false;
+          }
+        }
+        if (!gyro.listenerAttached) {
+          window.addEventListener('deviceorientation', onDeviceOrientation, true);
+          gyro.listenerAttached = true;
+        }
+        gyro.active = true;
+        gyro.calibrated = false; // Auto-calibrates on next sensor reading to current comfortable grip!
+        gyro.steer = 0;
+        gyro.throttle = 0;
+        updateGyroUI();
+        showToast('🧭 GYRO ON · TILT TO STEER & ACCELERATE!');
+        // Fallback check if browser blocks sensors on non-HTTPS LAN URLs
+        setTimeout(() => {
+          if (gyro.active && !gyro.receivedEvent) {
+            gyro.active = false;
+            updateGyroUI();
+            showToast('📱 GYRO NEEDS HTTPS · TOUCH CONTROLS ENABLED');
+          }
+        }, 1800);
+        return true;
+      } catch {
+        gyro.active = false;
+        updateGyroUI();
+        showToast('📱 GYRO UNAVAILABLE · USING TOUCH');
+        return false;
+      }
+    }
+
+    // Show Mobile Gyro Launch Splash on smartphones when ready
+    if (IS_MOBILE && mobileGuard) mobileGuard.classList.add('show');
+
+    const btnMobileGyro = document.getElementById('btn-mobile-gyro');
+    if (btnMobileGyro) {
+      btnMobileGyro.addEventListener('click', async () => {
+        sfx.unlock();
+        if (mobileGuard) mobileGuard.classList.remove('show');
+        dismissOnboarding();
+        await enableGyroscope();
+      });
+    }
+    const btnMobileTouch = document.getElementById('btn-mobile-touch');
+    if (btnMobileTouch) {
+      btnMobileTouch.addEventListener('click', () => {
+        sfx.unlock();
+        gyro.active = false;
+        updateGyroUI();
+        if (mobileGuard) mobileGuard.classList.remove('show');
+        dismissOnboarding();
+        showToast('👆 TOUCH CONTROLS READY');
+      });
+    }
+    const btnGyroHud = document.getElementById('btn-gyro');
+    if (btnGyroHud) {
+      btnGyroHud.addEventListener('click', () => {
+        if (gyro.active) {
+          gyro.active = false;
+          gyro.steer = 0;
+          gyro.throttle = 0;
+          updateGyroUI();
+          showToast('👆 SWITCHED TO TOUCH CONTROLS');
+        } else {
+          enableGyroscope();
+        }
+      });
+    }
     const btnMobileCv = document.getElementById('btn-mobile-cv');
     if (btnMobileCv) btnMobileCv.addEventListener('click', openCVModal);
 
@@ -3225,6 +3385,7 @@
       el.addEventListener('pointerleave', () => { keys[prop] = false; });
     }
     bindHold('t-gas', 'forward');
+    bindHold('t-brake', 'backward');
     bindHold('t-left', 'left');
     bindHold('t-right', 'right');
     bindHold('t-turbo', 'turbo');
@@ -3289,7 +3450,8 @@
 
     function animate() {
       rafId = requestAnimationFrame(animate);
-      if (document.hidden || state.mode === 'PAUSED' || state.mode === 'MODAL' || isNarrowScreen()) return;
+      if (document.hidden || state.mode === 'PAUSED' || state.mode === 'MODAL') return;
+      if (mobileGuard && mobileGuard.classList.contains('show')) return;
 
       const dt = Math.min(clock.getDelta(), 0.05);
       const elapsed = clock.getElapsedTime();
@@ -3335,8 +3497,11 @@
       // Guided Tour glides continuously past every giant billboard — NEVER stops!
       const isTour = state.mode === 'TOUR';
 
-      // 2. Acceleration, Turbo, Fluid Cruise & Snappy ABS Braking!
-      const wantsForward = !isCutscene && (keys.forward || isTour);
+      // 2. Acceleration, Turbo, Gyro Tilt Throttle & Snappy ABS Braking!
+      const gyroForward = gyro.active && gyro.throttle > 0.08;
+      const gyroBrake = gyro.active && gyro.throttle < -0.18;
+      const wantsForward = !isCutscene && (keys.forward || gyroForward || isTour);
+      const wantsBrake = !isCutscene && (keys.backward || gyroBrake);
       const isTurbo = !isCutscene && (keys.turbo || state.padBoostTimer > 0) && state.turboCharge > 2 && (wantsForward || Math.abs(state.speed) > 5);
       if (state.padBoostTimer > 0 && !isCutscene) state.padBoostTimer -= dt;
 
@@ -3356,13 +3521,14 @@
         state.reverseDelay = 0;
       } else {
         state.turboCharge = Math.min(100, state.turboCharge + 4 * dt);
-        const targetMax = isTour ? 60 : state.maxSpeed;
+        const gyroScale = (gyroForward && !keys.forward) ? Math.max(0.45, gyro.throttle) : 1.0;
+        const targetMax = (isTour ? 60 : state.maxSpeed) * gyroScale;
 
         if (wantsForward) {
           state.reverseDelay = 0;
           if (state.speed > targetMax) state.speed = THREE.MathUtils.lerp(state.speed, targetMax, dt * 3.5);
-          else state.speed = Math.min(targetMax, state.speed + state.accel * dt);
-        } else if (keys.backward) {
+          else state.speed = Math.min(targetMax, state.speed + state.accel * gyroScale * dt);
+        } else if (wantsBrake) {
           if (state.speed > 0.6) {
             // Snappy ABS Power Braking from high speed!
             activeHardBrake = true;
@@ -3385,17 +3551,18 @@
       }
 
       // Dynamic brake light flare, nose-dive pitch & brake sparks
-      const isBraking = activeHardBrake || keys.backward || state.mode === 'FOCUSED';
+      const isBraking = activeHardBrake || wantsBrake || state.mode === 'FOCUSED';
       car.tailMat.color.setHex(isBraking ? 0xff0033 : 0xa61036);
       car.brakeLight.intensity = THREE.MathUtils.lerp(car.brakeLight.intensity, activeHardBrake ? 6.0 : (isBraking ? 2.4 : 0), dt * 14);
       state.brakePitch = THREE.MathUtils.lerp(state.brakePitch, activeHardBrake ? 0.06 : 0, dt * 12);
 
-      // 3. Snappy Arcade Steering, Drift Nitro Charge & Smart Guided Tour Barrier Dodge!
+      // 3. Snappy Arcade Steering (Keyboard, Touch, Gyro Tilt & Guided Tour!)
       const steerLimit = TRACK_WIDTH * 0.40;
       let targetLaneVel = 0;
       if (!isCutscene) {
         if (keys.left) targetLaneVel = -22;
         else if (keys.right) targetLaneVel = 22;
+        else if (gyro.active && Math.abs(gyro.steer) > 0.01) targetLaneVel = gyro.steer * 24;
         else if (isTour) {
           let desiredLane = Math.sin(elapsed * 0.65) * 2.2;
           // Auto-weave cleanly around upcoming laser barriers in Guided Tour
@@ -3926,7 +4093,7 @@
       if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener('resize', onResize);
       sfx.dispose();
-      envRT.dispose();
+      if (envRT) envRT.dispose();
       scene.traverse((obj) => {
         if (obj.geometry) obj.geometry.dispose();
         if (obj.material) {
