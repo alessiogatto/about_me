@@ -1694,7 +1694,7 @@
     const container = document.getElementById('canvas-container');
     let renderer;
     try {
-      renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+      renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     } catch (err) {
       window.__hideLoadingScreen();
       document.getElementById('fallback-msg').textContent = 'WebGL is unavailable in this browser session. You can still view the full CV below.';
@@ -1707,10 +1707,11 @@
 
     const camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 1.2, 2600);
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(IS_MOBILE ? 1.0 : Math.min(window.devicePixelRatio, 1.25));
+    renderer.setPixelRatio(IS_MOBILE ? Math.min(window.devicePixelRatio, 1.25) : Math.min(window.devicePixelRatio, 1.5));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = IS_MOBILE ? 1.08 : 1.02;
     container.appendChild(renderer.domElement);
+    const MAX_ANISO = Math.min(IS_MOBILE ? 4 : 16, renderer.capabilities.getMaxAnisotropy());
 
     // Subtle Studio IBL Reflections (skipped on mobile for faster boot & higher FPS)
     let envRT = null;
@@ -1730,8 +1731,11 @@
     rimLight.position.set(-220, 140, -240);
     scene.add(rimLight);
 
-    // Half-Resolution Selective Bloom on Desktop; Direct Fast WebGL Render on Smartphones (3x GPU speedup!)
-    const composer = new EffectComposer(renderer);
+    // 4x MSAA EffectComposer + Half-Res Selective Bloom on Desktop (ultra-crisp anti-aliased lines!); Direct MSAA WebGL on Mobile
+    const composerRT = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, {
+      samples: IS_MOBILE ? 0 : 4
+    });
+    const composer = new EffectComposer(renderer, composerRT);
     composer.addPass(new RenderPass(scene, camera));
     const bloomPass = new UnrealBloomPass(
       new THREE.Vector2(Math.max(1, Math.floor(window.innerWidth * 0.5)), Math.max(1, Math.floor(window.innerHeight * 0.5))),
@@ -1923,38 +1927,46 @@
         }
       }
 
-      // Rain-Slick Shinjuku Night Wet Asphalt Texture
+      // Ultra-Sharp 1024x1024 Rain-Slick Shinjuku Night Wet Asphalt Texture
       const texC = document.createElement('canvas');
-      texC.width = 512; texC.height = 512;
+      texC.width = 1024; texC.height = 1024;
       const ctx = texC.getContext('2d');
-      ctx.fillStyle = '#090d1a';
-      ctx.fillRect(0, 0, 512, 512);
+      ctx.fillStyle = '#080c18';
+      ctx.fillRect(0, 0, 1024, 1024);
 
-      // Subtle wet-asphalt reflection grain & puddle sheen streaks
-      for (let i = 0; i < 160; i++) {
-        ctx.fillStyle = i % 3 === 0 ? 'rgba(0, 229, 255, 0.035)' : (i % 3 === 1 ? 'rgba(255, 42, 133, 0.03)' : 'rgba(255, 255, 255, 0.025)');
-        ctx.fillRect(24 + Math.random() * 464, Math.random() * 512, 6 + Math.random() * 24, 18 + Math.random() * 55);
+      // Fine realistic asphalt micro-grain + subtle wet neon reflection streaks
+      for (let i = 0; i < 420; i++) {
+        ctx.fillStyle = i % 3 === 0 ? 'rgba(0, 229, 255, 0.028)' : (i % 3 === 1 ? 'rgba(255, 42, 133, 0.024)' : 'rgba(255, 255, 255, 0.022)');
+        ctx.fillRect(44 + Math.random() * 936, Math.random() * 1024, 3 + Math.random() * 14, 16 + Math.random() * 72);
       }
 
-      // Crisp warm amber outer shoulder kerbs
+      // Crisp warm amber outer shoulder kerbs + fine inner highlight
       ctx.fillStyle = '#ff6b1a';
-      ctx.fillRect(10, 0, 12, 512);
-      ctx.fillRect(490, 0, 12, 512);
+      ctx.fillRect(18, 0, 20, 1024);
+      ctx.fillRect(986, 0, 20, 1024);
+      ctx.fillStyle = '#ffd32a';
+      ctx.fillRect(38, 0, 4, 1024);
+      ctx.fillRect(982, 0, 4, 1024);
 
-      // Subtle cyan lane dividers
-      ctx.fillStyle = 'rgba(0, 229, 255, 0.65)';
-      ctx.fillRect(168, 0, 4, 512);
-      ctx.fillRect(340, 0, 4, 512);
+      // Razor-sharp cyan lane dividers + reflective cat's-eye road studs
+      ctx.fillStyle = 'rgba(0, 229, 255, 0.78)';
+      ctx.fillRect(334, 0, 7, 1024);
+      ctx.fillRect(683, 0, 7, 1024);
+      ctx.fillStyle = '#b8faff';
+      for (let sy = 64; sy < 1024; sy += 256) {
+        ctx.fillRect(332, sy, 11, 14);
+        ctx.fillRect(681, sy, 11, 14);
+      }
 
-      // Clean dashed golden-white center highway markings
-      ctx.fillStyle = 'rgba(255, 215, 110, 0.78)';
-      ctx.fillRect(253, 30, 6, 150);
-      ctx.fillRect(253, 286, 6, 150);
+      // Crisp dashed golden-white center highway markings
+      ctx.fillStyle = 'rgba(255, 224, 120, 0.88)';
+      ctx.fillRect(507, 56, 10, 310);
+      ctx.fillRect(507, 568, 10, 310);
 
       const roadTex = new THREE.CanvasTexture(texC);
       roadTex.wrapS = THREE.RepeatWrapping;
       roadTex.wrapT = THREE.RepeatWrapping;
-      roadTex.anisotropy = 8;
+      roadTex.anisotropy = MAX_ANISO;
 
       const roadGeo = new THREE.BufferGeometry();
       roadGeo.setAttribute('position', new THREE.Float32BufferAttribute(roadPos, 3));
@@ -2113,28 +2125,32 @@
     floorGrid.material.transparent = true;
     scene.add(floorGrid);
 
-    // Fine Architectural Skyscraper Window Texture (Realistic Tokyo Night Office & Neon Lit Grid)
+    // High-Res 512x1024 Architectural Skyscraper Window Texture (Crisp Tokyo Night Office Mullions)
     const winCanvas = document.createElement('canvas');
-    winCanvas.width = 256; winCanvas.height = 512;
+    winCanvas.width = 512; winCanvas.height = 1024;
     const wCtx = winCanvas.getContext('2d');
-    wCtx.fillStyle = '#060a14';
-    wCtx.fillRect(0, 0, 256, 512);
-    for (let wy = 6; wy < 506; wy += 12) {
-      const floorLit = Math.random() > 0.28;
-      for (let wx = 6; wx < 248; wx += 14) {
+    wCtx.fillStyle = '#050812';
+    wCtx.fillRect(0, 0, 512, 1024);
+    for (let wy = 10; wy < 1012; wy += 20) {
+      const floorLit = Math.random() > 0.25;
+      for (let wx = 10; wx < 498; wx += 24) {
         if (floorLit && Math.random() > 0.34) {
           const r = Math.random();
-          wCtx.fillStyle = r < 0.45 ? '#9be8ff' : (r < 0.72 ? '#ffe3b3' : (r < 0.88 ? '#ff5c93' : '#ff9f43'));
-          wCtx.fillRect(wx, wy, 8, 5);
+          wCtx.fillStyle = r < 0.44 ? '#9be8ff' : (r < 0.72 ? '#ffe5b8' : (r < 0.88 ? '#ff5c93' : '#ffa74a'));
+          wCtx.fillRect(wx, wy, 14, 9);
+          // Subtle inner window mullion highlight
+          wCtx.fillStyle = 'rgba(255, 255, 255, 0.32)';
+          wCtx.fillRect(wx, wy, 14, 2);
         } else {
-          wCtx.fillStyle = 'rgba(20, 32, 58, 0.5)';
-          wCtx.fillRect(wx, wy, 8, 5);
+          wCtx.fillStyle = 'rgba(18, 30, 56, 0.55)';
+          wCtx.fillRect(wx, wy, 14, 9);
         }
       }
     }
     const winTex = new THREE.CanvasTexture(winCanvas);
     winTex.wrapS = THREE.RepeatWrapping;
     winTex.wrapT = THREE.RepeatWrapping;
+    winTex.anisotropy = MAX_ANISO;
 
     // Guaranteed Non-Overlapping Skyscraper Placement (inner plaza + outer metropolis ring!)
     const placedBuildings = [];
@@ -2488,7 +2504,7 @@
       ctx.fillText(m.tags.slice(0, 5).join('   •   '), 800, 810, 1480);
 
       const tex = new THREE.CanvasTexture(c);
-      tex.anisotropy = 4;
+      tex.anisotropy = MAX_ANISO;
       return tex;
     }
 
@@ -2684,27 +2700,124 @@
     });
 
     // ============================================================================
-    // 8. SCULPTED GT HYPERCAR (RECESSED WHEEL ARCHES — ZERO TIRE/BODY CLIPPING!)
+    // 8. DEADMAU5'S ICONIC "PURRARI" (FERRARI 458 ITALIA NYAN CAT LIVERY!)
     // ============================================================================
+    function createPurrariWrapTex() {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 512;
+      const ctx = c.getContext('2d');
+      // Iconic Purrari Nyan-Sky Blue base
+      const g = ctx.createLinearGradient(0, 0, 512, 512);
+      g.addColorStop(0, '#1c8cff');
+      g.addColorStop(0.5, '#35b4ff');
+      g.addColorStop(1, '#1273e6');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Crisp Nyan-Cat pixel white twinkling stars
+      ctx.fillStyle = '#ffffff';
+      const stars = [[42,56],[120,90],[210,44],[340,72],[445,52],[80,430],[190,460],[310,420],[430,450],[468,175],[56,165]];
+      stars.forEach(([sx, sy]) => {
+        ctx.fillRect(sx - 6, sy - 2, 12, 4);
+        ctx.fillRect(sx - 2, sy - 6, 4, 12);
+      });
+
+      // Signature 6-band Nyan Rainbow Trail sweeping across the wrap!
+      const rainbow = ['#ff1e2d', '#ff9500', '#ffe600', '#2ee640', '#00b4ff', '#9c3bff'];
+      const bandH = 26;
+      const startY = 178;
+      rainbow.forEach((col, i) => {
+        ctx.fillStyle = col;
+        ctx.fillRect(0, startY + i * bandH, 360, bandH);
+      });
+
+      // Cute Pixel Pop-Tart Nyan Cat Emblem at the head of the rainbow!
+      ctx.fillStyle = '#f5c78e';
+      ctx.fillRect(344, 198, 108, 92);
+      ctx.fillStyle = '#ff77bb';
+      ctx.fillRect(354, 208, 88, 72);
+      // Pink Pop-Tart sprinkles
+      ctx.fillStyle = '#ff1476';
+      [[368,224],[394,218],[420,232],[376,252],[408,260],[426,248]].forEach(([px, py]) => ctx.fillRect(px, py, 7, 7));
+      // Pixel grey cat head + ears + eyes + rosy cheeks
+      ctx.fillStyle = '#9aa3b2';
+      ctx.fillRect(426, 224, 52, 46);
+      ctx.fillRect(428, 212, 14, 14);
+      ctx.fillRect(462, 212, 14, 14);
+      ctx.fillStyle = '#111522';
+      ctx.fillRect(438, 240, 6, 6);
+      ctx.fillRect(460, 240, 6, 6);
+      ctx.fillStyle = '#ff6b9d';
+      ctx.fillRect(432, 250, 7, 6);
+      ctx.fillRect(465, 250, 7, 6);
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.anisotropy = MAX_ANISO;
+      return tex;
+    }
+
+    function createPurrariDeckTex() {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 512;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#259eff';
+      ctx.fillRect(0, 0, 512, 512);
+      // Vertical 6-band Nyan Rainbow racing stripes down the center of the Purrari!
+      const rainbow = ['#ff1e2d', '#ff9500', '#ffe600', '#2ee640', '#00b4ff', '#9c3bff'];
+      const bandW = 28;
+      const startX = 256 - (rainbow.length * bandW) * 0.5;
+      rainbow.forEach((col, i) => {
+        ctx.fillStyle = col;
+        ctx.fillRect(startX + i * bandW, 0, bandW, 512);
+      });
+      // Twinkling pixel stars on blue flanks
+      ctx.fillStyle = '#ffffff';
+      [[56,80],[96,210],[64,370],[440,110],[410,275],[455,415]].forEach(([sx, sy]) => {
+        ctx.fillRect(sx - 7, sy - 2, 14, 4);
+        ctx.fillRect(sx - 2, sy - 7, 4, 14);
+      });
+      const tex = new THREE.CanvasTexture(c);
+      tex.anisotropy = MAX_ANISO;
+      return tex;
+    }
+
     function buildSupercar() {
       const root = new THREE.Group();
       const visual = new THREE.Group();
       root.add(visual);
 
+      const purrariWrapTex = createPurrariWrapTex();
+      const purrariDeckTex = createPurrariDeckTex();
+
+      // Iconic Sky-Blue Clearcoated Purrari 458 Paint
       const bodyPaint = new THREE.MeshPhysicalMaterial({
-        color: 0x0c2461,
-        emissive: 0x040d28,
+        color: 0x2ba8ff,
+        emissive: 0x062042,
         emissiveIntensity: 0.25,
-        metalness: 0.88,
+        metalness: 0.55,
         roughness: 0.16,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.08
+        clearcoatRoughness: 0.06
       });
-      const carbonMat = new THREE.MeshStandardMaterial({ color: 0x0e121d, metalness: 0.65, roughness: 0.35 });
-      const accentMat = new THREE.MeshStandardMaterial({ color: 0xff2a85, emissive: 0xff1e6b, emissiveIntensity: 0.55, metalness: 0.4, roughness: 0.2 });
+      const sideWrapMat = new THREE.MeshPhysicalMaterial({
+        map: purrariWrapTex,
+        metalness: 0.35,
+        roughness: 0.18,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.06
+      });
+      const deckWrapMat = new THREE.MeshPhysicalMaterial({
+        map: purrariDeckTex,
+        metalness: 0.35,
+        roughness: 0.18,
+        clearcoat: 1.0,
+        clearcoatRoughness: 0.06
+      });
+      const carbonMat = new THREE.MeshStandardMaterial({ color: 0x10141f, metalness: 0.65, roughness: 0.35 });
+      const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe6eefc, metalness: 0.96, roughness: 0.12 });
       const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x060b18, metalness: 0.92, roughness: 0.05, clearcoat: 1.0 });
 
-      // Central Narrower Fuselage (width 1.84m -> leaves clean wheel wells at ±1.22m so tires NEVER clip!)
+      // Central Sculpted 458 Italia Fuselage (width 1.84m -> leaves clean wheel wells at ±1.22m!)
       const hullShape = new THREE.Shape();
       hullShape.moveTo(-2.5, 0.34);
       hullShape.lineTo(2.45, 0.24);
@@ -2722,18 +2835,29 @@
       hullGeo.translate(0.86, 0, 0);
       visual.add(new THREE.Mesh(hullGeo, bodyPaint));
 
-      // Sculpted Mid-Body Sidepods strictly BETWEEN front & rear axles (z: -0.95..0.95)
+      // Top Hood & Rear Deck Nyan Rainbow Racing Stripe Overlay (super visible from Hero Chase POV!)
+      const hoodStripe = new THREE.Mesh(new THREE.PlaneGeometry(1.56, 1.55), deckWrapMat);
+      hoodStripe.rotation.x = -Math.PI / 2 + 0.16;
+      hoodStripe.position.set(0, 0.72, 1.68);
+      visual.add(hoodStripe);
+
+      const rearDeckWrap = new THREE.Mesh(new THREE.PlaneGeometry(1.68, 1.12), deckWrapMat);
+      rearDeckWrap.rotation.x = -Math.PI / 2 - 0.03;
+      rearDeckWrap.position.set(0, 1.045, -1.85);
+      visual.add(rearDeckWrap);
+
+      // Sculpted Purrari Nyan-Cat Sidepods strictly BETWEEN front & rear axles
       [-1.08, 1.08].forEach((sx) => {
-        const pod = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.44, 1.85), bodyPaint);
+        const pod = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.44, 1.88), sideWrapMat);
         pod.position.set(sx, 0.54, 0);
         visual.add(pod);
 
-        const skirtGlow = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 1.8), new THREE.MeshBasicMaterial({ color: 0x00e5ff }));
-        skirtGlow.position.set(sx + Math.sign(sx) * 0.22, 0.32, 0);
+        const skirtGlow = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 1.84), new THREE.MeshBasicMaterial({ color: 0xff77cc }));
+        skirtGlow.position.set(sx + Math.sign(sx) * 0.22, 0.31, 0);
         visual.add(skirtGlow);
       });
 
-      // Teardrop Glass Canopy + Glowing Rear Mid-Engine Bay Louvers
+      // Teardrop Glass Canopy (458 Italia profile)
       const canopyShape = new THREE.Shape();
       canopyShape.moveTo(-1.55, 0.8);
       canopyShape.lineTo(1.0, 0.78);
@@ -2746,70 +2870,82 @@
       canopyGeo.translate(0.68, 0, 0);
       visual.add(new THREE.Mesh(canopyGeo, glassMat));
 
-      // Glowing Engine Core Louvers on Rear Deck (looks awesome from rear chase cam!)
-      const engineGlowMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff });
-      for (let lz = -1.1; lz >= -2.1; lz -= 0.25) {
-        const louver = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.05, 0.1), engineGlowMat);
-        louver.position.set(0, 0.96, lz);
-        visual.add(louver);
-      }
+      // Ferrari 458 Rear Glass V8 Engine Bay + Glowing Red V8 Intake Manifolds!
+      const engineGlowMat = new THREE.MeshBasicMaterial({ color: 0xff2233 });
+      [-0.24, 0.24].forEach((ex) => {
+        const manifold = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.08, 0.85), engineGlowMat);
+        manifold.position.set(ex, 1.07, -1.72);
+        visual.add(manifold);
+      });
 
-      // Multi-Fin Carbon Rear Diffuser + Front Splitter
+      // Black Ferrari 458 Rear Mesh Fascia + Carbon Diffuser + Front Splitter
       const splitter = new THREE.Mesh(new THREE.BoxGeometry(2.38, 0.09, 0.55), carbonMat);
       splitter.position.set(0, 0.24, 2.38);
       visual.add(splitter);
 
-      const diffuser = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.28, 0.28), carbonMat);
-      diffuser.position.set(0, 0.36, -2.54);
+      const rearGrille = new THREE.Mesh(new THREE.BoxGeometry(1.76, 0.34, 0.1), carbonMat);
+      rearGrille.position.set(0, 0.74, -2.56);
+      visual.add(rearGrille);
+
+      const diffuser = new THREE.Mesh(new THREE.BoxGeometry(1.94, 0.26, 0.28), carbonMat);
+      diffuser.position.set(0, 0.34, -2.54);
       visual.add(diffuser);
       for (let fx = -0.7; fx <= 0.7; fx += 0.35) {
-        const fin = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.26, 0.36), carbonMat);
-        fin.position.set(fx, 0.35, -2.56);
+        const fin = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.24, 0.36), carbonMat);
+        fin.position.set(fx, 0.34, -2.56);
         visual.add(fin);
       }
 
-      // Swan-Neck GT Rear Wing
-      [-0.7, 0.7].forEach((wx) => {
-        const strut = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.54, 0.34), carbonMat);
-        strut.position.set(wx, 1.18, -2.22);
-        strut.rotation.x = 0.22;
+      // Purrari Rainbow-Trimmed Rear GT Wing (iconic deadmau5 custom rear wing!)
+      [-0.72, 0.72].forEach((wx) => {
+        const strut = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.44, 0.3), carbonMat);
+        strut.position.set(wx, 1.15, -2.28);
+        strut.rotation.x = 0.2;
         visual.add(strut);
       });
-      const wingMain = new THREE.Mesh(new THREE.BoxGeometry(2.58, 0.1, 0.54), accentMat);
-      wingMain.position.set(0, 1.46, -2.36);
-      wingMain.rotation.x = -0.14;
+      const wingMain = new THREE.Mesh(new THREE.BoxGeometry(2.44, 0.09, 0.48), deckWrapMat);
+      wingMain.position.set(0, 1.38, -2.4);
+      wingMain.rotation.x = -0.12;
       visual.add(wingMain);
-      [-1.29, 1.29].forEach((ex) => {
-        const ep = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.36, 0.64), carbonMat);
-        ep.position.set(ex, 1.44, -2.36);
+      [-1.22, 1.22].forEach((ex) => {
+        const ep = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.32, 0.56), new THREE.MeshStandardMaterial({ color: 0xff55aa, metalness: 0.4, roughness: 0.25 }));
+        ep.position.set(ex, 1.37, -2.4);
         visual.add(ep);
       });
 
-      // Signature LED Headlights & Dynamic Brake Taillight Blade
-      const hlMat = new THREE.MeshBasicMaterial({ color: 0xb8faff });
+      // Signature 458 Swept LED Headlights & Iconic Twin Round Glowing Crimson Ferrari Taillights!
+      const hlMat = new THREE.MeshBasicMaterial({ color: 0xdcfaff });
       [-0.76, 0.76].forEach((hx) => {
-        const hl = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.1, 0.1), hlMat);
+        const hl = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.1, 0.14), hlMat);
         hl.position.set(hx, 0.52, 2.58);
         visual.add(hl);
       });
 
-      const tailMat = new THREE.MeshBasicMaterial({ color: 0xff1e4d });
-      const tlBar = new THREE.Mesh(new THREE.BoxGeometry(1.92, 0.12, 0.1), tailMat);
-      tlBar.position.set(0, 0.78, -2.56);
-      visual.add(tlBar);
+      const tailMat = new THREE.MeshBasicMaterial({ color: 0xff1122 });
+      const tailRingGeo = new THREE.TorusGeometry(0.16, 0.045, 8, 20);
+      const tailCoreGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.08, 16);
+      tailCoreGeo.rotateX(Math.PI / 2);
+      [-0.74, 0.74].forEach((tx) => {
+        const ring = new THREE.Mesh(tailRingGeo, tailMat);
+        ring.position.set(tx, 0.80, -2.59);
+        visual.add(ring);
+        const core = new THREE.Mesh(tailCoreGeo, tailMat);
+        core.position.set(tx, 0.80, -2.57);
+        visual.add(core);
+      });
 
-      // 4 Recessed Wheels (Clean Clearance from Chassis!)
+      // 4 Recessed Ferrari 458 Wheels + Classic Yellow Brake Caliper Rings!
       const wheels = [];
       const frontSteerGroups = [];
       const tireGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.4, 24);
       tireGeo.rotateZ(Math.PI / 2);
       const tireMat = new THREE.MeshStandardMaterial({ color: 0x10131c, roughness: 0.78 });
-      const rimGeo = new THREE.CylinderGeometry(0.32, 0.32, 0.42, 12);
+      const rimGeo = new THREE.CylinderGeometry(0.34, 0.34, 0.42, 16);
       rimGeo.rotateZ(Math.PI / 2);
-      const rimMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e8, metalness: 0.92, roughness: 0.18 });
-      const calipGeo = new THREE.TorusGeometry(0.34, 0.03, 6, 18);
+      const rimMat = new THREE.MeshStandardMaterial({ color: 0xdce6f7, metalness: 0.94, roughness: 0.14 });
+      const calipGeo = new THREE.TorusGeometry(0.35, 0.032, 6, 18);
       calipGeo.rotateY(Math.PI / 2);
-      const calipMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff });
+      const calipMat = new THREE.MeshBasicMaterial({ color: 0xffd32a }); // Iconic Ferrari Yellow Calipers!
 
       [[-1.22, 0.5, 1.56, true], [1.22, 0.5, 1.56, true], [-1.22, 0.53, -1.56, false], [1.22, 0.53, -1.56, false]]
         .forEach(([wx, wy, wz, isFront]) => {
@@ -2827,22 +2963,23 @@
           if (isFront) frontSteerGroups.push(steer);
         });
 
-      // Quad Titanium Exhausts + Twin Pulsing Nitro Flame Cones
+      // Signature Ferrari 458 TRIPLE-CENTER Chrome Exhausts + Triple Pulsing Nyan Nitro Flames!
       const flameCones = [];
-      const fConeGeo = new THREE.ConeGeometry(0.22, 2.2, 12);
+      const fConeGeo = new THREE.ConeGeometry(0.16, 2.1, 12);
       fConeGeo.rotateX(-Math.PI / 2);
-      fConeGeo.translate(0, 0, -1.1);
-      [-0.5, 0.5].forEach((fx) => {
-        const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.18, 0.36, 12), carbonMat);
+      fConeGeo.translate(0, 0, -1.05);
+      const flameColors = [0xff2a85, 0xffd32a, 0x00e5ff];
+      [-0.24, 0, 0.24].forEach((fx, idx) => {
+        const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.105, 0.34, 12), chromeMat);
         pipe.rotation.x = Math.PI / 2;
-        pipe.position.set(fx, 0.48, -2.58);
+        pipe.position.set(fx, 0.42, -2.58);
         visual.add(pipe);
 
         const cone = new THREE.Mesh(
           fConeGeo,
-          new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending })
+          new THREE.MeshBasicMaterial({ color: flameColors[idx], transparent: true, opacity: 0.88, blending: THREE.AdditiveBlending })
         );
-        cone.position.set(fx, 0.48, -2.68);
+        cone.position.set(fx, 0.42, -2.68);
         visual.add(cone);
         flameCones.push(cone);
       });
@@ -2894,11 +3031,12 @@
     sparkIMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     scene.add(sparkIMesh);
     const sparks = [];
+    const NYAN_SPARK_HEX = [0xff1e2d, 0xff9500, 0xffe600, 0x2ee640, 0x00b4ff, 0x9c3bff];
     for (let i = 0; i < SPARK_COUNT; i++) {
       sparks.push({ pos: new THREE.Vector3(0, -500, 0), vel: new THREE.Vector3(), life: 0, scale: 0 });
       dummy.position.set(0, -500, 0); dummy.scale.setScalar(0); dummy.updateMatrix();
       sparkIMesh.setMatrixAt(i, dummy.matrix);
-      tmpCol.setHex(i % 2 === 0 ? 0xff2a85 : 0x00e5ff);
+      tmpCol.setHex(NYAN_SPARK_HEX[i % NYAN_SPARK_HEX.length]);
       sparkIMesh.setColorAt(i, tmpCol);
     }
     if (sparkIMesh.instanceColor) sparkIMesh.instanceColor.needsUpdate = true;
@@ -3903,17 +4041,18 @@
       // Subtle exhaust flame idle flicker even at 0 KM/H!
       const idleFlicker = 0.14 + Math.sin(elapsed * 28) * 0.05;
       const flameLen = isTurbo ? (1.45 + Math.sin(elapsed * 45) * 0.25) : Math.max(idleFlicker, speedNorm * 0.55);
+      const purrariFlames = [0xff2a85, 0xffd32a, 0x00e5ff];
       for (let i = 0; i < car.flameCones.length; i++) {
         const fc = car.flameCones[i];
         fc.visible = true;
-        fc.scale.set(isTurbo ? 1.2 : 0.78, isTurbo ? 1.2 : 0.78, flameLen);
-        fc.material.color.setHex(isTurbo ? 0xff2a85 : 0x00e5ff);
+        fc.scale.set(isTurbo ? 1.25 : 0.82, isTurbo ? 1.25 : 0.82, flameLen);
+        fc.material.color.setHex(purrariFlames[i % 3]);
       }
-      // Breathing cyan engine louver & underglow pulse
-      const breath = 0.75 + Math.sin(elapsed * 3.8) * 0.25;
-      car.engineGlowMat.color.setRGB(0, 0.75 * breath + 0.15, 1.0 * breath);
-      car.underGlow.color.setHex(isTurbo ? 0xff2a85 : 0x00e5ff);
-      car.underGlow.intensity = isTurbo ? 4.8 : (2.2 + breath * 1.1);
+      // Breathing Ferrari Red V8 engine intake glow & Nyan sky-blue/pink underglow pulse
+      const breath = 0.78 + Math.sin(elapsed * 3.8) * 0.22;
+      car.engineGlowMat.color.setRGB(1.0 * breath, 0.14 * breath, 0.18 * breath);
+      car.underGlow.color.setHex(isTurbo ? 0xff44aa : 0x35b4ff);
+      car.underGlow.intensity = isTurbo ? 4.8 : (2.4 + breath * 1.1);
 
       // 7. Swept Anti-Tunneling Trigger Checks (Boost Pads, Ramps, Nitro Canisters, Sky Rings, Laser Barriers & Skill Orbs)
       if (state.hitShake > 0) state.hitShake = Math.max(0, state.hitShake - dt * 2.8);
