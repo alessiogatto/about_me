@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
   <title>ALESSIO GATTO // INTERACTIVE 3D CV</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -71,62 +71,76 @@
     #boot-fallback h2 { font-family: 'Orbitron', sans-serif; color: var(--neon-cyan); font-size: 1.35rem; }
     #boot-fallback p { color: #c4d3ee; max-width: 520px; line-height: 1.5; font-size: 0.92rem; }
 
-    /* Smartphone / Narrow Screen Full-Page Blocker */
+    /* Smartphone / Narrow Screen Full-Page Blocker (100% compatible CSS Level 3 media queries!) */
     #mobile-guard {
       position: fixed;
       inset: 0;
+      width: 100vw;
+      height: 100dvh;
       z-index: 120;
       background: radial-gradient(circle at top, #101630, #050710 72%);
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 20px;
       text-align: center;
-      gap: 16px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
-    #mobile-guard.show { display: flex; }
-    @media (max-width: 900px), ((pointer: coarse) and (max-width: 1024px)) {
+    #mobile-guard.show { display: flex !important; }
+    @media (max-width: 1024px), (pointer: coarse), (hover: none) {
       #mobile-guard { display: flex !important; }
-      #loading-screen { display: none !important; }
+      #loading-screen, #hud, #canvas-container, #nfsmw-overlay { display: none !important; }
     }
     .mobile-guard-card {
-      max-width: 390px;
-      background: linear-gradient(155deg, rgba(14, 20, 42, 0.94), rgba(7, 10, 22, 0.96));
-      border: 1px solid rgba(0, 229, 255, 0.35);
-      border-top: 4px solid var(--neon-pink);
-      border-radius: 18px;
-      padding: 24px 22px;
-      box-shadow: 0 22px 54px rgba(0, 0, 0, 0.8), 0 0 28px rgba(0, 229, 255, 0.16);
+      width: 100%;
+      max-width: 480px;
+      margin: auto;
+      background: linear-gradient(155deg, rgba(14, 20, 42, 0.96), rgba(7, 10, 22, 0.98));
+      border: 1px solid rgba(0, 229, 255, 0.42);
+      border-top: 5px solid var(--neon-pink);
+      border-radius: 22px;
+      padding: 28px 22px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 32px rgba(0, 229, 255, 0.18);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
-    .mobile-guard-icon { font-size: 2.3rem; }
+    @media (max-height: 520px) {
+      .mobile-guard-card { padding: 16px 20px; gap: 8px; }
+      .mobile-guard-icon { font-size: 2rem; }
+      .mobile-guard-card h2 { font-size: 1.15rem; }
+      .mobile-guard-card p { font-size: 0.9rem; line-height: 1.38; }
+      .mobile-guard-actions .action-btn { padding: 11px 16px; }
+    }
+    .mobile-guard-icon { font-size: 3.1rem; line-height: 1; }
     .mobile-guard-card h2 {
       font-family: 'Orbitron', sans-serif;
-      font-size: 1.12rem;
+      font-size: 1.38rem;
       color: #ffffff;
       letter-spacing: 0.8px;
+      line-height: 1.25;
     }
     .mobile-guard-card p {
-      font-size: 0.88rem;
-      line-height: 1.5;
-      color: #c5d5f0;
+      font-size: 1.04rem;
+      line-height: 1.55;
+      color: #d2e0f7;
     }
     .mobile-guard-actions {
       display: flex;
       flex-direction: column;
-      gap: 9px;
+      gap: 12px;
       width: 100%;
-      margin-top: 6px;
+      margin-top: 8px;
     }
     .mobile-guard-actions .action-btn {
       width: 100%;
       justify-content: center;
-      padding: 11px 14px;
-      font-size: 0.72rem;
+      padding: 16px 20px;
+      font-size: 0.95rem;
+      border-radius: 14px;
     }
 
     /* Pause Overlay */
@@ -670,7 +684,14 @@
     .contact-strip { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; font-size: 0.85rem; color: #a9bce0; }
     .contact-strip a { color: var(--neon-cyan); text-decoration: none; }
     .cv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media (max-width: 780px) { .cv-grid { grid-template-columns: 1fr; } .cv-card { width: 310px; max-width: 85vw; } }
+    @media (max-width: 780px) {
+      .cv-grid { grid-template-columns: 1fr; }
+      .cv-card { width: 310px; max-width: 85vw; }
+      .cv-modal-box { max-width: 100%; width: 100%; max-height: 92dvh; padding: 20px 18px; border-radius: 16px; }
+      .modal-top { flex-direction: column; gap: 12px; }
+      .modal-name { font-size: 1.38rem; }
+      .cv-item p { font-size: 0.92rem; line-height: 1.52; }
+    }
     .cv-sec-title {
       font-family: 'Orbitron', sans-serif;
       font-size: 0.92rem;
@@ -1192,8 +1213,10 @@
     </div>
   </div>
 
-  <!-- CDN Boot Watchdog & Smooth Loading Bar Controller -->
+  <!-- Mobile Detection, CDN Boot Watchdog & Smooth Loading Bar Controller -->
   <script>
+    window.__IS_MOBILE_DEVICE = /Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry|IEMobile/i.test(navigator.userAgent)
+      || (window.matchMedia && (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(hover: none)').matches));
     window.__GAME_BOOTED = false;
     window.__loadPct = 8;
     window.__setLoadProgress = function (pct, status) {
@@ -1211,17 +1234,27 @@
       ls.classList.add('fade-out');
       setTimeout(() => { ls.style.display = 'none'; }, 480);
     };
-    const __bootTick = setInterval(() => {
-      if (window.__GAME_BOOTED || window.__loadPct >= 34) { clearInterval(__bootTick); return; }
-      window.__setLoadProgress(window.__loadPct + 4, 'Loading 3D Engine...');
-    }, 120);
-    setTimeout(() => {
-      if (!window.__GAME_BOOTED) {
-        clearInterval(__bootTick);
-        window.__hideLoadingScreen();
-        document.getElementById('boot-fallback').classList.add('show');
-      }
-    }, 8000);
+
+    if (window.__IS_MOBILE_DEVICE) {
+      // Immediately show Broader Screen Required page on phones (e.g. Pixel 6a portrait/landscape/desktop-mode)
+      window.__GAME_BOOTED = true;
+      const mg = document.getElementById('mobile-guard');
+      const ls = document.getElementById('loading-screen');
+      if (mg) mg.classList.add('show');
+      if (ls) ls.style.display = 'none';
+    } else {
+      const __bootTick = setInterval(() => {
+        if (window.__GAME_BOOTED || window.__loadPct >= 34) { clearInterval(__bootTick); return; }
+        window.__setLoadProgress(window.__loadPct + 4, 'Loading 3D Engine...');
+      }, 120);
+      setTimeout(() => {
+        if (!window.__GAME_BOOTED && window.innerWidth > 1024) {
+          clearInterval(__bootTick);
+          window.__hideLoadingScreen();
+          document.getElementById('boot-fallback').classList.add('show');
+        }
+      }, 8000);
+    }
   </script>
 
   <script type="module">
@@ -1230,6 +1263,11 @@
     import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
     import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+    if (window.__IS_MOBILE_DEVICE) {
+      // Skip heavy WebGL initialization entirely on smartphones
+      throw new Error('Mobile device detected — 3D engine skipped cleanly.');
+    }
 
     window.__GAME_BOOTED = true;
     window.__setLoadProgress(42, 'Initializing WebGL & PBR Lighting...');
@@ -3071,8 +3109,8 @@
     document.getElementById('btn-pause-cv').addEventListener('click', openCVModal);
     document.getElementById('btn-close-modal').addEventListener('click', closeCVModal);
 
-    // Smartphone / Narrow Screen Guard (handled immediately by CSS @media <= 900px + JS sync)
-    const isNarrowScreen = () => window.innerWidth <= 900 || (window.matchMedia('(pointer: coarse)').matches && window.innerWidth <= 1024);
+    // Smartphone / Narrow Screen Guard (handled immediately by CSS @media <= 1024px + JS sync)
+    const isNarrowScreen = () => window.innerWidth <= 1024 || window.__IS_MOBILE_DEVICE;
     const btnMobileCv = document.getElementById('btn-mobile-cv');
     if (btnMobileCv) btnMobileCv.addEventListener('click', openCVModal);
 
