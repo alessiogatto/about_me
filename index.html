@@ -969,7 +969,7 @@
       </div>
       <button id="btn-nfsmw-proceed" disabled>
         <div class="nfsmw-btn-fill" id="nfsmw-btn-fill"></div>
-        <span id="nfsmw-btn-text">READ PANEL · 1.5s</span>
+        <span id="nfsmw-btn-text">READ PANEL · 1.0s</span>
       </button>
     </div>
   </div>
@@ -2367,50 +2367,11 @@
     });
 
     // ============================================================================
-    // 7. NON-OVERLAPPING BOOST PADS, WEDGE RAMPS & COLLECTIBLE SKILL ORBS
+    // 7. WEDGE RAMPS, NITRO CANISTERS, SKY RINGS, LASER BARRIERS & SKILL ORBS
     // ============================================================================
-    const boostPads = [];
     const jumpRamps = [];
     const skillOrbs = [];
-
-    // Seamless forward-pointing glowing cyan nitro boost pad chevrons (+Z = forward along track!)
-    const padCanvas = document.createElement('canvas');
-    padCanvas.width = 128; padCanvas.height = 256;
-    const pCtx = padCanvas.getContext('2d');
-    pCtx.fillStyle = '#041422'; pCtx.fillRect(0, 0, 128, 256);
-    // Seamless glowing side rails
-    pCtx.fillStyle = '#00e5ff';
-    pCtx.fillRect(4, 0, 8, 256);
-    pCtx.fillRect(116, 0, 8, 256);
-    // Forward-pointing chevrons (tip toward y=256 => v=0 => +Z forward!)
-    pCtx.strokeStyle = '#00e5ff'; pCtx.lineWidth = 11; pCtx.lineCap = 'round'; pCtx.lineJoin = 'round';
-    for (let cy = 42; cy <= 214; cy += 85) {
-      pCtx.beginPath(); pCtx.moveTo(24, cy - 20); pCtx.lineTo(64, cy + 20); pCtx.lineTo(104, cy - 20); pCtx.stroke();
-    }
-    const padTex = new THREE.CanvasTexture(padCanvas);
-    padTex.wrapS = THREE.RepeatWrapping;
-    padTex.wrapT = THREE.RepeatWrapping;
-    const padMat = new THREE.MeshBasicMaterial({
-      map: padTex,
-      polygonOffset: true,
-      polygonOffsetFactor: -2,
-      polygonOffsetUnits: -2
-    });
-    const padGeo = new THREE.BoxGeometry(4.0, 0.16, 6.2);
-
     const bPt = new THREE.Vector3(), bTan = new THREE.Vector3(), bBin = new THREE.Vector3(), bNorm = new THREE.Vector3();
-    [0.028, 0.095, 0.155, 0.22, 0.285, 0.345, 0.41, 0.47, 0.535, 0.60, 0.665, 0.73, 0.795, 0.86, 0.925, 0.975].forEach((t, idx) => {
-      getTrackFrame(t, bPt, bTan, bBin, bNorm);
-      const laneOffset = ((idx % 3) - 1) * 3.2;
-      const g = new THREE.Group();
-      g.position.copy(bPt).addScaledVector(bBin, laneOffset);
-      g.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(bBin.clone().negate(), bNorm, bTan));
-      const m = new THREE.Mesh(padGeo, padMat);
-      m.position.y = 0.12;
-      g.add(m);
-      scene.add(g);
-      boostPads.push({ t, laneOffset });
-    });
 
     const rampShape = new THREE.Shape();
     rampShape.moveTo(0, 0);
@@ -3179,7 +3140,7 @@
       nfsmwBtn.disabled = true;
       nfsmwBtn.classList.remove('ready');
       nfsmwBtnFill.style.width = '0%';
-      nfsmwBtnText.textContent = 'READ PANEL · 1.5s';
+      nfsmwBtnText.textContent = 'READ PANEL · 1.0s';
 
       // Trigger dramatic camera flash + letterbox bars + bass drop SFX!
       nfsmwFlash.classList.remove('flash');
@@ -3351,15 +3312,15 @@
         }
       }
 
-      // Handle 1.5-Second Countdown Lock during NFS Most Wanted Cutscene
+      // Handle 1.0-Second (1000ms) Countdown Lock during NFS Most Wanted Cutscene
       const isCutscene = state.mode === 'CUTSCENE';
       if (isCutscene) {
         state.cutsceneTimer += dt;
-        const pct = Math.min(100, (state.cutsceneTimer / 1.5) * 100);
+        const pct = Math.min(100, (state.cutsceneTimer / 1.0) * 100);
         nfsmwBtnFill.style.width = `${pct}%`;
         if (!state.cutsceneReady) {
-          const secsLeft = Math.max(0.1, 1.5 - state.cutsceneTimer).toFixed(1);
-          if (state.cutsceneTimer >= 1.5) {
+          const secsLeft = Math.max(0.1, 1.0 - state.cutsceneTimer).toFixed(1);
+          if (state.cutsceneTimer >= 1.0) {
             state.cutsceneReady = true;
             nfsmwBtn.disabled = false;
             nfsmwBtn.classList.add('ready');
@@ -3394,7 +3355,7 @@
         state.speed = THREE.MathUtils.lerp(state.speed, state.turboMaxSpeed, dt * 4.6);
         state.reverseDelay = 0;
       } else {
-        state.turboCharge = Math.min(100, state.turboCharge + 20 * dt);
+        state.turboCharge = Math.min(100, state.turboCharge + 4 * dt);
         const targetMax = isTour ? 60 : state.maxSpeed;
 
         if (wantsForward) {
@@ -3570,14 +3531,6 @@
 
       if (state.speed > 0 && !isCutscene) {
         if (state.isGrounded) {
-          for (let i = 0; i < boostPads.length; i++) {
-            const pad = boostPads[i];
-            if ((crossedTargetT(prevT, state.t, pad.t) || getCircularDistT(state.t, pad.t) < 0.005) && Math.abs(state.laneOffset - pad.laneOffset) < 2.6) {
-              if (state.padBoostTimer <= 0.1) { sfx.boost(); showToast('⚡ NITRO BOOST PAD!'); }
-              state.padBoostTimer = 1.15;
-              state.turboCharge = Math.min(100, state.turboCharge + 25);
-            }
-          }
           for (let i = 0; i < jumpRamps.length; i++) {
             const r = jumpRamps[i];
             if ((crossedTargetT(prevT, state.t, r.t) || getCircularDistT(state.t, r.t) < 0.0045) && Math.abs(state.laneOffset - r.laneOffset) < 2.6 && state.speed > 18) {
@@ -3617,7 +3570,7 @@
         }
       }
 
-      // Collectible Glowing NITRO Canisters (+35% NITRO + Mini Boost Surge!)
+      // Collectible Glowing NITRO Canisters (ONLY refills +35% NITRO — press SHIFT when you want to fire it!)
       for (let i = 0; i < nitroCanisters.length; i++) {
         const nc = nitroCanisters[i];
         if (!nc.collected) {
@@ -3627,10 +3580,9 @@
             nc.collected = true;
             nc.group.visible = false;
             state.turboCharge = Math.min(100, state.turboCharge + 35);
-            state.padBoostTimer = Math.max(state.padBoostTimer, 0.55);
             sfx.nitroPickup();
-            spawnSparks(_carPos, _tan, 12, 14);
-            showToast('🔥 +35% NITRO CANISTER!');
+            spawnSparks(_carPos, _tan, 12, 12);
+            showToast('⛽ +35% NITRO REFILLED!');
           }
         }
       }
@@ -3767,9 +3719,6 @@
         }
       }
       rainGeo.attributes.position.needsUpdate = true;
-
-      // Scroll boost pad energy chevrons continuously FORWARD (+Z along track!)
-      padTex.offset.y += dt * 1.8;
 
       // Animate rising neon embers / cyber-mist motes around the car
       const mArr = moteGeo.attributes.position.array;
