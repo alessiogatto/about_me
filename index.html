@@ -1706,11 +1706,11 @@
 
     const camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 1.2, 2600);
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(IS_MOBILE ? Math.min(window.devicePixelRatio, 1.25) : Math.min(window.devicePixelRatio, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2.0));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = IS_MOBILE ? 1.08 : 1.02;
+    renderer.toneMappingExposure = IS_MOBILE ? 1.06 : 1.02;
     container.appendChild(renderer.domElement);
-    const MAX_ANISO = Math.min(IS_MOBILE ? 4 : 16, renderer.capabilities.getMaxAnisotropy());
+    const MAX_ANISO = Math.min(16, renderer.capabilities.getMaxAnisotropy());
 
     // Subtle Studio IBL Reflections (skipped on mobile for faster boot & higher FPS)
     let envRT = null;
@@ -1973,15 +1973,13 @@
       roadGeo.setAttribute('uv', new THREE.Float32BufferAttribute(roadUv, 2));
       roadGeo.setIndex(roadIdx);
 
-      const roadMat = IS_MOBILE
-        ? new THREE.MeshLambertMaterial({ map: roadTex, side: THREE.DoubleSide })
-        : new THREE.MeshStandardMaterial({
-            map: roadTex,
-            roughness: 0.42,
-            metalness: 0.16,
-            envMapIntensity: 0.45,
-            side: THREE.DoubleSide
-          });
+      const roadMat = new THREE.MeshStandardMaterial({
+        map: roadTex,
+        roughness: 0.42,
+        metalness: 0.16,
+        envMapIntensity: 0.45,
+        side: THREE.DoubleSide
+      });
       group.add(new THREE.Mesh(roadGeo, roadMat));
 
       const deckGeo = new THREE.BufferGeometry();
@@ -2184,16 +2182,14 @@
 
     const B_COUNT = placedBuildings.length;
     const unitBox = new THREE.BoxGeometry(1, 1, 1);
-    const towerMat = IS_MOBILE
-      ? new THREE.MeshLambertMaterial({ color: 0x0a1022, emissiveMap: winTex, emissive: 0xffffff, emissiveIntensity: 0.55 })
-      : new THREE.MeshStandardMaterial({
-          color: 0x0a1022,
-          emissiveMap: winTex,
-          emissive: 0xffffff,
-          emissiveIntensity: 0.48,
-          roughness: 0.42,
-          metalness: 0.65
-        });
+    const towerMat = new THREE.MeshStandardMaterial({
+      color: 0x0a1022,
+      emissiveMap: winTex,
+      emissive: 0xffffff,
+      emissiveIntensity: 0.52,
+      roughness: 0.42,
+      metalness: 0.65
+    });
     const towerIMesh = new THREE.InstancedMesh(unitBox, towerMat, B_COUNT);
     const crownIMesh = new THREE.InstancedMesh(unitBox, new THREE.MeshStandardMaterial({ color: 0x101830, metalness: 0.8, roughness: 0.3 }), B_COUNT);
     const spireIMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.18, 0.35, 1, 6), new THREE.MeshStandardMaterial({ color: 0x3a4b70, metalness: 0.85 }), B_COUNT);
@@ -2424,8 +2420,9 @@
 
     function createPanelTex(m) {
       const c = document.createElement('canvas');
-      c.width = 1600; c.height = 880;
+      c.width = 1920; c.height = 1056;
       const ctx = c.getContext('2d');
+      ctx.scale(1.2, 1.2); // Renders existing 1600x880 layout at crisp 1920x1056 HD resolution!
 
       const bg = ctx.createLinearGradient(0, 0, 1600, 880);
       bg.addColorStop(0, '#040814');
@@ -2504,6 +2501,9 @@
 
       const tex = new THREE.CanvasTexture(c);
       tex.anisotropy = MAX_ANISO;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.generateMipmaps = true;
       return tex;
     }
 
@@ -2752,6 +2752,9 @@
 
       const tex = new THREE.CanvasTexture(c);
       tex.anisotropy = MAX_ANISO;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.generateMipmaps = true;
       return tex;
     }
 
@@ -2777,6 +2780,9 @@
       });
       const tex = new THREE.CanvasTexture(c);
       tex.anisotropy = MAX_ANISO;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.generateMipmaps = true;
       return tex;
     }
 
@@ -3407,6 +3413,7 @@
       active: false,
       smoothSteerDeg: 0,
       steer: 0,       // -1 (left) .. +1 (right), 0° = level horizon!
+      braking: false, // Tilt phone upright/back past ~70° to brake (or tap 🛑 button!)
       listenerAttached: false,
       receivedEvent: false
     };
@@ -3428,10 +3435,14 @@
       const ang = getScreenAngle();
       const osSign = IS_IOS ? -1 : 1;
       const gy = ag.y * osSign;
+      const gz = ag.z * osSign;
 
       // Pure gravity horizon steering (0° = level phone, ZERO calibration needed, ZERO drift!)
       const sign = (ang === -90 || ang === 270) ? -1 : 1;
       const rawSteerDeg = Math.asin(THREE.MathUtils.clamp((sign * gy) / gMag, -1, 1)) * (180 / Math.PI);
+
+      // Natural tilt-back brake: tilting the phone steeply upright (gz / gMag < 0.28) engages ABS braking!
+      gyro.braking = (gz / gMag) < 0.28;
 
       // Smooth low-pass filter removes hand shake while keeping crisp arcade wheel feel
       gyro.smoothSteerDeg += (rawSteerDeg - gyro.smoothSteerDeg) * 0.28;
@@ -3446,6 +3457,7 @@
 
       if (gyroDotEl) {
         gyroDotEl.style.left = `${50 + gyro.steer * 44}%`;
+        gyroDotEl.style.background = gyro.braking ? '#ff2a85' : '#00e5ff';
       }
     }
 
@@ -3497,6 +3509,11 @@
     window.addEventListener('orientationchange', () => {
       gyro.steer = 0;
       gyro.smoothSteerDeg = 0;
+      gyro.braking = false;
+      if (IS_MOBILE && window.innerHeight > window.innerWidth) {
+        sfx.updateEngine(0, false, false);
+        clearAllKeys();
+      }
     });
 
     // Show Mobile Gyro Launch Splash on smartphones when ready
@@ -3686,6 +3703,7 @@
       if (!el) return;
       el.addEventListener('pointerdown', (e) => { e.preventDefault(); dismissOnboarding(); keys[prop] = true; });
       el.addEventListener('pointerup', () => { keys[prop] = false; });
+      el.addEventListener('pointercancel', () => { keys[prop] = false; });
       el.addEventListener('pointerleave', () => { keys[prop] = false; });
     }
     bindHold('t-gas', 'forward');
@@ -3755,9 +3773,18 @@
 
     function animate() {
       rafId = requestAnimationFrame(animate);
-      if (document.hidden || state.mode === 'PAUSED' || state.mode === 'MODAL') return;
-      if (IS_MOBILE && window.innerHeight > window.innerWidth) return;
-      if (mobileGuard && mobileGuard.classList.contains('show')) return;
+      if (document.hidden || state.mode === 'PAUSED' || state.mode === 'MODAL') {
+        sfx.updateEngine(0, false, false);
+        return;
+      }
+      if (IS_MOBILE && window.innerHeight > window.innerWidth) {
+        sfx.updateEngine(0, false, false);
+        return;
+      }
+      if (mobileGuard && mobileGuard.classList.contains('show')) {
+        sfx.updateEngine(0, false, false);
+        return;
+      }
 
       const dt = Math.min(clock.getDelta(), 0.05);
       const elapsed = clock.getElapsedTime();
@@ -3803,8 +3830,8 @@
       // Guided Tour glides continuously past every giant billboard — NEVER stops!
       const isTour = state.mode === 'TOUR';
 
-      // 2. Acceleration, Turbo, Auto-Gas in Mobile Gyro Mode & Snappy ABS Braking!
-      const wantsBrake = !isCutscene && keys.backward;
+      // 2. Acceleration, Turbo, Auto-Gas + Tilt-Back Brake in Mobile Gyro Mode & Snappy ABS Braking!
+      const wantsBrake = !isCutscene && (keys.backward || (gyro.active && gyro.braking));
       const wantsForward = !isCutscene && !wantsBrake && (keys.forward || gyro.active || isTour);
       const isTurbo = !isCutscene && !wantsBrake && (keys.turbo || state.padBoostTimer > 0) && state.turboCharge > 2 && (wantsForward || Math.abs(state.speed) > 5);
       if (state.padBoostTimer > 0 && !isCutscene) state.padBoostTimer -= dt;
@@ -4233,18 +4260,18 @@
         const ct = state.cutsceneTimer;
         const cp = state.cutscenePanel;
 
-        // Quick dramatic push-in over first 0.75s, zoomed cleanly for both Desktop and 915x412 Landscape Phones!
+        // Quick dramatic push-in over first 0.75s, zoomed cleanly for razor-sharp HD readability on both Desktop and Phone!
         const pushEase = Math.min(1, ct / 0.75);
         const smoothEase = 1 - Math.pow(1 - pushEase, 3);
-        const distFront = THREE.MathUtils.lerp(IS_MOBILE ? 54 : 46, IS_MOBILE ? 44 : 36, smoothEase) - Math.min(ct, 5.0) * 0.22;
+        const distFront = THREE.MathUtils.lerp(IS_MOBILE ? 44 : 46, IS_MOBILE ? 35 : 36, smoothEase) - Math.min(ct, 5.0) * 0.22;
 
         _desCam.copy(cp.worldPos).addScaledVector(cp.forwardDir, distFront);
-        _desCam.y -= THREE.MathUtils.lerp(2.0, 0.3, smoothEase);
+        _desCam.y -= THREE.MathUtils.lerp(1.8, 0.2, smoothEase);
 
         _desLook.copy(cp.worldPos);
 
-        // Dramatic FOV punch with clean margin between cinema letterbox bars
-        const cutFov = THREE.MathUtils.lerp(66, IS_MOBILE ? 52 : 48, smoothEase);
+        // Dramatic FOV punch with crisp HD billboard framing between cinema letterbox bars
+        const cutFov = THREE.MathUtils.lerp(62, IS_MOBILE ? 45 : 48, smoothEase);
         camera.fov = THREE.MathUtils.lerp(camera.fov, cutFov, dt * 8);
         if (Math.abs(camera.fov - lastCamFov) > 0.01) {
           lastCamFov = camera.fov;
