@@ -950,7 +950,7 @@
       .gyro-only { display: inline-flex; }
       #hud { padding: 8px 10px; gap: 6px; }
       .top-bar { gap: 4px; }
-      .stepper-pill, .brand-sub, #onboarding-hint, #btn-tour, #btn-pause { display: none !important; }
+      .stepper-pill, .brand-sub, #onboarding-hint, #btn-tour { display: none !important; }
       .brand-badge { padding: 5px 8px; flex-shrink: 1; min-width: 0; }
       .brand-title { font-size: 0.7rem; letter-spacing: 0.6px; white-space: nowrap; }
       .top-actions { gap: 4px; }
@@ -3773,7 +3773,7 @@
         // Lap 1 Only: dramatic NFS Most Wanted cut-in the first time you spot each panel ahead!
         if (state.lap === 1 && (state.mode === 'PLAYING' || state.mode === 'TOUR') && state.speed > 4 && !state.spottedPanels.has(tp.milestone.id)) {
           const fwdDist = (tp.t - state.t + 1) % 1;
-          if (fwdDist > 0.012 && fwdDist < 0.024) {
+          if (fwdDist > 0.008 && fwdDist < 0.028) {
             triggerSpottedCutscene(tp);
             break;
           }
@@ -3792,7 +3792,7 @@
             state.cutsceneReady = true;
             nfsmwBtn.disabled = false;
             nfsmwBtn.classList.add('ready');
-            nfsmwBtnText.textContent = '▶ CONTINUE DRIVING (SPACE)';
+            nfsmwBtnText.textContent = IS_MOBILE ? '▶ TAP TO CONTINUE' : '▶ CONTINUE DRIVING (SPACE)';
             sfx.stage();
           } else {
             nfsmwBtnText.textContent = `READ PANEL · ${secsLeft}s`;
@@ -4233,18 +4233,18 @@
         const ct = state.cutsceneTimer;
         const cp = state.cutscenePanel;
 
-        // Quick dramatic push-in over first 0.75s, framed straight-on with clean margin around all 4 corners!
+        // Quick dramatic push-in over first 0.75s, zoomed cleanly for both Desktop and 915x412 Landscape Phones!
         const pushEase = Math.min(1, ct / 0.75);
         const smoothEase = 1 - Math.pow(1 - pushEase, 3);
-        const distFront = THREE.MathUtils.lerp(46, 36, smoothEase) - Math.min(ct, 5.0) * 0.22;
+        const distFront = THREE.MathUtils.lerp(IS_MOBILE ? 54 : 46, IS_MOBILE ? 44 : 36, smoothEase) - Math.min(ct, 5.0) * 0.22;
 
         _desCam.copy(cp.worldPos).addScaledVector(cp.forwardDir, distFront);
         _desCam.y -= THREE.MathUtils.lerp(2.0, 0.3, smoothEase);
 
         _desLook.copy(cp.worldPos);
 
-        // Dramatic FOV punch (64° -> 48°) with clean margin between cinema letterbox bars
-        const cutFov = THREE.MathUtils.lerp(64, 48, smoothEase);
+        // Dramatic FOV punch with clean margin between cinema letterbox bars
+        const cutFov = THREE.MathUtils.lerp(66, IS_MOBILE ? 52 : 48, smoothEase);
         camera.fov = THREE.MathUtils.lerp(camera.fov, cutFov, dt * 8);
         if (Math.abs(camera.fov - lastCamFov) > 0.01) {
           lastCamFov = camera.fov;
