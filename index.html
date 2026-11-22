@@ -89,7 +89,8 @@
       -webkit-overflow-scrolling: touch;
     }
     #mobile-guard.show { display: flex !important; }
-    .gyro-only { display: none; }
+    .gyro-only { display: none !important; }
+    body.is-mobile-ui .gyro-only { display: inline-flex !important; }
     body.gyro-active .gyro-hide { display: none !important; }
     .mobile-guard-card {
       width: 100%;
@@ -362,21 +363,21 @@
     }
 
     .cv-card {
-      width: 400px;
-      max-width: 38vw;
-      background: linear-gradient(160deg, rgba(9, 13, 28, 0.92), rgba(5, 8, 18, 0.94));
-      border: 1px solid rgba(0, 229, 255, 0.26);
+      width: 372px;
+      max-width: 36vw;
+      background: linear-gradient(155deg, rgba(8, 12, 26, 0.86), rgba(4, 7, 16, 0.90));
+      border: 1px solid rgba(0, 229, 255, 0.22);
       border-top: 3px solid var(--neon-pink);
-      border-radius: 15px;
-      padding: 13px 16px;
-      box-shadow: 0 16px 42px rgba(0, 0, 0, 0.65);
-      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 14px;
+      padding: 12px 15px;
+      box-shadow: 0 14px 36px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      transition: all 0.26s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
-      gap: 7px;
+      gap: 6px;
     }
     .cv-card.compact .cv-bullets { display: none; }
-    .cv-card.compact { width: 392px; padding: 11px 15px; }
+    .cv-card.compact { width: 358px; padding: 10px 14px; }
     .cv-card.zoom-hidden { opacity: 0; pointer-events: none; transform: translateY(10px); }
     @keyframes stagePulse {
       0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.7), 0 16px 42px rgba(0,0,0,0.65); transform: translateX(0); }
@@ -533,15 +534,18 @@
     /* BOTTOM BAR */
     .bottom-bar { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; }
     .controls-bar {
-      background: var(--glass-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: 12px;
-      padding: 8px 13px;
+      background: rgba(6, 9, 20, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 11px;
+      padding: 7px 12px;
       display: flex;
       align-items: center;
-      gap: 11px;
+      gap: 10px;
       flex-wrap: wrap;
+      opacity: 0.82;
+      transition: opacity 0.2s ease;
     }
+    .controls-bar:hover { opacity: 1; }
     .key-item {
       display: flex;
       align-items: center;
@@ -583,18 +587,19 @@
     #onboarding-hint.hidden { opacity: 0; transform: translateY(10px); pointer-events: none; }
 
     .telemetry-cluster {
-      background: linear-gradient(145deg, rgba(10, 14, 32, 0.92), rgba(5, 8, 18, 0.95));
-      border: 1px solid var(--glass-border);
+      background: linear-gradient(145deg, rgba(8, 12, 28, 0.90), rgba(4, 7, 16, 0.94));
+      border: 1px solid rgba(0, 229, 255, 0.28);
       border-right: 4px solid var(--neon-cyan);
       border-radius: 14px;
-      padding: 9px 15px;
+      padding: 10px 16px;
       display: flex;
       align-items: center;
-      gap: 15px;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+      gap: 16px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), 0 0 18px rgba(0, 229, 255, 0.12);
       flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
     }
-    .gauges-col { display: flex; flex-direction: column; gap: 4px; min-width: 138px; }
+    .gauges-col { display: flex; flex-direction: column; gap: 4px; min-width: 148px; }
     .gauge-row {
       display: flex;
       justify-content: space-between;
@@ -608,22 +613,28 @@
     }
     .gauge-track { width: 100%; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 99px; overflow: hidden; }
     #turbo-bar { width: 100%; height: 100%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink), var(--neon-gold)); transition: width 0.08s linear; }
-    .speed-box { text-align: right; min-width: 72px; }
+    .speed-box { text-align: right; min-width: 84px; display: flex; flex-direction: column; align-items: flex-end; }
     .speed-val {
       font-family: 'Orbitron', sans-serif;
-      font-size: 1.72rem;
+      font-size: 1.95rem;
       font-weight: 900;
-      line-height: 1;
-      background: linear-gradient(180deg, #ffffff, #88f3ff);
+      font-style: italic;
+      line-height: 0.95;
+      letter-spacing: -0.5px;
+      background: linear-gradient(180deg, #ffffff 20%, #7ef3ff 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.35));
     }
     .speed-val.turbo-text {
-      background: linear-gradient(180deg, #fff6cc, #ff2a85);
+      background: linear-gradient(180deg, #fff6cc 10%, #ff2a85 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      filter: drop-shadow(0 0 14px rgba(255, 42, 133, 0.65));
     }
-    .speed-unit { font-family: 'Orbitron', sans-serif; font-size: 0.58rem; color: #8fa6cc; letter-spacing: 1px; margin-top: 2px; }
+    .speed-bar-rail { width: 78px; height: 4px; background: rgba(255, 255, 255, 0.12); border-radius: 99px; overflow: hidden; margin-top: 5px; }
+    #speed-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink), var(--neon-gold)); transition: width 0.06s linear; }
+    .speed-unit { font-family: 'Orbitron', sans-serif; font-size: 0.56rem; color: #8fa6cc; letter-spacing: 1.4px; margin-top: 3px; }
 
     .touch-controls { display: none; gap: 6px; }
     @media (pointer: coarse), (max-width: 960px), (max-height: 520px) {
@@ -999,6 +1010,98 @@
     @media (orientation: portrait) and (max-width: 900px) {
       .rotate-tip { display: block; }
     }
+
+    /* Landscape-Only Mobile Enforcement (Portrait Rotate Lock) */
+    #rotate-lock {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100dvh;
+      z-index: 140;
+      background: radial-gradient(circle at center, #111836, #040610 75%);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 28px;
+      gap: 16px;
+    }
+    @keyframes phoneRotateAnim {
+      0%, 18% { transform: rotate(0deg); }
+      45%, 72% { transform: rotate(-90deg); }
+      100% { transform: rotate(0deg); }
+    }
+    .rotate-phone-icon {
+      font-size: 3.4rem;
+      display: inline-block;
+      animation: phoneRotateAnim 2.4s ease-in-out infinite;
+    }
+    #rotate-lock h2 {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.32rem;
+      color: #ffffff;
+      letter-spacing: 1px;
+    }
+    #rotate-lock p {
+      max-width: 340px;
+      font-size: 0.96rem;
+      line-height: 1.5;
+      color: #c2d4f2;
+    }
+    @media (orientation: portrait) {
+      body.is-mobile-ui #rotate-lock { display: flex !important; }
+    }
+
+    /* Live Mobile Gyro Tilt Indicator + 1-Tap Re-Zero Pill */
+    #gyro-hud-pill {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: rgba(8, 12, 28, 0.9);
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      border-radius: 999px;
+      padding: 4px 10px;
+    }
+    body.gyro-active #gyro-hud-pill { display: inline-flex; }
+    .gyro-axis-rail {
+      position: relative;
+      width: 64px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.14);
+      border-radius: 99px;
+    }
+    .gyro-axis-center {
+      position: absolute;
+      left: 50%;
+      top: -2px;
+      width: 2px;
+      height: 10px;
+      background: rgba(255, 255, 255, 0.35);
+      transform: translateX(-50%);
+    }
+    #gyro-steer-dot {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--neon-cyan);
+      box-shadow: 0 0 8px var(--neon-cyan);
+      transform: translate(-50%, -50%);
+    }
+    #btn-gyro-zero {
+      background: rgba(255, 211, 42, 0.18);
+      border: 1px solid rgba(255, 211, 42, 0.6);
+      color: #ffe169;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.56rem;
+      font-weight: 800;
+      padding: 3px 7px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
   </style>
 
   <script type="importmap">
@@ -1061,6 +1164,15 @@
     </div>
   </div>
 
+  <!-- PORTRAIT ROTATE LOCK (LANDSCAPE-ONLY ON MOBILE) -->
+  <div id="rotate-lock" class="interactive">
+    <div class="rotate-phone-icon">📱</div>
+    <div class="brand-title" style="font-size:1.15rem;">ALESSIO GATTO</div>
+    <h2>Rotate to Landscape to Play</h2>
+    <p>Turn your phone sideways into <strong>landscape mode</strong> to drive with Gyroscope steering — or read the full CV right here:</p>
+    <button class="action-btn primary" style="padding:14px 24px;font-size:0.86rem;" onclick="document.getElementById('cv-modal').classList.add('open')">📄 READ FULL CV</button>
+  </div>
+
   <!-- SMARTPHONE MOBILE GYROSCOPE LAUNCH SPLASH -->
   <div id="mobile-guard" class="interactive">
     <div class="mobile-guard-card">
@@ -1104,7 +1216,11 @@
 
       <!-- CRISP TOP-RIGHT CONTROLS -->
       <div class="top-actions interactive">
-        <button class="action-btn gyro-only" id="btn-gyro" title="Toggle / Calibrate Gyroscope">
+        <div id="gyro-hud-pill">
+          <div class="gyro-axis-rail"><div class="gyro-axis-center"></div><div id="gyro-steer-dot"></div></div>
+          <button id="btn-gyro-zero" title="Re-center Gyro to Current Grip">🎯 ZERO</button>
+        </div>
+        <button class="action-btn gyro-only" id="btn-gyro" title="Toggle Gyroscope">
           <span>🧭</span> <span id="gyro-label">GYRO</span>
         </button>
         <button class="action-btn" id="btn-tour" title="Auto-Drive Guided Tour (G)">
@@ -1205,6 +1321,7 @@
         </div>
         <div class="speed-box">
           <div class="speed-val" id="speed-val">000</div>
+          <div class="speed-bar-rail"><div id="speed-bar-fill"></div></div>
           <div class="speed-unit">KM/H</div>
         </div>
       </div>
@@ -1327,6 +1444,7 @@
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
     const IS_MOBILE = Boolean(window.__IS_MOBILE_DEVICE);
+    document.body.classList.toggle('is-mobile-ui', IS_MOBILE);
     window.__GAME_BOOTED = true;
     window.__setLoadProgress(42, IS_MOBILE ? 'Optimizing 3D Engine for Mobile...' : 'Initializing WebGL & PBR Lighting...');
 
@@ -3044,11 +3162,9 @@
       _carPos.copy(_pt).addScaledVector(_bin, state.laneOffset);
       const fb = focusedPanel ? 1.0 : 0.0;
       smoothCamPos.copy(_carPos)
-        .addScaledVector(_tan, -15.4 + fb * 2.2)
-        .addScaledVector(_bin, -fb * 2.8);
-      smoothCamPos.y += 7.0 - fb * 0.4;
-      smoothLookAt.copy(_carPos).addScaledVector(_tan, 16);
-      smoothLookAt.y += 2.6;
+        .addScaledVector(_tan, -11.4 - fb * 2.4)
+        .addScaledVector(_norm, 4.35 + fb * 2.0);
+      smoothLookAt.copy(_carPos).addScaledVector(_tan, 26).addScaledVector(_norm, 2.1);
       if (focusedPanel) {
         _panelLook.copy(focusedPanel.worldPos);
         smoothLookAt.lerp(_panelLook, 0.58);
@@ -3147,58 +3263,98 @@
     document.getElementById('btn-pause-cv').addEventListener('click', openCVModal);
     document.getElementById('btn-close-modal').addEventListener('click', closeCVModal);
 
-    // Mobile Gyroscope Tilt Steering + Tilt Acceleration Engine (Portrait & Landscape!)
+    // Gimbal-Lock-Free Landscape Gyroscope Engine (Gravity Vector via devicemotion + 5-sample auto-zero!)
     const mobileGuard = document.getElementById('mobile-guard');
+    const gyroDotEl = document.getElementById('gyro-steer-dot');
     const gyro = {
       active: false,
-      calibrated: false,
-      neutralPitch: 45,
+      calSamples: 0,
+      calSteerSum: 0,
+      calPitchSum: 0,
+      neutralSteer: 0,
+      neutralPitch: 0,
+      smoothSteer: 0,
+      smoothPitch: 0,
       steer: 0,       // -1 (left) .. +1 (right)
       throttle: 0,    // -1 (brake) .. +1 (accelerate)
       listenerAttached: false,
       receivedEvent: false
     };
 
-    function getScreenAngle() {
-      if (screen.orientation && typeof screen.orientation.angle === 'number') return screen.orientation.angle;
-      return typeof window.orientation === 'number' ? window.orientation : 0;
+    function resetGyroCalibration(silent = false) {
+      gyro.calSamples = 0;
+      gyro.calSteerSum = 0;
+      gyro.calPitchSum = 0;
+      gyro.steer = 0;
+      gyro.throttle = 0;
+      if (gyroDotEl) gyroDotEl.style.left = '50%';
+      if (!silent) showToast('🎯 GYRO CALIBRATED TO CURRENT GRIP');
     }
 
-    function onDeviceOrientation(e) {
-      if (e.beta === null || e.gamma === null) return;
+    function getScreenAngle() {
+      if (screen.orientation && typeof screen.orientation.angle === 'number') return screen.orientation.angle;
+      return typeof window.orientation === 'number' ? window.orientation : 90;
+    }
+
+    function processGyroAngles(rawSteerDeg, rawPitchDeg) {
       gyro.receivedEvent = true;
-      const ang = getScreenAngle();
-      let rawSteer = 0;
-      let rawPitch = 0;
+      // Average first 5 samples to lock neutral grip with zero drift
+      if (gyro.calSamples < 5) {
+        gyro.calSteerSum += rawSteerDeg;
+        gyro.calPitchSum += rawPitchDeg;
+        gyro.calSamples++;
+        if (gyro.calSamples === 5) {
+          gyro.neutralSteer = gyro.calSteerSum / 5;
+          gyro.neutralPitch = gyro.calPitchSum / 5;
+          gyro.smoothSteer = gyro.neutralSteer;
+          gyro.smoothPitch = gyro.neutralPitch;
+        }
+        return;
+      }
 
-      if (ang === 90) {
-        // Landscape-primary (home/USB on right): tilt wheel left/right = beta, forward/back = -gamma
-        rawSteer = e.beta;
-        rawPitch = -e.gamma;
-      } else if (ang === -90 || ang === 270) {
-        // Landscape-secondary: invert axes
-        rawSteer = -e.beta;
-        rawPitch = e.gamma;
+      // Exponential low-pass filter removes hand tremor while keeping razor-sharp response
+      gyro.smoothSteer += (rawSteerDeg - gyro.smoothSteer) * 0.24;
+      gyro.smoothPitch += (rawPitchDeg - gyro.smoothPitch) * 0.22;
+
+      // Steering relative to calibrated neutral grip (±3.2° deadzone, 24° = full lock, smooth power curve)
+      const sDelta = gyro.smoothSteer - gyro.neutralSteer;
+      if (Math.abs(sDelta) < 3.2) {
+        gyro.steer = 0;
       } else {
-        // Portrait: tilt left/right = gamma, forward/back = beta (smaller beta = tilted forward away from face)
-        rawSteer = e.gamma;
-        rawPitch = -e.beta;
+        const lin = THREE.MathUtils.clamp((sDelta - Math.sign(sDelta) * 3.2) / 22.0, -1, 1);
+        gyro.steer = Math.sign(lin) * Math.pow(Math.abs(lin), 1.35);
       }
 
-      if (!gyro.calibrated) {
-        gyro.neutralPitch = rawPitch;
-        gyro.calibrated = true;
+      // Forward/Back tilt relative to calibrated neutral grip (±4.5° deadzone, 16° = full throttle/brake)
+      const pDelta = gyro.smoothPitch - gyro.neutralPitch;
+      if (Math.abs(pDelta) < 4.5) {
+        gyro.throttle = 0;
+      } else {
+        gyro.throttle = THREE.MathUtils.clamp((pDelta - Math.sign(pDelta) * 4.5) / 16.0, -1, 1);
       }
 
-      // Smooth analog steering with ±4° deadzone (±28° = full steer)
-      const sDead = 4.0;
-      if (Math.abs(rawSteer) < sDead) gyro.steer = 0;
-      else gyro.steer = THREE.MathUtils.clamp((rawSteer - Math.sign(rawSteer) * sDead) / 24.0, -1, 1);
+      if (gyroDotEl) {
+        gyroDotEl.style.left = `${50 + gyro.steer * 44}%`;
+        gyroDotEl.style.background = gyro.throttle > 0.1 ? '#00ff9d' : (gyro.throttle < -0.15 ? '#ff2a85' : '#00e5ff');
+      }
+    }
 
-      // Smooth analog acceleration / braking relative to holding angle (±5° deadzone)
-      const pDelta = rawPitch - gyro.neutralPitch;
-      if (Math.abs(pDelta) < 5.0) gyro.throttle = 0;
-      else gyro.throttle = THREE.MathUtils.clamp((pDelta - Math.sign(pDelta) * 5.0) / 18.0, -1, 1);
+    function onDeviceMotion(e) {
+      if (!gyro.active) return;
+      const ag = e.accelerationIncludingGravity;
+      if (!ag || ag.x === null || ag.y === null || ag.z === null) return;
+      const gMag = Math.hypot(ag.x, ag.y, ag.z);
+      if (gMag < 1.0) return;
+
+      const ang = getScreenAngle();
+      const RAD2DEG = 180 / Math.PI;
+      // Landscape gravity vector (100% immune to Euler ±90° gimbal flip!)
+      // angle 90 (top of phone on left): +y points left/down when steering left; +z points out of screen
+      const sign = (ang === -90 || ang === 270) ? -1 : 1;
+      const steerRad = Math.asin(THREE.MathUtils.clamp((sign * ag.y) / gMag, -1, 1));
+      // Tilting top of phone away from face (forward) decreases z / increases x -> positive throttle!
+      const pitchRad = Math.atan2(-ag.z, sign * ag.x);
+      processGyroAngles(steerRad * RAD2DEG, pitchRad * RAD2DEG);
     }
 
     function updateGyroUI() {
@@ -3211,8 +3367,8 @@
 
     async function enableGyroscope() {
       try {
-        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-          const res = await DeviceOrientationEvent.requestPermission();
+        if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+          const res = await DeviceMotionEvent.requestPermission();
           if (res !== 'granted') {
             showToast('📱 GYRO PERMISSION DENIED · USING TOUCH');
             gyro.active = false;
@@ -3221,16 +3377,14 @@
           }
         }
         if (!gyro.listenerAttached) {
-          window.addEventListener('deviceorientation', onDeviceOrientation, true);
+          window.addEventListener('devicemotion', onDeviceMotion, true);
           gyro.listenerAttached = true;
         }
         gyro.active = true;
-        gyro.calibrated = false; // Auto-calibrates on next sensor reading to current comfortable grip!
-        gyro.steer = 0;
-        gyro.throttle = 0;
+        gyro.receivedEvent = false;
+        resetGyroCalibration(true);
         updateGyroUI();
-        showToast('🧭 GYRO ON · TILT TO STEER & ACCELERATE!');
-        // Fallback check if browser blocks sensors on non-HTTPS LAN URLs
+        showToast('🧭 GYRO CALIBRATED · TILT WHEEL TO STEER & GAS!');
         setTimeout(() => {
           if (gyro.active && !gyro.receivedEvent) {
             gyro.active = false;
@@ -3247,12 +3401,13 @@
       }
     }
 
-    // Auto-recalibrate gyro neutral pitch whenever the phone rotates
+    // Auto-recalibrate gyro neutral grip whenever the phone rotates
     window.addEventListener('orientationchange', () => {
-      gyro.calibrated = false;
-      gyro.steer = 0;
-      gyro.throttle = 0;
+      resetGyroCalibration(true);
     });
+
+    const btnGyroZero = document.getElementById('btn-gyro-zero');
+    if (btnGyroZero) btnGyroZero.addEventListener('click', () => resetGyroCalibration(false));
 
     // Show Mobile Gyro Launch Splash on smartphones when ready
     if (IS_MOBILE && mobileGuard) mobileGuard.classList.add('show');
@@ -3420,7 +3575,7 @@
       if (e.code === 'KeyF') document.getElementById('btn-focus-toggle').click();
       if (e.code === 'KeyC') {
         state.cameraMode = (state.cameraMode + 1) % 3;
-        showToast(['🎥 CHASE CAM', '🎥 LOW ACTION CAM', '🎥 AERIAL CAM'][state.cameraMode]);
+        showToast(['🎥 HERO CHASE POV', '🎥 HOOD / BUMPER POV', '🎥 CINEMA HELI POV'][state.cameraMode]);
       }
       if (e.code === 'KeyM') document.getElementById('btn-sound').click();
       if (e.code === 'KeyG') document.getElementById('btn-tour').click();
@@ -3459,6 +3614,7 @@
     let sparkCursor = 0;
 
     const speedValEl = document.getElementById('speed-val');
+    const speedBarFillEl = document.getElementById('speed-bar-fill');
     const turboFxEl = document.getElementById('turbo-fx');
     const turboBarEl = document.getElementById('turbo-bar');
     const turboPctEl = document.getElementById('turbo-pct');
@@ -3510,6 +3666,7 @@
     function animate() {
       rafId = requestAnimationFrame(animate);
       if (document.hidden || state.mode === 'PAUSED' || state.mode === 'MODAL') return;
+      if (IS_MOBILE && window.innerHeight > window.innerWidth) return;
       if (mobileGuard && mobileGuard.classList.contains('show')) return;
 
       const dt = Math.min(clock.getDelta(), 0.05);
@@ -4018,61 +4175,73 @@
         camera.lookAt(smoothLookAt);
       } else {
         const targetFocus = (state.mode === 'FOCUSED' && nearPanel) ? 1.0 : 0.0;
-        state.focusBlend = THREE.MathUtils.lerp(state.focusBlend, targetFocus, dt * 5.2);
+        const focusAlpha = 1 - Math.exp(-6.0 * dt);
+        state.focusBlend = THREE.MathUtils.lerp(state.focusBlend, targetFocus, focusAlpha);
         const targetDeep = (state.deepZoom && nearPanel && !isTurbo) ? 1.0 : 0.0;
-        state.deepZoomBlend = THREE.MathUtils.lerp(state.deepZoomBlend, targetDeep, dt * 5.6);
+        state.deepZoomBlend = THREE.MathUtils.lerp(state.deepZoomBlend, targetDeep, focusAlpha);
 
-        const targetFov = isTurbo ? 78 : (60 - state.focusBlend * 4 - state.deepZoomBlend * 8 + speedNorm * 8);
-        camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, dt * 6);
+        // Dynamic speed-sense FOV (tighter & cinematic at idle, dramatic wide-angle rush at 400+ KM/H!)
+        const baseFov = state.cameraMode === 1 ? 68 : 61;
+        const targetFov = isTurbo ? (baseFov + 19) : (baseFov - state.focusBlend * 5 - state.deepZoomBlend * 9 + speedNorm * 10);
+        camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 1 - Math.exp(-7.0 * dt));
         if (Math.abs(camera.fov - lastCamFov) > 0.01) {
           lastCamFov = camera.fov;
           camera.updateProjectionMatrix();
         }
 
         if (state.cameraMode === 0) {
+          // AAA Hero Chase POV: lower, closer, elastic Nitro pull-back & drift lateral lag!
+          const turboStretch = isTurbo ? -2.0 : (-speedNorm * 0.8);
+          const driftLag = -state.laneVel * 0.095;
           _desCam.copy(_carPos)
-            .addScaledVector(_tan, -15.4 + state.focusBlend * 0.8 + state.deepZoomBlend * 3.5);
-          _desCam.y += 7.0 + state.focusBlend * 2.0 + state.deepZoomBlend * 5.2;
+            .addScaledVector(_tan, -11.4 + turboStretch - state.focusBlend * 1.8 + state.deepZoomBlend * 2.6)
+            .addScaledVector(_bin, driftLag)
+            .addScaledVector(_norm, 4.35 + state.focusBlend * 1.9 + state.deepZoomBlend * 4.8);
+
           // Gentle handheld cinema sway when stopped so the scene feels alive!
           const idleFactor = Math.max(0, 1.0 - Math.abs(state.speed) / 8);
           if (idleFactor > 0.05) {
-            _desCam.x += Math.sin(elapsed * 0.9) * 0.22 * idleFactor;
-            _desCam.y += Math.cos(elapsed * 1.2) * 0.14 * idleFactor;
+            _desCam.x += Math.sin(elapsed * 0.9) * 0.18 * idleFactor;
+            _desCam.y += Math.cos(elapsed * 1.2) * 0.12 * idleFactor;
           }
           if (isTurbo || state.hitShake > 0.01) {
-            const shakeMag = isTurbo ? 0.16 : 0;
-            const totalShake = shakeMag + state.hitShake * 0.65;
+            const totalShake = (isTurbo ? 0.14 : 0) + state.hitShake * 0.65;
             _desCam.x += (Math.random() - 0.5) * totalShake;
             _desCam.y += (Math.random() - 0.5) * totalShake;
           }
-          _desLook.copy(_carPos).addScaledVector(_tan, 16);
-          _desLook.y += 2.6;
+          // Long +26m look-ahead along road tangent so upcoming barriers, ramps & billboards are always crystal clear!
+          _desLook.copy(_carPos)
+            .addScaledVector(_tan, 26)
+            .addScaledVector(_bin, state.laneVel * 0.06)
+            .addScaledVector(_norm, 2.05);
         } else if (state.cameraMode === 1) {
-          _desCam.copy(_carPos).addScaledVector(_tan, -8.4);
-          _desCam.y += 3.2;
-          _desLook.copy(_carPos).addScaledVector(_tan, 24);
-          _desLook.y += 1.9;
+          // Hood / Bumper Speed-Rush POV!
+          _desCam.copy(_carPos).addScaledVector(_tan, 1.4).addScaledVector(_norm, 1.55);
+          _desLook.copy(_carPos).addScaledVector(_tan, 34).addScaledVector(_norm, 1.45);
         } else {
-          _desCam.copy(_carPos).addScaledVector(_tan, -28).addScaledVector(_bin, 18);
-          _desCam.y += 24;
-          _desLook.copy(_carPos).addScaledVector(_tan, 12);
+          // Cinema Heli POV
+          _desCam.copy(_carPos).addScaledVector(_tan, -26).addScaledVector(_bin, 15).addScaledVector(_norm, 21);
+          _desLook.copy(_carPos).addScaledVector(_tan, 16);
         }
 
         if (nearPanel && (state.focusBlend > 0.02 || !isTurbo)) {
           _panelLook.copy(nearPanel.worldPos);
-          const driveGlance = (!isTurbo && state.mode !== 'FOCUSED') ? 0.14 : 0.0;
+          const driveGlance = (!isTurbo && state.mode !== 'FOCUSED') ? 0.12 : 0.0;
           const lookWeight = Math.min(0.92, Math.max(driveGlance, state.focusBlend * 0.46 + state.deepZoomBlend * 0.44));
           _desLook.lerp(_panelLook, lookWeight);
         }
 
         // Dynamic banking camera roll on corners (levels smoothly to upright when reading/zooming!)
-        const rollInfluence = (1.0 - state.deepZoomBlend) * (state.mode === 'FOCUSED' ? 0.0 : 0.36);
+        const rollInfluence = (1.0 - state.deepZoomBlend) * (state.mode === 'FOCUSED' ? 0.0 : 0.42);
         _targetCamUp.copy(upVec).lerp(_norm, rollInfluence).normalize();
-        _camUp.lerp(_targetCamUp, dt * 5.0).normalize();
+        _camUp.lerp(_targetCamUp, 1 - Math.exp(-6.5 * dt)).normalize();
         camera.up.copy(_camUp);
 
-        smoothCamPos.lerp(_desCam, dt * 7.5);
-        smoothLookAt.lerp(_desLook, dt * 10.0);
+        // Silky frame-rate-independent exponential camera damping (zero micro-jitter on 60Hz/120Hz!)
+        const camPosAlpha = 1 - Math.exp(-(state.cameraMode === 1 ? 22.0 : 10.5) * dt);
+        const camLookAlpha = 1 - Math.exp(-14.0 * dt);
+        smoothCamPos.lerp(_desCam, camPosAlpha);
+        smoothLookAt.lerp(_desLook, camLookAlpha);
         camera.position.copy(smoothCamPos);
         camera.lookAt(smoothLookAt);
       }
@@ -4082,6 +4251,7 @@
       if (kmh !== state.lastSpeedKmh) {
         state.lastSpeedKmh = kmh;
         speedValEl.textContent = String(kmh).padStart(3, '0');
+        if (speedBarFillEl) speedBarFillEl.style.width = `${Math.min(100, (kmh / 425) * 100)}%`;
       }
       speedValEl.classList.toggle('turbo-text', isTurbo);
       turboFxEl.classList.toggle('active', isTurbo);
