@@ -3803,12 +3803,10 @@
       // Guided Tour glides continuously past every giant billboard — NEVER stops!
       const isTour = state.mode === 'TOUR';
 
-      // 2. Acceleration, Turbo, Gyro Tilt Throttle & Snappy ABS Braking!
-      const gyroForward = gyro.active && gyro.throttle > 0.08;
-      const gyroBrake = gyro.active && gyro.throttle < -0.18;
-      const wantsForward = !isCutscene && (keys.forward || gyroForward || isTour);
-      const wantsBrake = !isCutscene && (keys.backward || gyroBrake);
-      const isTurbo = !isCutscene && (keys.turbo || state.padBoostTimer > 0) && state.turboCharge > 2 && (wantsForward || Math.abs(state.speed) > 5);
+      // 2. Acceleration, Turbo, Auto-Gas in Mobile Gyro Mode & Snappy ABS Braking!
+      const wantsBrake = !isCutscene && keys.backward;
+      const wantsForward = !isCutscene && !wantsBrake && (keys.forward || gyro.active || isTour);
+      const isTurbo = !isCutscene && !wantsBrake && (keys.turbo || state.padBoostTimer > 0) && state.turboCharge > 2 && (wantsForward || Math.abs(state.speed) > 5);
       if (state.padBoostTimer > 0 && !isCutscene) state.padBoostTimer -= dt;
 
       // Freeze track progress cleanly during cutscene (city & car idle stay alive!)
@@ -3827,13 +3825,12 @@
         state.reverseDelay = 0;
       } else {
         state.turboCharge = Math.min(100, state.turboCharge + 4 * dt);
-        const gyroScale = (gyroForward && !keys.forward) ? Math.max(0.45, gyro.throttle) : 1.0;
-        const targetMax = (isTour ? 60 : state.maxSpeed) * gyroScale;
+        const targetMax = isTour ? 60 : state.maxSpeed;
 
         if (wantsForward) {
           state.reverseDelay = 0;
           if (state.speed > targetMax) state.speed = THREE.MathUtils.lerp(state.speed, targetMax, dt * 3.5);
-          else state.speed = Math.min(targetMax, state.speed + state.accel * gyroScale * dt);
+          else state.speed = Math.min(targetMax, state.speed + state.accel * dt);
         } else if (wantsBrake) {
           if (state.speed > 0.6) {
             // Snappy ABS Power Braking from high speed!
