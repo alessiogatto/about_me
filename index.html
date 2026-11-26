@@ -28,10 +28,20 @@
       background: #04060e;
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       color: #f3f6ff;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: geometricPrecision;
+    }
+
+    #canvas-container canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
     }
 
     #canvas-container {
       position: absolute;
+      top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
       width: 100%;
       height: 100%;
@@ -40,22 +50,24 @@
     }
     #canvas-container:active { cursor: grabbing; }
 
-    /* Turbo Vignette */
+    /* GPU-Composited Turbo Vignette (Zero CPU Mask Re-Rasterization!) */
     #turbo-fx {
       position: absolute;
+      top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
       pointer-events: none;
       z-index: 2;
       opacity: 0;
+      will-change: opacity;
       transition: opacity 0.2s ease;
-      background: radial-gradient(circle at center, transparent 50%, rgba(0, 229, 255, 0.14) 82%, rgba(255, 42, 133, 0.34) 100%);
-      box-shadow: inset 0 0 80px rgba(0, 229, 255, 0.3), inset 0 0 36px rgba(255, 42, 133, 0.45);
+      background: radial-gradient(circle at center, transparent 54%, rgba(0, 229, 255, 0.15) 82%, rgba(255, 42, 133, 0.34) 100%);
     }
     #turbo-fx.active { opacity: 1; }
 
     /* Safe CDN / WebGL Fallback Banner */
     #boot-fallback {
       position: fixed;
+      top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
       z-index: 100;
       background: radial-gradient(circle at top, #121730, #050711);
@@ -71,11 +83,14 @@
     #boot-fallback h2 { font-family: 'Orbitron', sans-serif; color: var(--neon-cyan); font-size: 1.35rem; }
     #boot-fallback p { color: #c4d3ee; max-width: 520px; line-height: 1.5; font-size: 0.92rem; }
 
-    /* Smartphone Mobile Gyro Launch Splash */
+    /* Touch / Tablet / Smartphone Gyro Launch Splash */
     #mobile-guard {
       position: fixed;
+      top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
-      width: 100vw;
+      width: 100%;
+      height: 100%;
+      height: 100vh;
       height: 100dvh;
       z-index: 120;
       background: radial-gradient(circle at top, rgba(16, 22, 48, 0.96), rgba(5, 7, 16, 0.98) 72%);
@@ -90,7 +105,8 @@
     }
     #mobile-guard.show { display: flex !important; }
     .gyro-only { display: none !important; }
-    body.is-mobile-ui .gyro-only { display: inline-flex !important; }
+    body.is-mobile-ui .gyro-only,
+    body.is-tablet-ui .gyro-only { display: inline-flex !important; }
     body.gyro-active .gyro-hide { display: none !important; }
     .mobile-guard-card {
       width: 100%;
@@ -145,15 +161,18 @@
     /* Pause Overlay */
     #pause-overlay {
       position: fixed;
+      top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
       z-index: 40;
-      background: rgba(4, 6, 15, 0.72);
+      background: rgba(4, 6, 15, 0.78);
+      -webkit-backdrop-filter: blur(12px);
       backdrop-filter: blur(12px);
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 14px;
+      padding: 20px;
     }
     #pause-overlay.open { display: flex; }
     .pause-title {
@@ -164,11 +183,12 @@
       color: #ffffff;
       text-shadow: 0 0 24px rgba(0, 229, 255, 0.6);
     }
-    .pause-actions { display: flex; gap: 10px; }
+    .pause-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 
     /* HUD Shell */
     #hud {
       position: absolute;
+      top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
       z-index: 10;
       pointer-events: none;
@@ -177,6 +197,7 @@
       justify-content: space-between;
       padding: 14px 20px;
       gap: 10px;
+      transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1);
     }
     .interactive { pointer-events: auto; }
 
@@ -639,6 +660,10 @@
     .speed-unit { font-family: 'Orbitron', sans-serif; font-size: 0.56rem; color: #8fa6cc; letter-spacing: 1.4px; margin-top: 3px; }
 
     .touch-controls { display: none; gap: 6px; }
+    body.is-mobile-ui .touch-controls,
+    body.is-tablet-ui .touch-controls { display: flex; }
+    body.is-mobile-ui .controls-row,
+    body.is-tablet-ui .controls-row { display: none !important; }
     @media (pointer: coarse), (max-width: 960px), (max-height: 520px) {
       .touch-controls { display: flex; }
       .controls-row { display: none !important; }
@@ -654,22 +679,37 @@
       padding: 8px 11px;
       border-radius: 8px;
       cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
     }
 
     /* FULL CV MODAL */
     #cv-modal {
       position: fixed;
+      top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
       z-index: 150;
       background: rgba(4, 6, 15, 0.92);
+      -webkit-backdrop-filter: blur(14px);
       backdrop-filter: blur(14px);
-      display: none;
+      display: flex;
       justify-content: center;
       align-items: center;
       padding: 16px;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.22s ease, visibility 0s linear 0.22s;
     }
-    #cv-modal.open { display: flex; }
+    #cv-modal.open {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transition: opacity 0.18s ease, visibility 0s;
+    }
     .cv-modal-box {
+      transform: scale(0.97) translateY(6px);
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
       width: 960px;
       max-width: 95vw;
       max-height: 90vh;
@@ -682,6 +722,7 @@
       box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85);
       color: #e4ecfa;
     }
+    #cv-modal.open .cv-modal-box { transform: scale(1) translateY(0); }
     .modal-top {
       display: flex;
       justify-content: space-between;
@@ -699,7 +740,8 @@
       .cv-grid { grid-template-columns: 1fr; }
       .cv-card { width: 310px; max-width: 85vw; }
       .cv-modal-box { max-width: 100%; width: 100%; max-height: 92dvh; padding: 20px 18px; border-radius: 16px; }
-      .modal-top { flex-direction: column; gap: 12px; }
+      #cv-modal.open .cv-modal-box { transform: scale(1) translateY(0); }
+    .modal-top { flex-direction: column; gap: 12px; }
       .modal-name { font-size: 1.38rem; }
       .cv-item p { font-size: 0.92rem; line-height: 1.52; }
     }
@@ -727,6 +769,7 @@
     /* NEON BOOT LOADING SCREEN */
     #loading-screen {
       position: fixed;
+      top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
       z-index: 90;
       display: flex;
@@ -803,26 +846,28 @@
     #load-pct { color: var(--neon-cyan); font-weight: 800; }
 
     /* NFS MOST WANTED STYLE FIRST-SIGHT CINEMATIC CUT-IN (LAP 1 ONLY!) */
-    #hud.cutscene-hide { opacity: 0; pointer-events: none !important; transition: opacity 0.25s ease; }
+    #hud.cutscene-hide { opacity: 0; pointer-events: none !important; transition: opacity 0.28s ease; }
     #hud.cutscene-hide * { pointer-events: none !important; }
     #nfsmw-flash {
       position: fixed;
+      top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
       z-index: 65;
       pointer-events: none;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.92), rgba(0, 229, 255, 0.55) 45%, rgba(255, 42, 133, 0.35) 100%);
+      background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0) 48%, rgba(0, 229, 255, 0.34) 80%, rgba(255, 165, 42, 0.45) 100%);
       opacity: 0;
+      will-change: opacity;
     }
     @keyframes nfsmwFlashAnim {
-      0% { opacity: 0.95; }
-      22% { opacity: 0.2; }
-      38% { opacity: 0.65; }
+      0% { opacity: 0.28; }
       100% { opacity: 0; }
     }
-    #nfsmw-flash.flash { animation: nfsmwFlashAnim 0.55s ease-out forwards; }
+    #nfsmw-flash.flash { animation: nfsmwFlashAnim 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
     #nfsmw-overlay {
+      --cut-accent: #00e5ff;
       position: fixed;
+      top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
       z-index: 60;
       pointer-events: none;
@@ -830,25 +875,55 @@
       flex-direction: column;
       justify-content: space-between;
     }
+    #nfsmw-overlay::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; bottom: 0; left: 0;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 50%, rgba(3, 6, 16, 0.56) 92%, rgba(0, 229, 255, 0.12) 100%);
+      opacity: 0;
+      transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: opacity;
+    }
+    #nfsmw-overlay.active::before {
+      opacity: 1;
+      transition: opacity 0.42s ease-out;
+    }
+    #nfsmw-overlay.active.ready-click {
+      pointer-events: auto;
+      cursor: pointer;
+    }
     .nfsmw-bar {
+      position: relative;
+      z-index: 2;
       width: 100%;
-      background: rgba(3, 5, 13, 0.96);
+      background: linear-gradient(90deg, rgba(4, 7, 18, 0.95), rgba(8, 13, 30, 0.90));
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
       padding: 14px 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 18px;
-      transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity: 0;
+      transition: transform 0.88s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.62s ease;
+      will-change: transform, opacity;
+      pointer-events: none;
+    }
+    #nfsmw-overlay.active .nfsmw-bar {
+      opacity: 1;
+      transition: transform 0.48s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.32s ease;
       pointer-events: auto;
     }
     .nfsmw-bar-top {
-      border-bottom: 2px solid var(--neon-cyan);
-      box-shadow: 0 6px 28px rgba(0, 229, 255, 0.28);
+      border-bottom: 2px solid var(--cut-accent);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
       transform: translateY(-110%);
     }
     .nfsmw-bar-bottom {
       border-top: 2px solid var(--neon-pink);
-      box-shadow: 0 -6px 28px rgba(255, 42, 133, 0.28);
+      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.65);
       transform: translateY(110%);
     }
     #nfsmw-overlay.active .nfsmw-bar-top,
@@ -865,6 +940,14 @@
       letter-spacing: 2.2px;
       color: #ffffff;
       text-transform: uppercase;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
+    }
+    #nfsmw-overlay.active .nfsmw-alert {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.07s;
     }
     .nfsmw-siren {
       width: 12px;
@@ -894,6 +977,14 @@
       flex-direction: column;
       gap: 2px;
       min-width: 0;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
+    }
+    #nfsmw-overlay.active .nfsmw-bottom-info {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: 0.12s;
     }
     .nfsmw-bottom-title {
       font-family: 'Orbitron', sans-serif;
@@ -930,10 +1021,13 @@
     }
     #btn-nfsmw-proceed .nfsmw-btn-fill {
       position: absolute;
+      top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
-      width: 0%;
-      background: linear-gradient(90deg, rgba(0, 229, 255, 0.26), rgba(255, 42, 133, 0.32));
-      transition: width 0.12s linear;
+      width: 100%;
+      transform: scaleX(0);
+      transform-origin: left center;
+      background: linear-gradient(90deg, rgba(0, 229, 255, 0.30), rgba(255, 42, 133, 0.36));
+      will-change: transform;
       z-index: 0;
     }
     #btn-nfsmw-proceed span { position: relative; z-index: 1; }
@@ -951,23 +1045,30 @@
     #nfsmw-mobile-card {
       display: none;
       align-self: center;
-      width: min(540px, 90vw);
+      width: 90vw;
+      max-width: 540px;
       background: linear-gradient(155deg, rgba(6, 10, 24, 0.94), rgba(10, 17, 38, 0.96));
       border: 2px solid var(--neon-cyan);
       border-radius: 14px;
       padding: 12px 16px;
       box-shadow: 0 18px 46px rgba(0, 0, 0, 0.85), 0 0 24px rgba(0, 229, 255, 0.25);
-      pointer-events: auto;
+      pointer-events: none;
+      visibility: hidden;
       opacity: 0;
       transform: scale(0.94);
-      transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: opacity 0.68s cubic-bezier(0.22, 1, 0.36, 1), transform 0.68s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.68s;
     }
-    body.is-mobile-ui #nfsmw-overlay.active #nfsmw-mobile-card {
+    body.is-mobile-ui #nfsmw-mobile-card {
       display: flex;
       flex-direction: column;
       gap: 6px;
+    }
+    body.is-mobile-ui #nfsmw-overlay.active #nfsmw-mobile-card {
+      visibility: visible;
+      pointer-events: auto;
       opacity: 1;
       transform: scale(1);
+      transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s;
     }
     .nmc-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
     .nmc-title { font-family: 'Orbitron', sans-serif; font-size: 0.98rem; font-weight: 900; color: #ffffff; line-height: 1.2; }
@@ -987,8 +1088,8 @@
     .nmc-impact { font-size: 0.86rem; line-height: 1.38; color: #eef5ff; font-weight: 500; }
     .nmc-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
 
-    /* Compact Mobile Responsive HUD (Placed last so it cleanly overrides desktop rules!) */
-    @media (max-width: 960px), (max-height: 520px), (pointer: coarse) {
+    /* Compact Phone Responsive HUD (Placed last so it cleanly overrides desktop rules!) */
+    @media (max-width: 960px) and (max-height: 560px), (max-width: 760px) {
       .gyro-only { display: inline-flex; }
       #hud { padding: 8px 10px; gap: 6px; }
       .top-bar { gap: 4px; }
@@ -1016,6 +1117,18 @@
       .nfsmw-bottom-sub { font-size: 0.76rem; }
       #btn-nfsmw-proceed { min-width: 180px; padding: 10px 14px; font-size: 0.7rem; width: 100%; }
     }
+
+    /* Dedicated iPad & Tablet Landscape HUD (Spacious 768px-1366px Touch Layout!) */
+    body.is-tablet-ui #onboarding-hint,
+    body.is-tablet-ui .brand-sub { display: none !important; }
+    body.is-tablet-ui #hud { padding: 12px 18px; }
+    body.is-tablet-ui .stepper-pill { display: flex !important; min-width: 244px; padding: 5px 10px; }
+    body.is-tablet-ui .bottom-bar { flex-direction: row !important; align-items: flex-end !important; justify-content: space-between !important; gap: 12px; }
+    body.is-tablet-ui .controls-bar { width: auto !important; padding: 7px 10px; opacity: 0.95; background: rgba(6, 10, 22, 0.74); }
+    body.is-tablet-ui .touch-controls { width: auto !important; gap: 8px; }
+    body.is-tablet-ui .touch-btn { flex: none !important; padding: 13px 16px; font-size: 0.8rem; border-radius: 10px; touch-action: none; }
+    body.is-tablet-ui .telemetry-cluster { width: auto !important; padding: 9px 14px; }
+    body.is-tablet-ui .cv-card.compact { width: 308px; max-width: 38vw; }
 
     /* Landscape Smartphone Optimization (Ultra-Clean 90%+ Open 3D Highway!) */
     @media (max-height: 520px) and (orientation: landscape) {
@@ -1049,15 +1162,18 @@
       padding: 8px 12px;
       width: 100%;
     }
-    @media (orientation: portrait) and (max-width: 900px) {
+    @media (orientation: portrait) and (max-width: 1024px) {
       .rotate-tip { display: block; }
     }
 
-    /* Landscape-Only Mobile Enforcement (Portrait Rotate Lock) */
+    /* Landscape-Only Mobile & Tablet Enforcement (Portrait Rotate Lock) */
     #rotate-lock {
       position: fixed;
+      top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
-      width: 100vw;
+      width: 100%;
+      height: 100%;
+      height: 100vh;
       height: 100dvh;
       z-index: 140;
       background: radial-gradient(circle at center, #111836, #040610 75%);
@@ -1092,7 +1208,8 @@
       color: #c2d4f2;
     }
     @media (orientation: portrait) {
-      body.is-mobile-ui #rotate-lock { display: flex !important; }
+      body.is-mobile-ui #rotate-lock,
+      body.is-tablet-ui #rotate-lock { display: flex !important; }
     }
 
     /* Live Mobile Gyro Tilt Indicator + 1-Tap Re-Zero Pill */
@@ -1146,11 +1263,13 @@
     }
   </style>
 
+  <!-- Polyfill Import Maps for Older iPads (iPadOS < 16.4) & Older Android Phones (Chrome < 89) -->
+  <script async src="https://cdn.jsdelivr.net/npm/es-module-shims@1.10.0/dist/es-module-shims.js" crossorigin="anonymous"></script>
   <script type="importmap">
     {
       "imports": {
-        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
       }
     }
   </script>
@@ -1247,6 +1366,7 @@
     <div class="pause-actions">
       <button class="action-btn primary" id="btn-resume">▶ RESUME (P)</button>
       <button class="action-btn" id="btn-reset-run">↻ RESTART CIRCUIT (R)</button>
+      <button class="action-btn" id="btn-quality" title="Switch Graphics Preset for Older or High-End Devices">✨ FX: AUTO</button>
       <button class="action-btn" id="btn-pause-cv">📄 FULL CV</button>
     </div>
   </div>
@@ -1311,10 +1431,10 @@
         </div>
       </div>
 
-      <div class="focus-indicator" id="focus-indicator">
+      <div class="focus-indicator interactive" id="focus-indicator" style="cursor:pointer;" title="Click to toggle 3D Panel Zoom (F)">
         <div class="focus-ind-row">
           <span class="pulse-dot"></span>
-          <span id="focus-status-text">AUTO-SLOWDOWN · READING PANEL</span>
+          <span id="focus-status-text">⚡ GIANT PANEL AHEAD · CLICK TO ZOOM</span>
         </div>
         <div class="dwell-track" id="dwell-track"><div id="dwell-bar"></div></div>
       </div>
@@ -1449,40 +1569,60 @@
     </div>
   </div>
 
-  <!-- Mobile Detection, CDN Boot Watchdog & Smooth Loading Bar Controller -->
+  <!-- Device Tier Detection (Desktop vs iPad/Tablet vs Phone + Low-End Guard), CDN Boot Watchdog & Loading Bar -->
   <script>
-    window.__IS_MOBILE_DEVICE = /Android|iPhone|iPad|iPod|Mobile|webOS|BlackBerry|IEMobile/i.test(navigator.userAgent)
-      || (window.matchMedia && (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(hover: none)').matches))
-      || window.innerWidth <= 960 || window.innerHeight <= 520;
+    (function () {
+      var ua = navigator.userAgent || '';
+      var maxTP = navigator.maxTouchPoints || 0;
+      var isIPad = /iPad/i.test(ua) || (/Macintosh/i.test(ua) && maxTP > 1);
+      var isIOS = /iPhone|iPad|iPod/i.test(ua) || isIPad;
+      var isCoarse = Boolean(window.matchMedia && (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(any-pointer: coarse)').matches || window.matchMedia('(hover: none)').matches));
+      var isTouchDevice = isIPad || /Android|iPhone|iPod|Mobile|webOS|BlackBerry|IEMobile/i.test(ua) || maxTP > 1 || isCoarse;
+      var shortSide = Math.min(window.innerWidth || 800, window.innerHeight || 600);
+      var longSide = Math.max(window.innerWidth || 800, window.innerHeight || 600);
+      var isTablet = isIPad || (isTouchDevice && shortSide >= 600 && longSide >= 900);
+      var isPhone = (isTouchDevice && !isTablet) || shortSide <= 540 || longSide <= 760;
+      var isLowEnd = Boolean((navigator.deviceMemory && navigator.deviceMemory <= 3) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4));
+
+      window.__DEVICE_INFO = {
+        isIPad: isIPad,
+        isIOS: isIOS,
+        isTouch: isTouchDevice || isPhone,
+        isTablet: isTablet && !isPhone,
+        isPhone: isPhone,
+        isLowEnd: isLowEnd
+      };
+      window.__IS_MOBILE_DEVICE = window.__DEVICE_INFO.isPhone;
+    })();
     window.__GAME_BOOTED = false;
     window.__loadPct = 8;
     window.__setLoadProgress = function (pct, status) {
       window.__loadPct = Math.max(window.__loadPct, Math.min(100, pct));
-      const fill = document.getElementById('load-bar-fill');
-      const pctEl = document.getElementById('load-pct');
-      const stEl = document.getElementById('load-status');
+      var fill = document.getElementById('load-bar-fill');
+      var pctEl = document.getElementById('load-pct');
+      var stEl = document.getElementById('load-status');
       if (fill) fill.style.width = window.__loadPct + '%';
       if (pctEl) pctEl.textContent = Math.round(window.__loadPct) + '%';
       if (stEl && status) stEl.textContent = status;
     };
     window.__hideLoadingScreen = function () {
-      const ls = document.getElementById('loading-screen');
+      var ls = document.getElementById('loading-screen');
       if (!ls) return;
       ls.classList.add('fade-out');
-      setTimeout(() => { ls.style.display = 'none'; }, 480);
+      setTimeout(function () { ls.style.display = 'none'; }, 480);
     };
 
-    const __bootTick = setInterval(() => {
+    var __bootTick = setInterval(function () {
       if (window.__GAME_BOOTED || window.__loadPct >= 34) { clearInterval(__bootTick); return; }
       window.__setLoadProgress(window.__loadPct + 4, 'Loading 3D Engine...');
     }, 120);
-    setTimeout(() => {
+    setTimeout(function () {
       if (!window.__GAME_BOOTED) {
         clearInterval(__bootTick);
         window.__hideLoadingScreen();
         document.getElementById('boot-fallback').classList.add('show');
       }
-    }, 9000);
+    }, 15000);
   </script>
 
   <script type="module">
@@ -1492,10 +1632,27 @@
     import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
-    const IS_MOBILE = Boolean(window.__IS_MOBILE_DEVICE);
-    document.body.classList.toggle('is-mobile-ui', IS_MOBILE);
+    const DEV = window.__DEVICE_INFO || { isIPad: false, isIOS: false, isTouch: false, isTablet: false, isPhone: false, isLowEnd: false };
+    let IS_PHONE = Boolean(DEV.isPhone);
+    let IS_TABLET = Boolean(DEV.isTablet);
+    let IS_TOUCH_UI = Boolean(DEV.isTouch || IS_PHONE || IS_TABLET);
+    const IS_MOBILE = IS_TOUCH_UI; // Used for mobile-safe VRAM & geometry budgets on both phones and iPads!
+
+    function syncResponsiveBodyClasses() {
+      const shortSide = Math.min(window.innerWidth, window.innerHeight);
+      const longSide = Math.max(window.innerWidth, window.innerHeight);
+      const viewportPhone = shortSide <= 540 || longSide <= 760;
+      const viewportTablet = !viewportPhone && (DEV.isIPad || DEV.isTablet || (DEV.isTouch && shortSide >= 600));
+      IS_PHONE = Boolean(DEV.isPhone || viewportPhone);
+      IS_TABLET = Boolean(!IS_PHONE && viewportTablet);
+      IS_TOUCH_UI = Boolean(IS_PHONE || IS_TABLET || DEV.isTouch);
+      document.body.classList.toggle('is-mobile-ui', IS_PHONE);
+      document.body.classList.toggle('is-tablet-ui', IS_TABLET);
+    }
+    syncResponsiveBodyClasses();
+
     window.__GAME_BOOTED = true;
-    window.__setLoadProgress(42, IS_MOBILE ? 'Optimizing 3D Engine for Mobile...' : 'Initializing WebGL & PBR Lighting...');
+    window.__setLoadProgress(42, IS_TOUCH_UI ? 'Optimizing 3D Engine for Touch Device...' : 'Initializing WebGL & PBR Lighting...');
 
     // ============================================================================
     // 1. CV MILESTONE DATA (DE-DUPLICATED & FAITHFUL TO Curriculum_vitae.pdf)
@@ -1668,7 +1825,7 @@
           this.unlocked = true;
           if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
           return true;
-        } catch {
+        } catch (_e) {
           return false;
         }
       }
@@ -1708,11 +1865,41 @@
         this.tone(330, 660, 0.15, 'sine', 0.11);
         setTimeout(() => this.tone(660, 880, 0.18, 'sine', 0.11), 85);
       }
+      toneAt(delaySec, f1, f2, dur = 0.2, type = 'sine', vol = 0.14, lpfStart = 0, lpfEnd = 0) {
+        if (!this.enabled || !this.unlock() || !this.ctx || !this.master) return;
+        const t = this.ctx.currentTime + Math.max(0, delaySec);
+        const o = this.ctx.createOscillator();
+        const g = this.ctx.createGain();
+        o.type = type;
+        o.frequency.setValueAtTime(f1, t);
+        o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + dur);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.linearRampToValueAtTime(vol, t + Math.min(0.025, dur * 0.25));
+        g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        if (lpfStart > 0 && lpfEnd > 0) {
+          const lpf = this.ctx.createBiquadFilter();
+          lpf.type = 'lowpass';
+          lpf.frequency.setValueAtTime(lpfStart, t);
+          lpf.frequency.exponentialRampToValueAtTime(Math.max(40, lpfEnd), t + dur);
+          o.connect(lpf);
+          lpf.connect(g);
+        } else {
+          o.connect(g);
+        }
+        g.connect(this.master);
+        o.start(t);
+        o.stop(t + dur + 0.02);
+      }
       spotted() {
-        // Iconic NFS Most Wanted style bass drop + radar lock-on double chirp!
-        this.tone(130, 38, 0.48, 'sawtooth', 0.18);
-        this.tone(520, 980, 0.14, 'square', 0.09);
-        setTimeout(() => this.tone(780, 1240, 0.18, 'triangle', 0.11), 130);
+        // Sample-accurate Speedbreaker time-dilation sub-drop + clean harmonic radar lock chimes!
+        this.toneAt(0.0, 145, 36, 0.58, 'sawtooth', 0.16, 900, 140);
+        this.toneAt(0.04, 520, 780, 0.16, 'sine', 0.09);
+        this.toneAt(0.15, 780, 1170, 0.22, 'triangle', 0.10);
+      }
+      resumeWhoosh() {
+        // Sample-accurate Speedbreaker time-ramp turbine swell!
+        this.toneAt(0.0, 56, 290, 1.15, 'triangle', 0.12);
+        this.toneAt(0.18, 140, 520, 0.85, 'sine', 0.075);
       }
       nitroPickup() {
         this.tone(440, 880, 0.12, 'sawtooth', 0.11);
@@ -1738,41 +1925,68 @@
     window.addEventListener('keydown', firstGestureUnlock, { passive: true });
 
     // ============================================================================
-    // 3. RENDERER, WEBGL CONTEXT-LOSS GUARD, STUDIO PBR & BALANCED BLOOM
+    // 3. RENDERER, WEBGL1/2 SAFE FALLBACK, STUDIO PBR & ADAPTIVE QUALITY ENGINE
     // ============================================================================
     const container = document.getElementById('canvas-container');
     let renderer;
     try {
-      renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-    } catch (err) {
-      window.__hideLoadingScreen();
-      document.getElementById('fallback-msg').textContent = 'WebGL is unavailable in this browser session. You can still view the full CV below.';
-      document.getElementById('boot-fallback').classList.add('show');
-      throw err;
+      renderer = new THREE.WebGLRenderer({
+        antialias: !DEV.isLowEnd,
+        powerPreference: IS_TOUCH_UI ? 'default' : 'high-performance'
+      });
+    } catch (_firstErr) {
+      try {
+        renderer = new THREE.WebGLRenderer({ antialias: false, precision: 'mediump' });
+      } catch (err) {
+        window.__hideLoadingScreen();
+        document.getElementById('fallback-msg').textContent = 'WebGL is unavailable on this device or browser. You can still view the full CV below.';
+        document.getElementById('boot-fallback').classList.add('show');
+        throw err;
+      }
     }
 
+    const IS_WEBGL2 = Boolean(renderer.capabilities && renderer.capabilities.isWebGL2);
+    const MAX_TEX_SIZE = (renderer.capabilities && renderer.capabilities.maxTextureSize) || 4096;
+    const IS_LOW_END = Boolean(DEV.isLowEnd || !IS_WEBGL2 || MAX_TEX_SIZE <= 4096);
+
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x090b1a, 0.00068);
+    scene.fog = new THREE.FogExp2(0x090b1a, 0.00066);
 
-    const camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 1.2, 2600);
+    const camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 1.2, 2400);
+    // High-Efficiency Crisp Retina DPR:
+    // Caps AUTO at 2.0x Retina on Desktop (1.75x on iPad/Phone, 1.15x on Low-End) + Direct Hardware MSAA -> 3x-4x Higher FPS with Razor-Sharp Edges!
+    function getTargetDPR(preset) {
+      const nativeDpr = window.devicePixelRatio || 1;
+      if (preset === 'LITE') return 1.0;
+      if (IS_LOW_END && preset !== 'HIGH') return Math.min(nativeDpr, 1.15);
+      if (preset === 'HIGH') {
+        return Math.min(Math.max(nativeDpr, 1.75), IS_TOUCH_UI ? 2.0 : 2.25);
+      }
+      // AUTO: Fast Locked 60-120 FPS + Crisp Native Retina!
+      if (IS_TOUCH_UI) return Math.min(nativeDpr, 1.75);
+      return Math.min(Math.max(nativeDpr, 1.5), 2.0);
+    }
+    const DEFAULT_MAX_DPR = getTargetDPR('AUTO');
+    renderer.setPixelRatio(DEFAULT_MAX_DPR);
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2.0));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = IS_MOBILE ? 1.06 : 1.02;
+    renderer.toneMappingExposure = IS_TOUCH_UI ? 1.07 : 1.04;
     container.appendChild(renderer.domElement);
-    const MAX_ANISO = Math.min(16, renderer.capabilities.getMaxAnisotropy());
+    const MAX_ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy() || 8);
 
-    // Subtle Studio IBL Reflections (skipped on mobile for faster boot & higher FPS)
+    // Subtle Studio IBL Reflections (skipped on touch/low-end devices to save ~30MB VRAM & boot faster)
     let envRT = null;
-    if (!IS_MOBILE) {
-      const pmrem = new THREE.PMREMGenerator(renderer);
-      envRT = pmrem.fromScene(new RoomEnvironment(), 0.04);
-      scene.environment = envRT.texture;
-      pmrem.dispose();
+    if (!IS_TOUCH_UI && !IS_LOW_END) {
+      try {
+        const pmrem = new THREE.PMREMGenerator(renderer);
+        envRT = pmrem.fromScene(new RoomEnvironment(), 0.04);
+        scene.environment = envRT.texture;
+        pmrem.dispose();
+      } catch (_envErr) {}
     }
 
     // Moody Shinjuku Tokyo Night Lighting (deep shadows + crisp cyan/magenta/amber accents)
-    scene.add(new THREE.HemisphereLight(0x5288c4, 0x160a22, IS_MOBILE ? 0.95 : 0.72));
+    scene.add(new THREE.HemisphereLight(0x5288c4, 0x160a22, IS_TOUCH_UI ? 0.96 : 0.76));
     const keyLight = new THREE.DirectionalLight(0xffdfc2, 1.15);
     keyLight.position.set(160, 260, 140);
     scene.add(keyLight);
@@ -1780,18 +1994,55 @@
     rimLight.position.set(-220, 140, -240);
     scene.add(rimLight);
 
-    // 4x MSAA EffectComposer + Half-Res Selective Bloom on Desktop (ultra-crisp anti-aliased lines!); Direct MSAA WebGL on Mobile
-    const composerRT = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight, {
-      samples: IS_MOBILE ? 0 : 4
-    });
-    const composer = new EffectComposer(renderer, composerRT);
-    composer.addPass(new RenderPass(scene, camera));
-    const bloomPass = new UnrealBloomPass(
-      new THREE.Vector2(Math.max(1, Math.floor(window.innerWidth * 0.5)), Math.max(1, Math.floor(window.innerHeight * 0.5))),
-      0.30, 0.38, 0.88
-    );
-    composer.addPass(bloomPass);
-    let usePostFX = !IS_MOBILE;
+    // Direct Single-Pass Hardware MSAA by default (AUTO) -> Eliminates 12-pass EffectComposer fill-rate bottleneck!
+    // Optional Quarter-Res Fast Bloom + 4x MSAA EffectComposer allocated ONLY if user selects FX: HIGH!
+    let composer = null;
+    let bloomPass = null;
+    let usePostFX = false;
+    let qualityPreset = 'AUTO'; // 'AUTO' | 'HIGH' | 'LITE'
+
+    function syncComposerResolution() {
+      if (!composer) return;
+      const dpr = renderer.getPixelRatio();
+      composer.setPixelRatio(dpr);
+      composer.setSize(window.innerWidth, window.innerHeight);
+      if (bloomPass) {
+        bloomPass.resolution.set(
+          Math.max(1, Math.floor(window.innerWidth * dpr * 0.25)),
+          Math.max(1, Math.floor(window.innerHeight * dpr * 0.25))
+        );
+      }
+    }
+
+    function ensurePostFX() {
+      if (composer) {
+        syncComposerResolution();
+        return true;
+      }
+      try {
+        const dpr = renderer.getPixelRatio();
+        const rtOpts = (IS_WEBGL2 && !IS_TOUCH_UI) ? { samples: 4 } : {};
+        const composerRT = new THREE.WebGLRenderTarget(
+          Math.max(1, Math.floor(window.innerWidth * dpr)),
+          Math.max(1, Math.floor(window.innerHeight * dpr)),
+          rtOpts
+        );
+        composer = new EffectComposer(renderer, composerRT);
+        composer.setPixelRatio(dpr);
+        composer.addPass(new RenderPass(scene, camera));
+        bloomPass = new UnrealBloomPass(
+          new THREE.Vector2(Math.max(1, Math.floor(window.innerWidth * dpr * 0.25)), Math.max(1, Math.floor(window.innerHeight * dpr * 0.25))),
+          0.22, 0.30, 0.95
+        );
+        composer.addPass(bloomPass);
+        composer.setSize(window.innerWidth, window.innerHeight);
+        return true;
+      } catch (_fxErr) {
+        composer = null;
+        usePostFX = false;
+        return false;
+      }
+    }
 
     // ============================================================================
     // 4. EXCITING BANKED TOKYO EXPRESSWAY ROLLER-COASTER CIRCUIT (ZERO OVERLAPS!)
@@ -1826,29 +2077,111 @@
     ];
 
     const trackCurve = new THREE.CatmullRomCurve3(trackControlPoints, true, 'catmullrom', 0.5);
-    const TRACK_SEGMENTS = IS_MOBILE ? 680 : 1260;
+    trackCurve.arcLengthDivisions = 3600;
+    trackCurve.updateArcLengths();
+    const TRACK_SEGMENTS = IS_MOBILE ? 980 : 1680;
     const upVec = new THREE.Vector3(0, 1, 0);
 
-    // Pre-baked O(1) Banked Track Frame Lookup Table (~15x faster than per-frame spline binary search!)
-    const FRAME_LUT_SIZE = IS_MOBILE ? 360 : 720;
+    // Iconic 74m-Tall Helical 360° Vertical Loop-the-Loop right on the Opening Straightaway!
+    // Helical lateral offset (±18.5m) gives >11.8m clean air gap between climbing & descending decks!
+    const LOOP_U0 = 0.015;
+    const LOOP_U1 = 0.055;
+    const LOOP_RADIUS = 37.0;
+    const LOOP_HELIX = 18.5;
+
+    function quinticStep(x) {
+      const c = THREE.MathUtils.clamp(x, 0, 1);
+      return c * c * c * (c * (c * 6 - 15) + 10);
+    }
+
+    function evalLoopPointAndBaseFrame(uu, outPt, outBaseTan, outBaseBin, outBaseNorm) {
+      const basePt = trackCurve.getPointAt(uu);
+      const baseTan = trackCurve.getTangentAt(uu).normalize();
+      outBaseTan.copy(baseTan);
+      outBaseBin.crossVectors(baseTan, upVec).normalize();
+      outBaseNorm.crossVectors(outBaseBin, baseTan).normalize();
+
+      if (uu > LOOP_U0 && uu < LOOP_U1) {
+        const xi = (uu - LOOP_U0) / (LOOP_U1 - LOOP_U0);
+        // C2 quintic smoothstep for zero-jerk clothoid-style loop entry & exit!
+        const w = quinticStep(xi);
+        const theta = Math.PI * 2 * w;
+        const fwdOff = LOOP_RADIUS * Math.sin(theta);
+        const upOff = LOOP_RADIUS * (1 - Math.cos(theta));
+        const latOff = -LOOP_HELIX * Math.sin(theta);
+        outPt.copy(basePt)
+          .addScaledVector(outBaseTan, fwdOff)
+          .addScaledVector(outBaseNorm, upOff)
+          .addScaledVector(outBaseBin, latOff);
+      } else {
+        outPt.copy(basePt);
+      }
+    }
+
+    // Pre-baked O(1) Parallel-Transport & C2-Smoothed Banked Track Frame LUT (Zero Cliffs & Zero Gimbal-Lock!)
+    const FRAME_LUT_SIZE = IS_MOBILE ? 2400 : 3600;
     const frameLUT = new Array(FRAME_LUT_SIZE);
     {
+      const rawPts = new Array(FRAME_LUT_SIZE);
+      const baseTans = new Array(FRAME_LUT_SIZE);
+      const baseBins = new Array(FRAME_LUT_SIZE);
+      const baseNorms = new Array(FRAME_LUT_SIZE);
+      const rawBanks = new Float32Array(FRAME_LUT_SIZE);
+      const smoothBanks = new Float32Array(FRAME_LUT_SIZE);
       const tPrev = new THREE.Vector3(), tNext = new THREE.Vector3();
-      const b0 = new THREE.Vector3(), n0 = new THREE.Vector3();
+
       for (let i = 0; i < FRAME_LUT_SIZE; i++) {
         const uu = i / FRAME_LUT_SIZE;
-        const pt = trackCurve.getPointAt(uu);
-        const tan = trackCurve.getTangentAt(uu).normalize();
-        trackCurve.getTangentAt((uu - 0.004 + 1) % 1, tPrev).normalize();
-        trackCurve.getTangentAt((uu + 0.004) % 1, tNext).normalize();
+        rawPts[i] = new THREE.Vector3();
+        baseTans[i] = new THREE.Vector3();
+        baseBins[i] = new THREE.Vector3();
+        baseNorms[i] = new THREE.Vector3();
+        evalLoopPointAndBaseFrame(uu, rawPts[i], baseTans[i], baseBins[i], baseNorms[i]);
+        trackCurve.getTangentAt((uu - 0.006 + 1) % 1, tPrev).normalize();
+        trackCurve.getTangentAt((uu + 0.006) % 1, tNext).normalize();
         const crossY = tPrev.x * tNext.z - tPrev.z * tNext.x;
-        const bankAngle = THREE.MathUtils.clamp(-crossY * 2.7, -0.37, 0.37);
-        const cosB = Math.cos(bankAngle), sinB = Math.sin(bankAngle);
-        b0.crossVectors(tan, upVec).normalize();
+        rawBanks[i] = THREE.MathUtils.clamp(-crossY * 1.85, -0.37, 0.37);
+      }
+
+      const blurR = Math.round(FRAME_LUT_SIZE * 0.007);
+      const blurSpan = blurR * 2 + 1;
+      for (let i = 0; i < FRAME_LUT_SIZE; i++) {
+        let sum = 0;
+        for (let k = -blurR; k <= blurR; k++) {
+          sum += rawBanks[(i + k + FRAME_LUT_SIZE) % FRAME_LUT_SIZE];
+        }
+        smoothBanks[i] = sum / blurSpan;
+      }
+
+      function getLoopBankMask(uu) {
+        if (uu >= LOOP_U0 - 0.003 && uu <= LOOP_U1 + 0.003) return 0.0;
+        const dBefore = ((LOOP_U0 - 0.003) - uu + 1) % 1;
+        if (dBefore < 0.022) return quinticStep(dBefore / 0.022);
+        const dAfter = (uu - (LOOP_U1 + 0.003) + 1) % 1;
+        if (dAfter < 0.030) return quinticStep(dAfter / 0.030);
+        return 1.0;
+      }
+
+      const b0 = new THREE.Vector3(), n0 = new THREE.Vector3();
+      const du = 1 / FRAME_LUT_SIZE;
+
+      for (let i = 0; i < FRAME_LUT_SIZE; i++) {
+        const uu = i / FRAME_LUT_SIZE;
+        const iPrev = (i - 1 + FRAME_LUT_SIZE) % FRAME_LUT_SIZE;
+        const iNext = (i + 1) % FRAME_LUT_SIZE;
+        const pt = rawPts[i];
+        const chord = new THREE.Vector3().subVectors(rawPts[iNext], rawPts[iPrev]);
+        const dsDu = Math.max(800, chord.length() / (2 * du));
+        const tan = chord.normalize();
+
+        // Unified branchless frame: parallel-transported around baseBins[i] + C2-masked highway banking
+        const bankAngle = smoothBanks[i] * getLoopBankMask(uu);
+        b0.copy(baseBins[i]).addScaledVector(tan, -baseBins[i].dot(tan)).normalize();
         n0.crossVectors(b0, tan).normalize();
+        const cosB = Math.cos(bankAngle), sinB = Math.sin(bankAngle);
         const bin = b0.clone().multiplyScalar(cosB).addScaledVector(n0, sinB).normalize();
         const norm = n0.clone().multiplyScalar(cosB).addScaledVector(b0, -sinB).normalize();
-        frameLUT[i] = { pt, tan, bin, norm, bankAngle };
+        frameLUT[i] = { pt, tan, bin, norm, bankAngle, dsDu };
       }
     }
 
@@ -1866,9 +2199,19 @@
       return f0.bankAngle + (f1.bankAngle - f0.bankAngle) * alpha;
     }
 
-    // Sample 220 track points for guaranteed spatial clearance of buildings & landmarks
+    function getTrackDsDu(u) {
+      const uu = ((u % 1) + 1) % 1;
+      const fIdx = uu * FRAME_LUT_SIZE;
+      const i0 = Math.floor(fIdx) % FRAME_LUT_SIZE;
+      const i1 = (i0 + 1) % FRAME_LUT_SIZE;
+      const alpha = fIdx - Math.floor(fIdx);
+      return frameLUT[i0].dsDu + (frameLUT[i1].dsDu - frameLUT[i0].dsDu) * alpha;
+    }
+
+    // Sample track points (including 360° loop!) for guaranteed spatial clearance of buildings & landmarks
     const trackSamples = [];
-    for (let i = 0; i < 220; i++) trackSamples.push(trackCurve.getPointAt(i / 220));
+    const trackSampleStride = Math.max(4, Math.floor(FRAME_LUT_SIZE / 400));
+    for (let i = 0; i < FRAME_LUT_SIZE; i += trackSampleStride) trackSamples.push(frameLUT[i].pt);
 
     function distToTrackXZ(x, z) {
       let minSq = Infinity;
@@ -1910,21 +2253,40 @@
       const railH = 0.95;
       const deckDepth = 1.6;
 
-      const vPt = new THREE.Vector3();
+      const vPt = new THREE.Vector3(), vPrevPt = new THREE.Vector3();
       const vLeft = new THREE.Vector3(), vRight = new THREE.Vector3();
       const vTan = new THREE.Vector3(), vBin = new THREE.Vector3(), vNorm = new THREE.Vector3();
+      let cumArcLen = 0;
 
-      for (let i = 0; i <= segments; i++) {
-        const u = i / segments;
+      // Adaptive Spline Tessellation: ultra-dense inside the 360° vertical loop & exit transition, lean on smooth highway!
+      const uSamples = [];
+      {
+        const loopStep = IS_MOBILE ? 0.00045 : 0.00028;
+        const roadStep = IS_MOBILE ? 0.0020 : 0.0014;
+        let cu = 0;
+        while (cu < 1.0) {
+          if (1.0 - cu < roadStep * 0.4) break;
+          uSamples.push(cu);
+          cu += (cu >= LOOP_U0 - 0.006 && cu <= LOOP_U1 + 0.012) ? loopStep : roadStep;
+        }
+        uSamples.push(1.0);
+      }
+      const segCount = uSamples.length - 1;
+
+      for (let i = 0; i <= segCount; i++) {
+        const u = uSamples[i];
         getTrackFrame(u, vPt, vTan, vBin, vNorm);
         const pt = vPt;
+        if (i > 0) cumArcLen += pt.distanceTo(vPrevPt);
+        vPrevPt.copy(pt);
 
         vLeft.copy(pt).addScaledVector(vBin, -halfW);
         vRight.copy(pt).addScaledVector(vBin, halfW);
 
         roadPos.push(vLeft.x, vLeft.y, vLeft.z, vRight.x, vRight.y, vRight.z);
         roadNorm.push(vNorm.x, vNorm.y, vNorm.z, vNorm.x, vNorm.y, vNorm.z);
-        roadUv.push(0, u * 185, 1, u * 185);
+        const uvV = cumArcLen / 21.5;
+        roadUv.push(0, uvV, 1, uvV);
 
         // Thick concrete/steel expressway underside deck (offset -0.09m below asphalt to prevent coplanar z-fighting!)
         const dlTop = vLeft.clone().addScaledVector(vBin, -railW).addScaledVector(vNorm, -0.09);
@@ -1960,7 +2322,7 @@
         const rl1 = rl0.clone().addScaledVector(vBin, 0.22).addScaledVector(vNorm, 0.14);
         ledRPos.push(rl0.x, rl0.y, rl0.z, rl1.x, rl1.y, rl1.z);
 
-        if (i < segments) {
+        if (i < segCount) {
           const a = i * 2;
           roadIdx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
           ledIdx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2);
@@ -1976,17 +2338,21 @@
         }
       }
 
-      // Ultra-Sharp 1024x1024 Rain-Slick Shinjuku Night Wet Asphalt Texture
+      // Power-of-Two Rain-Slick Shinjuku Night Wet Asphalt Texture (1024x1024 Crisp POT, 512 on Low-End)
+      const roadSize = IS_LOW_END ? 512 : 1024;
+      const rScale = roadSize / 1024;
       const texC = document.createElement('canvas');
-      texC.width = 1024; texC.height = 1024;
+      texC.width = roadSize; texC.height = roadSize;
       const ctx = texC.getContext('2d');
-      ctx.fillStyle = '#080c18';
+      ctx.save();
+      ctx.scale(rScale, rScale);
+      ctx.fillStyle = '#070b16';
       ctx.fillRect(0, 0, 1024, 1024);
 
-      // Fine realistic asphalt micro-grain + subtle wet neon reflection streaks
-      for (let i = 0; i < 420; i++) {
-        ctx.fillStyle = i % 3 === 0 ? 'rgba(0, 229, 255, 0.028)' : (i % 3 === 1 ? 'rgba(255, 42, 133, 0.024)' : 'rgba(255, 255, 255, 0.022)');
-        ctx.fillRect(44 + Math.random() * 936, Math.random() * 1024, 3 + Math.random() * 14, 16 + Math.random() * 72);
+      // Wet rain-slick Tokyo neon reflections + fine asphalt grain
+      for (let i = 0; i < 460; i++) {
+        ctx.fillStyle = i % 4 === 0 ? 'rgba(0, 229, 255, 0.038)' : (i % 4 === 1 ? 'rgba(255, 42, 133, 0.034)' : (i % 4 === 2 ? 'rgba(255, 211, 42, 0.022)' : 'rgba(255, 255, 255, 0.022)'));
+        ctx.fillRect(44 + Math.random() * 936, Math.random() * 1024, 3 + Math.random() * 16, 18 + Math.random() * 84);
       }
 
       // Crisp warm amber outer shoulder kerbs + fine inner highlight
@@ -1998,7 +2364,7 @@
       ctx.fillRect(982, 0, 4, 1024);
 
       // Razor-sharp cyan lane dividers + reflective cat's-eye road studs
-      ctx.fillStyle = 'rgba(0, 229, 255, 0.78)';
+      ctx.fillStyle = 'rgba(0, 229, 255, 0.82)';
       ctx.fillRect(334, 0, 7, 1024);
       ctx.fillRect(683, 0, 7, 1024);
       ctx.fillStyle = '#b8faff';
@@ -2011,6 +2377,7 @@
       ctx.fillStyle = 'rgba(255, 224, 120, 0.88)';
       ctx.fillRect(507, 56, 10, 310);
       ctx.fillRect(507, 568, 10, 310);
+      ctx.restore();
 
       const roadTex = new THREE.CanvasTexture(texC);
       roadTex.wrapS = THREE.RepeatWrapping;
@@ -2077,16 +2444,27 @@
       const ringIMesh = new THREE.InstancedMesh(ringGeo, ringMat, PILLAR_COUNT);
 
       const dObj = new THREE.Object3D();
+      const pPt = new THREE.Vector3(), pTan = new THREE.Vector3(), pBin = new THREE.Vector3(), pNorm = new THREE.Vector3();
       for (let i = 0; i < PILLAR_COUNT; i++) {
-        const pt = curve.getPointAt(i / PILLAR_COUNT);
-        const h = Math.max(4, pt.y + 32);
-        dObj.position.set(pt.x, pt.y - h * 0.5 - 1.5, pt.z);
+        const pu = i / PILLAR_COUNT;
+        // Never drop vertical concrete pillars near the 360° vertical loop entrance or exit!
+        if (pu > LOOP_U0 - 0.006 && pu < LOOP_U1 + 0.008) {
+          dObj.position.set(0, -500, 0);
+          dObj.scale.setScalar(0);
+          dObj.updateMatrix();
+          pilIMesh.setMatrixAt(i, dObj.matrix);
+          ringIMesh.setMatrixAt(i, dObj.matrix);
+          continue;
+        }
+        getTrackFrame(pu, pPt, pTan, pBin, pNorm);
+        const h = Math.max(4, pPt.y + 32);
+        dObj.position.set(pPt.x, pPt.y - h * 0.5 - 1.5, pPt.z);
         dObj.rotation.set(0, 0, 0);
         dObj.scale.set(1, h, 1);
         dObj.updateMatrix();
         pilIMesh.setMatrixAt(i, dObj.matrix);
 
-        dObj.position.set(pt.x, pt.y - 2.8, pt.z);
+        dObj.position.set(pPt.x, pPt.y - 2.8, pPt.z);
         dObj.rotation.set(Math.PI / 2, 0, 0);
         dObj.scale.set(1, 1, 1);
         dObj.updateMatrix();
@@ -2097,29 +2475,115 @@
       group.add(pilIMesh);
       group.add(ringIMesh);
 
-      // Exciting Neon Hyper-Tunnel Rib Sequences (aligned to banked road, strictly clear of CV panels!)
-      const tunnelRibGeo = new THREE.TorusGeometry(width * 0.64, 0.16, 8, 28, Math.PI);
-      const tunnelMatA = new THREE.MeshBasicMaterial({ color: 0x00e5ff });
-      const tunnelMatB = new THREE.MeshBasicMaterial({ color: 0xff2a85 });
-      const tunnelMatC = new THREE.MeshBasicMaterial({ color: 0xffd32a });
-      const tunnelMats = [tunnelMatA, tunnelMatB, tunnelMatC];
-      const tunnelStarts = [0.04, 0.165, 0.39, 0.675, 0.945];
+      // Glowing Neon Orange & Gold Booster Pad + Structural Neon Loop Rings around the 360° Vertical Loop!
       const tPt = new THREE.Vector3(), tTan = new THREE.Vector3(), tBin = new THREE.Vector3(), tNorm = new THREE.Vector3();
       const tMat4 = new THREE.Matrix4();
+
+      // 1) Iconic Glowing Orange/Gold Chevron Booster Strip at the 360° Loop Entrance!
+      const boostC = document.createElement('canvas');
+      boostC.width = 512; boostC.height = 512;
+      const bCx = boostC.getContext('2d');
+      bCx.fillStyle = '#120802';
+      bCx.fillRect(0, 0, 512, 512);
+      bCx.strokeStyle = '#ff6b1a';
+      bCx.lineWidth = 16;
+      bCx.strokeRect(8, 8, 496, 496);
+      for (let cy = 95; cy <= 435; cy += 110) {
+        bCx.strokeStyle = cy % 220 === 95 ? '#ffd32a' : '#ff5500';
+        bCx.lineWidth = 34;
+        bCx.lineCap = 'round';
+        bCx.beginPath();
+        bCx.moveTo(86, cy + 58);
+        bCx.lineTo(256, cy - 36);
+        bCx.lineTo(426, cy + 58);
+        bCx.stroke();
+      }
+      const boostPadTex = new THREE.CanvasTexture(boostC);
+      boostPadTex.anisotropy = MAX_ANISO;
+      const BOOST_SEGS = 12;
+      const boostU0 = LOOP_U0 - 0.0010;
+      const boostU1 = LOOP_U0 + 0.0036;
+      const boostHalfW = width * 0.39;
+      const boostPos = [], boostUv = [], boostIdx = [];
+      const boostL = new THREE.Vector3(), boostR = new THREE.Vector3();
+      for (let k = 0; k <= BOOST_SEGS; k++) {
+        const vFrac = k / BOOST_SEGS;
+        const bu = boostU0 + vFrac * (boostU1 - boostU0);
+        getTrackFrame(bu, tPt, tTan, tBin, tNorm);
+        boostL.copy(tPt).addScaledVector(tBin, -boostHalfW).addScaledVector(tNorm, 0.065);
+        boostR.copy(tPt).addScaledVector(tBin, boostHalfW).addScaledVector(tNorm, 0.065);
+        boostPos.push(boostL.x, boostL.y, boostL.z, boostR.x, boostR.y, boostR.z);
+        boostUv.push(0, vFrac, 1, vFrac);
+        if (k < BOOST_SEGS) {
+          const ba = k * 2;
+          boostIdx.push(ba, ba + 1, ba + 2, ba + 1, ba + 3, ba + 2);
+        }
+      }
+      const boostPadGeo = new THREE.BufferGeometry();
+      boostPadGeo.setAttribute('position', new THREE.Float32BufferAttribute(boostPos, 3));
+      boostPadGeo.setAttribute('uv', new THREE.Float32BufferAttribute(boostUv, 2));
+      boostPadGeo.setIndex(boostIdx);
+      const boostPadMesh = new THREE.Mesh(
+        boostPadGeo,
+        new THREE.MeshBasicMaterial({
+          map: boostPadTex,
+          side: THREE.DoubleSide,
+          polygonOffset: true,
+          polygonOffsetFactor: -3,
+          polygonOffsetUnits: -3
+        })
+      );
+      group.add(boostPadMesh);
+
+      // 2) Batched InstancedMesh Neon Loop & Hyper-Tunnel Rib Arches (36 Draw Calls -> 1 Single Draw Call!)
+      const tunnelStarts = [0.165, 0.39, 0.675, 0.945];
+      const TOTAL_RIBS = 12 + tunnelStarts.length * 6;
+      const sharedRibGeo = new THREE.TorusGeometry(width * 0.64, 0.19, 8, 28, Math.PI);
+      const ribIMesh = new THREE.InstancedMesh(sharedRibGeo, new THREE.MeshBasicMaterial({ color: 0xffffff }), TOTAL_RIBS);
+      const ribCol = new THREE.Color();
+      let ribIdx = 0;
+
+      for (let k = 0; k < 12; k++) {
+        const lu = LOOP_U0 + 0.0025 + (k / 11) * (LOOP_U1 - LOOP_U0 - 0.005);
+        getTrackFrame(lu, tPt, tTan, tBin, tNorm);
+        tMat4.makeBasis(tBin.clone().negate(), tNorm, tTan);
+        dObj.position.copy(tPt);
+        dObj.quaternion.setFromRotationMatrix(tMat4);
+        dObj.scale.set(1, 1, 1.15);
+        dObj.updateMatrix();
+        ribIMesh.setMatrixAt(ribIdx, dObj.matrix);
+        ribCol.setHex(k % 2 === 0 ? 0xff6b1a : 0xffd32a);
+        ribIMesh.setColorAt(ribIdx, ribCol);
+        ribIdx++;
+      }
+
+      const tunnelPalette = [0x00e5ff, 0xff2a85, 0xffd32a];
       let ribCounter = 0;
       tunnelStarts.forEach((startT) => {
         for (let k = 0; k < 6; k++) {
           const tu = (startT + k * 0.0065) % 1;
           getTrackFrame(tu, tPt, tTan, tBin, tNorm);
-          const rib = new THREE.Mesh(tunnelRibGeo, tunnelMats[ribCounter % 3]);
-          rib.position.copy(tPt);
           tMat4.makeBasis(tBin.clone().negate(), tNorm, tTan);
-          rib.quaternion.setFromRotationMatrix(tMat4);
-          group.add(rib);
+          dObj.position.copy(tPt);
+          dObj.quaternion.setFromRotationMatrix(tMat4);
+          dObj.scale.set(1, 1, 1);
+          dObj.updateMatrix();
+          ribIMesh.setMatrixAt(ribIdx, dObj.matrix);
+          ribCol.setHex(tunnelPalette[ribCounter % 3]);
+          ribIMesh.setColorAt(ribIdx, ribCol);
+          ribIdx++;
           ribCounter++;
         }
       });
+      ribIMesh.instanceMatrix.needsUpdate = true;
+      if (ribIMesh.instanceColor) ribIMesh.instanceColor.needsUpdate = true;
+      group.add(ribIMesh);
 
+      // Freeze static highway matrices so Three.js skips 4x4 matrix traversal every frame!
+      group.traverse((child) => {
+        child.updateMatrix();
+        child.matrixAutoUpdate = false;
+      });
       return group;
     }
 
@@ -2172,21 +2636,24 @@
     floorGrid.material.transparent = true;
     scene.add(floorGrid);
 
-    // High-Res 512x1024 Architectural Skyscraper Window Texture (Crisp Tokyo Night Office Mullions)
+    // High-Definition Power-of-Two Architectural Skyscraper Window Texture (1024x2048 on Desktop, 512x1024 on Mobile)
+    const winW = IS_LOW_END ? 256 : (IS_TOUCH_UI ? 512 : 1024);
+    const winH = IS_LOW_END ? 512 : (IS_TOUCH_UI ? 1024 : 2048);
     const winCanvas = document.createElement('canvas');
-    winCanvas.width = 512; winCanvas.height = 1024;
+    winCanvas.width = winW; winCanvas.height = winH;
     const wCtx = winCanvas.getContext('2d');
+    wCtx.save();
+    wCtx.scale(winW / 512, winH / 1024);
     wCtx.fillStyle = '#050812';
     wCtx.fillRect(0, 0, 512, 1024);
     for (let wy = 10; wy < 1012; wy += 20) {
-      const floorLit = Math.random() > 0.25;
+      const floorLit = Math.random() > 0.24;
       for (let wx = 10; wx < 498; wx += 24) {
-        if (floorLit && Math.random() > 0.34) {
+        if (floorLit && Math.random() > 0.32) {
           const r = Math.random();
           wCtx.fillStyle = r < 0.44 ? '#9be8ff' : (r < 0.72 ? '#ffe5b8' : (r < 0.88 ? '#ff5c93' : '#ffa74a'));
           wCtx.fillRect(wx, wy, 14, 9);
-          // Subtle inner window mullion highlight
-          wCtx.fillStyle = 'rgba(255, 255, 255, 0.32)';
+          wCtx.fillStyle = 'rgba(255, 255, 255, 0.34)';
           wCtx.fillRect(wx, wy, 14, 2);
         } else {
           wCtx.fillStyle = 'rgba(18, 30, 56, 0.55)';
@@ -2194,6 +2661,7 @@
         }
       }
     }
+    wCtx.restore();
     const winTex = new THREE.CanvasTexture(winCanvas);
     winTex.wrapS = THREE.RepeatWrapping;
     winTex.wrapT = THREE.RepeatWrapping;
@@ -2216,10 +2684,10 @@
       return true;
     }
 
-    // Inner Tokyo Downtown Core (inside the highway loop, far from track) + Outer Metropolis Skyline
-    const MAX_BUILDINGS = IS_MOBILE ? 56 : 126;
+    // Inner Downtown Core (inside the highway loop, far from track) + Outer Metropolis Skyline
+    const MAX_BUILDINGS = IS_LOW_END ? 48 : (IS_MOBILE ? 64 : 126);
     for (let attempt = 0; attempt < 1100 && placedBuildings.length < MAX_BUILDINGS; attempt++) {
-      const isInner = placedBuildings.length < (IS_MOBILE ? 18 : 36);
+      const isInner = placedBuildings.length < (IS_MOBILE ? 20 : 38);
       const angle = Math.random() * Math.PI * 2;
       const radius = isInner ? (45 + Math.random() * 255) : (590 + Math.random() * 380);
       const bx = Math.cos(angle) * radius;
@@ -2282,6 +2750,13 @@
     crownIMesh.instanceMatrix.needsUpdate = true;
     spireIMesh.instanceMatrix.needsUpdate = true;
     beaconIMesh.instanceMatrix.needsUpdate = true;
+    towerIMesh.matrixAutoUpdate = false;
+    crownIMesh.matrixAutoUpdate = false;
+    spireIMesh.matrixAutoUpdate = false;
+    beaconIMesh.matrixAutoUpdate = false;
+    skyDome.matrixAutoUpdate = false;
+    floorGrid.updateMatrix();
+    floorGrid.matrixAutoUpdate = false;
     scene.add(towerIMesh, crownIMesh, spireIMesh, beaconIMesh);
 
     // Animated Vertical Tokyo Shinjuku Neon Signs mounted cleanly on building facades
@@ -2337,6 +2812,8 @@
         b.z + toCenter.y * offsetDist
       );
       sign.lookAt(0, sign.position.y, 0);
+      sign.updateMatrix();
+      sign.matrixAutoUpdate = false;
       scene.add(sign);
     }
 
@@ -2446,37 +2923,43 @@
 
     function createGateTex(m) {
       const c = document.createElement('canvas');
-      c.width = 1024; c.height = 240;
+      c.width = 1024; c.height = 256;
       const ctx = c.getContext('2d');
       ctx.fillStyle = '#070a18';
-      ctx.fillRect(0, 0, 1024, 240);
+      ctx.fillRect(0, 0, 1024, 256);
       ctx.strokeStyle = m.color;
       ctx.lineWidth = 10;
-      ctx.strokeRect(8, 8, 1008, 224);
+      ctx.strokeRect(8, 8, 1008, 240);
 
       ctx.fillStyle = m.color;
       ctx.font = '800 26px Orbitron, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`${m.signTop}   ·   ${m.signSub}`, 512, 74);
+      ctx.fillText(`${m.signTop}   ·   ${m.signSub}`, 512, 80);
 
       ctx.fillStyle = '#ffffff';
       ctx.font = '900 52px Orbitron, sans-serif';
-      ctx.fillText(m.signMain, 512, 168);
+      ctx.fillText(m.signMain, 512, 178);
 
       const tex = new THREE.CanvasTexture(c);
-      tex.anisotropy = 8;
+      tex.anisotropy = Math.min(8, MAX_ANISO);
       return tex;
     }
 
     function createPanelTex(m) {
+      // Crisp 2K HD Power-of-Two (POT) Canvas Resolution (2048x1024 on Desktop/Retina, 1024x512 on Low-End):
+      // Saves 234 MB of GPU VRAM vs 4K so texture caches never thrash while staying 100% tack-sharp in Deep Zoom!
+      const texW = IS_LOW_END ? 1024 : 2048;
+      const texH = texW >> 1;
       const c = document.createElement('canvas');
-      c.width = 1920; c.height = 1056;
+      c.width = texW; c.height = texH;
       const ctx = c.getContext('2d');
-      ctx.scale(1.2, 1.2); // Renders existing 1600x880 layout at crisp 1920x1056 HD resolution!
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.scale(texW / 1600, texH / 880); // Maps 1600x880 layout cleanly onto 4K/2K POT texture!
 
       const bg = ctx.createLinearGradient(0, 0, 1600, 880);
-      bg.addColorStop(0, '#040814');
-      bg.addColorStop(1, '#0b1530');
+      bg.addColorStop(0, '#030611');
+      bg.addColorStop(1, '#091228');
       ctx.fillStyle = bg;
       ctx.fillRect(0, 0, 1600, 880);
 
@@ -2490,64 +2973,73 @@
       ctx.fillRect(20, 20, 1560, 96);
 
       ctx.fillStyle = '#040712';
-      ctx.font = '900 42px Orbitron, sans-serif';
+      ctx.font = '900 43px Orbitron, sans-serif';
       ctx.textAlign = 'left';
       ctx.fillText(m.stage, 52, 82);
       ctx.textAlign = 'right';
       ctx.fillText(m.date, 1548, 82);
 
+      // Crisp Dark Readability Drop-Shadow for Ultra-Sharp 3D Text Contrast!
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 3;
+
       // Massive Highway-Readable Title & Subtitle
       ctx.textAlign = 'left';
       ctx.fillStyle = '#ffffff';
-      ctx.font = '900 64px Orbitron, sans-serif';
+      ctx.font = '900 65px Orbitron, sans-serif';
       ctx.fillText(m.title, 54, 198, 1492);
 
-      ctx.fillStyle = '#4ef0ff';
-      ctx.font = '700 42px Rajdhani, sans-serif';
+      ctx.fillStyle = '#62f4ff';
+      ctx.font = '700 44px Rajdhani, sans-serif';
       ctx.fillText(m.subtitle, 54, 254, 1492);
 
       // Huge Glowing Gold Hero Metric Banner (instantly legible from 120m+ at 350 KM/H!)
-      ctx.fillStyle = 'rgba(255, 211, 42, 0.18)';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
+      ctx.fillStyle = 'rgba(255, 211, 42, 0.20)';
       ctx.fillRect(46, 282, 1508, 92);
       ctx.strokeStyle = '#ffd32a';
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 5;
       ctx.strokeRect(46, 282, 1508, 92);
-      ctx.fillStyle = '#ffe159';
-      ctx.font = '900 44px Orbitron, sans-serif';
+      ctx.shadowBlur = 6;
+      ctx.fillStyle = '#ffe566';
+      ctx.font = '900 45px Orbitron, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('⚡ ' + m.heroStat, 800, 344, 1460);
 
       // Large, High-Contrast Key Takeaway + Top Highlight (zero tiny walls of text!)
       ctx.textAlign = 'left';
       ctx.fillStyle = m.color;
-      ctx.font = '900 44px Inter, sans-serif';
+      ctx.font = '900 45px Inter, sans-serif';
       ctx.fillText('▸', 52, 456);
       ctx.fillStyle = '#ffffff';
-      ctx.font = '700 42px Inter, sans-serif';
-      let curY = wrapText(ctx, m.impact, 98, 456, 1440, 56) + 26;
+      ctx.font = '700 43px Inter, sans-serif';
+      let curY = wrapText(ctx, m.impact, 98, 456, 1440, 57) + 26;
 
       // Second distinct concise bullet if space allows
       if (m.bullets.length > 0 && curY < 660) {
         const secondLine = m.bullets[0];
         ctx.fillStyle = m.color;
-        ctx.font = '900 38px Inter, sans-serif';
+        ctx.font = '900 39px Inter, sans-serif';
         ctx.fillText('▸', 52, curY);
-        ctx.fillStyle = '#dbeaff';
-        ctx.font = '500 36px Inter, sans-serif';
-        wrapText(ctx, secondLine, 98, curY, 1440, 48);
+        ctx.fillStyle = '#e6f1ff';
+        ctx.font = '600 38px Inter, sans-serif';
+        wrapText(ctx, secondLine, 98, curY, 1440, 49);
       }
 
       // Massive Skills Footer
-      ctx.fillStyle = 'rgba(0, 229, 255, 0.16)';
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(0, 229, 255, 0.18)';
       ctx.fillRect(40, 748, 1520, 96);
-      ctx.strokeStyle = 'rgba(0, 229, 255, 0.65)';
-      ctx.lineWidth = 4;
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.72)';
+      ctx.lineWidth = 5;
       ctx.strokeRect(40, 748, 1520, 96);
 
-      ctx.fillStyle = '#b4f3ff';
-      ctx.font = '800 40px Rajdhani, sans-serif';
+      ctx.fillStyle = '#ccf7ff';
+      ctx.font = '800 42px Rajdhani, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(m.tags.slice(0, 5).join('   •   '), 800, 810, 1480);
+      ctx.fillText(m.tags.slice(0, 5).join('   •   '), 800, 811, 1480);
 
       const tex = new THREE.CanvasTexture(c);
       tex.anisotropy = MAX_ANISO;
@@ -2619,6 +3111,7 @@
         screenMesh,
         baseQuat,
         forwardDir,
+        screenFaceMat,
         worldPos: hoverGroup.position,
         baseY: hoverY,
         milestone: m,
@@ -2626,8 +3119,25 @@
       });
     });
 
+    // Staggered Non-Blocking Font Re-Bake (1 panel per frame so zero main-thread hitch!)
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        let pIdx = 0;
+        function rebakeNextPanel() {
+          if (pIdx >= tracksidePanels.length) return;
+          const tp = tracksidePanels[pIdx++];
+          const oldTex = tp.screenFaceMat.map;
+          tp.screenFaceMat.map = createPanelTex(tp.milestone);
+          tp.screenFaceMat.needsUpdate = true;
+          if (oldTex) oldTex.dispose();
+          requestAnimationFrame(rebakeNextPanel);
+        }
+        requestAnimationFrame(rebakeNextPanel);
+      }).catch(() => {});
+    }
+
     // ============================================================================
-    // 7. WEDGE RAMPS, NITRO CANISTERS, SKY RINGS, LASER BARRIERS & SKILL ORBS
+    // 7. FULLY INSTANCED RAMPS, NITRO CANISTERS, SKY RINGS & SKILL ORBS (5 DRAW CALLS TOTAL!)
     // ============================================================================
     const jumpRamps = [];
     const skillOrbs = [];
@@ -2653,152 +3163,166 @@
     });
     const rampEdgeMat = new THREE.MeshBasicMaterial({ color: 0xff6b1a });
     const rampLipGeo = new THREE.BoxGeometry(4.44, 0.14, 0.22);
+    rampLipGeo.translate(0, 1.58, 3.24);
 
-    [0.055, 0.135, 0.20, 0.27, 0.33, 0.40, 0.465, 0.54, 0.605, 0.675, 0.745, 0.815, 0.885, 0.955].forEach((t, idx) => {
+    // Instanced Launch Ramps & Lips (26 Draw Calls -> 2 Static Draw Calls!)
+    const RAMP_T_LIST = [0.135, 0.20, 0.27, 0.33, 0.40, 0.465, 0.54, 0.605, 0.675, 0.745, 0.815, 0.885, 0.955];
+    const rampIMesh = new THREE.InstancedMesh(rampGeo, rampMat, RAMP_T_LIST.length);
+    const rampLipIMesh = new THREE.InstancedMesh(rampLipGeo, rampEdgeMat, RAMP_T_LIST.length);
+    const rampMat4 = new THREE.Matrix4();
+    RAMP_T_LIST.forEach((t, idx) => {
       getTrackFrame(t, bPt, bTan, bBin, bNorm);
       const laneOffset = (idx % 2 === 0 ? 1 : -1) * 3.0;
-      const g = new THREE.Group();
-      g.position.copy(bPt).addScaledVector(bBin, laneOffset);
-      g.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(bBin.clone().negate(), bNorm, bTan));
-      g.add(new THREE.Mesh(rampGeo, rampMat));
-      // Crisp glowing neon orange launch lip (no blown-out flat yellow bloom slab!)
-      const lip = new THREE.Mesh(rampLipGeo, rampEdgeMat);
-      lip.position.set(0, 1.58, 3.24);
-      g.add(lip);
-      scene.add(g);
+      dummy.position.copy(bPt).addScaledVector(bBin, laneOffset);
+      rampMat4.makeBasis(bBin.clone().negate(), bNorm, bTan);
+      dummy.quaternion.setFromRotationMatrix(rampMat4);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      rampIMesh.setMatrixAt(idx, dummy.matrix);
+      rampLipIMesh.setMatrixAt(idx, dummy.matrix);
       jumpRamps.push({ t, laneOffset });
     });
+    rampIMesh.instanceMatrix.needsUpdate = true;
+    rampLipIMesh.instanceMatrix.needsUpdate = true;
+    rampIMesh.matrixAutoUpdate = false;
+    rampLipIMesh.matrixAutoUpdate = false;
+    scene.add(rampIMesh, rampLipIMesh);
 
+    // Instanced Skill Orbs (21 Draw Calls -> 1 Single InstancedMesh Draw Call!)
     const SKILL_NAMES = [
       "Python", "Java", "SQL", "Boomi", "TensorFlow", "Docker", "SAP Customs",
       "AWS SageMaker", "Spring Boot", "Hibernate", "MongoDB", "MySQL", "Qlik Sense", "Tableau",
       "Power BI", "NumPy & Pandas", "Scikit-Learn", "Computer Vision", "Git & Linux", "REST APIs", "Algorithms"
     ];
     const orbGeo = new THREE.OctahedronGeometry(0.9, 1);
-    const orbMatCyan = new THREE.MeshStandardMaterial({ color: 0x00e5ff, emissive: 0x00aaff, emissiveIntensity: 0.85, metalness: 0.4, roughness: 0.15 });
-    const orbMatMint = new THREE.MeshStandardMaterial({ color: 0x00ff9d, emissive: 0x00cc66, emissiveIntensity: 0.85, metalness: 0.4, roughness: 0.15 });
-
+    const orbIMesh = new THREE.InstancedMesh(
+      orbGeo,
+      new THREE.MeshBasicMaterial({ color: 0xffffff }),
+      SKILL_NAMES.length
+    );
+    orbIMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     SKILL_NAMES.forEach((name, i) => {
-      // Distribute cleanly in open track stretches
       const t = ((i + 0.35) / SKILL_NAMES.length) % 1;
-      const pt = trackCurve.getPointAt(t);
-      const tan = trackCurve.getTangentAt(t).normalize();
-      const bin = new THREE.Vector3().crossVectors(tan, upVec).normalize();
+      getTrackFrame(t, bPt, bTan, bBin, bNorm);
       const laneOffset = Math.sin(i * 1.9) * 3.6;
-      const mesh = new THREE.Mesh(orbGeo, i % 2 === 0 ? orbMatMint : orbMatCyan);
-      mesh.position.copy(pt).addScaledVector(bin, laneOffset);
-      scene.add(mesh);
-      skillOrbs.push({ name, mesh, collected: false, baseY: mesh.position.y });
+      const basePos = bPt.clone().addScaledVector(bBin, laneOffset);
+      const pos = basePos.clone().addScaledVector(bNorm, 1.55);
+      dummy.position.copy(pos);
+      dummy.rotation.set(0, 0, 0);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      orbIMesh.setMatrixAt(i, dummy.matrix);
+      tmpCol.setHex(i % 2 === 0 ? 0x00ff9d : 0x00e5ff);
+      orbIMesh.setColorAt(i, tmpCol);
+      skillOrbs.push({ name, pos, collected: false, basePos, norm: bNorm.clone() });
     });
+    orbIMesh.instanceMatrix.needsUpdate = true;
+    if (orbIMesh.instanceColor) orbIMesh.instanceColor.needsUpdate = true;
+    scene.add(orbIMesh);
 
-    // 24 Glowing Collectible NITRO Canisters scattered along racing lines!
+    // Instanced Collectible NITRO Canisters (72 Draw Calls -> 1 Single InstancedMesh Draw Call!)
     const nitroCanisters = [];
-    const nitroBodyGeo = new THREE.CylinderGeometry(0.42, 0.42, 1.55, 10);
-    const nitroCapGeo = new THREE.CylinderGeometry(0.48, 0.48, 0.22, 10);
-    const nitroBodyMat = new THREE.MeshStandardMaterial({ color: 0xff2a85, emissive: 0xff1e6b, emissiveIntensity: 0.9, metalness: 0.5, roughness: 0.18 });
-    const nitroCapMat = new THREE.MeshBasicMaterial({ color: 0xffd32a });
-
+    const nitroTexC = document.createElement('canvas');
+    nitroTexC.width = 64; nitroTexC.height = 128;
+    const ntCtx = nitroTexC.getContext('2d');
+    ntCtx.fillStyle = '#ffd32a';
+    ntCtx.fillRect(0, 0, 64, 128);
+    ntCtx.fillStyle = '#ff2a85';
+    ntCtx.fillRect(0, 18, 64, 92);
+    ntCtx.fillStyle = '#ffffff';
+    ntCtx.fillRect(0, 58, 64, 12);
+    const nitroIMesh = new THREE.InstancedMesh(
+      new THREE.CylinderGeometry(0.45, 0.45, 1.72, 10),
+      new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(nitroTexC) }),
+      24
+    );
+    nitroIMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     for (let i = 0; i < 24; i++) {
       const t = ((i + 0.35) / 24) % 1;
       getTrackFrame(t, bPt, bTan, bBin, bNorm);
       const laneOffset = ((i % 3) - 1) * 3.8;
-      const g = new THREE.Group();
-      const body = new THREE.Mesh(nitroBodyGeo, nitroBodyMat);
-      const capTop = new THREE.Mesh(nitroCapGeo, nitroCapMat); capTop.position.y = 0.82;
-      const capBot = new THREE.Mesh(nitroCapGeo, nitroCapMat); capBot.position.y = -0.82;
-      g.add(body, capTop, capBot);
-      g.rotation.z = 0.28;
-      g.position.copy(bPt).addScaledVector(bBin, laneOffset).addScaledVector(bNorm, 1.6);
-      scene.add(g);
-      nitroCanisters.push({ t, laneOffset, group: g, basePos: g.position.clone(), norm: bNorm.clone(), collected: false });
+      const basePos = bPt.clone().addScaledVector(bBin, laneOffset).addScaledVector(bNorm, 1.6);
+      const pos = basePos.clone();
+      dummy.position.copy(pos);
+      dummy.rotation.set(0, 0, 0.28);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      nitroIMesh.setMatrixAt(i, dummy.matrix);
+      nitroCanisters.push({ t, laneOffset, pos, basePos, norm: bNorm.clone(), collected: false });
     }
+    nitroIMesh.instanceMatrix.needsUpdate = true;
+    scene.add(nitroIMesh);
 
-    // 10 Aerial Golden Neon Sky Rings floating right past every Launch Ramp!
+    // Instanced Aerial Golden Neon Sky Rings (13 Draw Calls -> 1 Single InstancedMesh Draw Call!)
     const skyRings = [];
-    const skyRingGeo = new THREE.TorusGeometry(2.8, 0.18, 8, 24);
-    const skyRingMat = new THREE.MeshBasicMaterial({ color: 0xffd32a });
-    jumpRamps.forEach((r) => {
+    const skyRingIMesh = new THREE.InstancedMesh(
+      new THREE.TorusGeometry(2.8, 0.18, 8, 22),
+      new THREE.MeshBasicMaterial({ color: 0xffd32a }),
+      jumpRamps.length
+    );
+    skyRingIMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    jumpRamps.forEach((r, idx) => {
       const rt = (r.t + 0.0085) % 1;
       getTrackFrame(rt, bPt, bTan, bBin, bNorm);
-      const ring = new THREE.Mesh(skyRingGeo, skyRingMat);
-      ring.position.copy(bPt).addScaledVector(bBin, r.laneOffset).addScaledVector(bNorm, 5.2);
-      ring.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(bBin.clone().negate(), bNorm, bTan));
-      scene.add(ring);
-      skyRings.push({ t: rt, laneOffset: r.laneOffset, mesh: ring, collected: false });
+      const pos = bPt.clone().addScaledVector(bBin, r.laneOffset).addScaledVector(bNorm, 5.2);
+      rampMat4.makeBasis(bBin.clone().negate(), bNorm, bTan);
+      const baseQuat = new THREE.Quaternion().setFromRotationMatrix(rampMat4);
+      dummy.position.copy(pos);
+      dummy.quaternion.copy(baseQuat);
+      dummy.scale.set(1, 1, 1);
+      dummy.updateMatrix();
+      skyRingIMesh.setMatrixAt(idx, dummy.matrix);
+      skyRings.push({ t: rt, laneOffset: r.laneOffset, pos, baseQuat, spinZ: 0, collected: false });
     });
-
-    // 16 Cyber-Laser Road Barriers (block 1 lane -> dodge for Close Call bonus OR jump over with SPACE!)
-    const roadBarriers = [];
-    const barPostGeo = new THREE.BoxGeometry(0.32, 1.5, 0.32);
-    const barBeamGeo = new THREE.BoxGeometry(4.2, 0.22, 0.18);
-    const barPostMat = new THREE.MeshStandardMaterial({ color: 0x161d34, metalness: 0.8, roughness: 0.3 });
-    const barLaserMat = new THREE.MeshBasicMaterial({ color: 0xff2a55 });
-    [0.042, 0.115, 0.175, 0.245, 0.305, 0.37, 0.435, 0.505, 0.57, 0.635, 0.705, 0.77, 0.835, 0.905, 0.94, 0.985].forEach((t, idx) => {
-      getTrackFrame(t, bPt, bTan, bBin, bNorm);
-      const laneOffset = ((idx % 3) - 1) * 4.0;
-      const g = new THREE.Group();
-      g.position.copy(bPt).addScaledVector(bBin, laneOffset);
-      g.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(bBin.clone().negate(), bNorm, bTan));
-      const pL = new THREE.Mesh(barPostGeo, barPostMat); pL.position.set(-2.1, 0.75, 0);
-      const pR = new THREE.Mesh(barPostGeo, barPostMat); pR.position.set(2.1, 0.75, 0);
-      const b1 = new THREE.Mesh(barBeamGeo, barLaserMat); b1.position.set(0, 0.55, 0);
-      const b2 = new THREE.Mesh(barBeamGeo, barLaserMat); b2.position.set(0, 1.15, 0);
-      g.add(pL, pR, b1, b2);
-      scene.add(g);
-      roadBarriers.push({ t, laneOffset, hitCooldown: 0 });
-    });
+    skyRingIMesh.instanceMatrix.needsUpdate = true;
+    scene.add(skyRingIMesh);
 
     // ============================================================================
-    // 8. DEADMAU5'S ICONIC "PURRARI" (FERRARI 458 ITALIA NYAN CAT LIVERY!)
+    // 8. ITALIAN SUPERCAR — FERRARI 458 SPECIALE "TRICOLORE ITALIA" (ROSSO CORSA!)
     // ============================================================================
-    function createPurrariWrapTex() {
+    function createItaliaSideTex() {
       const c = document.createElement('canvas');
-      c.width = 512; c.height = 512;
+      c.width = 1024; c.height = 1024;
       const ctx = c.getContext('2d');
-      // Iconic Purrari Nyan-Sky Blue base
+      ctx.scale(2, 2);
+      // Deep Maranello Rosso Corsa metallic gradient
       const g = ctx.createLinearGradient(0, 0, 512, 512);
-      g.addColorStop(0, '#1c8cff');
-      g.addColorStop(0.5, '#35b4ff');
-      g.addColorStop(1, '#1273e6');
+      g.addColorStop(0, '#c80e1e');
+      g.addColorStop(0.5, '#e6192b');
+      g.addColorStop(1, '#b50b19');
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, 512, 512);
 
-      // Crisp Nyan-Cat pixel white twinkling stars
+      // Sleek Carbon-Black lower aero sill + Tricolore side spear (Verde · Bianco · Rosso)
+      ctx.fillStyle = '#0d111a';
+      ctx.fillRect(0, 340, 512, 172);
+      ctx.fillStyle = '#009246';
+      ctx.fillRect(0, 226, 512, 26);
       ctx.fillStyle = '#ffffff';
-      const stars = [[42,56],[120,90],[210,44],[340,72],[445,52],[80,430],[190,460],[310,420],[430,450],[468,175],[56,165]];
-      stars.forEach(([sx, sy]) => {
-        ctx.fillRect(sx - 6, sy - 2, 12, 4);
-        ctx.fillRect(sx - 2, sy - 6, 4, 12);
-      });
+      ctx.fillRect(0, 252, 512, 26);
+      ctx.fillStyle = '#ce2b37';
+      ctx.fillRect(0, 278, 512, 26);
 
-      // Signature 6-band Nyan Rainbow Trail sweeping across the wrap!
-      const rainbow = ['#ff1e2d', '#ff9500', '#ffe600', '#2ee640', '#00b4ff', '#9c3bff'];
-      const bandH = 26;
-      const startY = 178;
-      rainbow.forEach((col, i) => {
-        ctx.fillStyle = col;
-        ctx.fillRect(0, startY + i * bandH, 360, bandH);
-      });
-
-      // Cute Pixel Pop-Tart Nyan Cat Emblem at the head of the rainbow!
-      ctx.fillStyle = '#f5c78e';
-      ctx.fillRect(344, 198, 108, 92);
-      ctx.fillStyle = '#ff77bb';
-      ctx.fillRect(354, 208, 88, 72);
-      // Pink Pop-Tart sprinkles
-      ctx.fillStyle = '#ff1476';
-      [[368,224],[394,218],[420,232],[376,252],[408,260],[426,248]].forEach(([px, py]) => ctx.fillRect(px, py, 7, 7));
-      // Pixel grey cat head + ears + eyes + rosy cheeks
-      ctx.fillStyle = '#9aa3b2';
-      ctx.fillRect(426, 224, 52, 46);
-      ctx.fillRect(428, 212, 14, 14);
-      ctx.fillRect(462, 212, 14, 14);
-      ctx.fillStyle = '#111522';
-      ctx.fillRect(438, 240, 6, 6);
-      ctx.fillRect(460, 240, 6, 6);
-      ctx.fillStyle = '#ff6b9d';
-      ctx.fillRect(432, 250, 7, 6);
-      ctx.fillRect(465, 250, 7, 6);
+      // Iconic Giallo Modena Scuderia Fender Shield Emblem
+      ctx.fillStyle = '#ffd32a';
+      ctx.beginPath();
+      ctx.moveTo(392, 92);
+      ctx.lineTo(456, 92);
+      ctx.lineTo(452, 154);
+      ctx.lineTo(424, 182);
+      ctx.lineTo(396, 154);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#111520';
+      ctx.lineWidth = 5;
+      ctx.stroke();
+      // Tricolore top bar on Scuderia shield + black prancing silhouette accent
+      ctx.fillStyle = '#009246'; ctx.fillRect(396, 95, 19, 8);
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(415, 95, 18, 8);
+      ctx.fillStyle = '#ce2b37'; ctx.fillRect(433, 95, 19, 8);
+      ctx.fillStyle = '#111520';
+      ctx.fillRect(418, 116, 12, 38);
+      ctx.fillRect(410, 126, 26, 10);
 
       const tex = new THREE.CanvasTexture(c);
       tex.anisotropy = MAX_ANISO;
@@ -2808,32 +3332,72 @@
       return tex;
     }
 
-    function createPurrariDeckTex() {
+    function createItaliaDeckTex() {
       const c = document.createElement('canvas');
-      c.width = 512; c.height = 512;
+      c.width = 1024; c.height = 1024;
       const ctx = c.getContext('2d');
-      ctx.fillStyle = '#259eff';
+      ctx.scale(2, 2);
+      // Rich Rosso Corsa flanks
+      ctx.fillStyle = '#dc1426';
       ctx.fillRect(0, 0, 512, 512);
-      // Vertical 6-band Nyan Rainbow racing stripes down the center of the Purrari!
-      const rainbow = ['#ff1e2d', '#ff9500', '#ffe600', '#2ee640', '#00b4ff', '#9c3bff'];
-      const bandW = 28;
-      const startX = 256 - (rainbow.length * bandW) * 0.5;
-      rainbow.forEach((col, i) => {
-        ctx.fillStyle = col;
-        ctx.fillRect(startX + i * bandW, 0, bandW, 512);
-      });
-      // Twinkling pixel stars on blue flanks
+
+      // Dark carbon-fiber outer pinstripe framing the Italian Tricolore center racing stripe!
+      ctx.fillStyle = '#0d121c';
+      ctx.fillRect(142, 0, 228, 512);
+      ctx.fillStyle = '#ffd32a';
+      ctx.fillRect(148, 0, 6, 512);
+      ctx.fillRect(358, 0, 6, 512);
+
+      // Bold Italian Flag "Il Tricolore" (Verde Left · Bianco Center · Rosso Right in 3D Chase View!)
+      // Note: car local +X (UV u=1) is Screen-Left from rear chase camera, -X (UV u=0) is Screen-Right!
+      ctx.fillStyle = '#ce2b37';
+      ctx.fillRect(154, 0, 68, 512);
       ctx.fillStyle = '#ffffff';
-      [[56,80],[96,210],[64,370],[440,110],[410,275],[455,415]].forEach(([sx, sy]) => {
-        ctx.fillRect(sx - 7, sy - 2, 14, 4);
-        ctx.fillRect(sx - 2, sy - 7, 4, 14);
-      });
+      ctx.fillRect(222, 0, 68, 512);
+      ctx.fillStyle = '#009246';
+      ctx.fillRect(290, 0, 68, 512);
+
       const tex = new THREE.CanvasTexture(c);
       tex.anisotropy = MAX_ANISO;
       tex.minFilter = THREE.LinearMipmapLinearFilter;
       tex.magFilter = THREE.LinearFilter;
       tex.generateMipmaps = true;
       return tex;
+    }
+
+    function createItaliaPlateTex() {
+      const c = document.createElement('canvas');
+      c.width = 512; c.height = 128;
+      const ctx = c.getContext('2d');
+      ctx.scale(2, 2);
+      // Authentic Italian EU Rear License Plate: [EU/I Blue Band] [AG · ITALIA] [Blue Band]
+      ctx.fillStyle = '#f4f7fc';
+      ctx.fillRect(0, 0, 256, 64);
+      ctx.fillStyle = '#003399';
+      ctx.fillRect(0, 0, 34, 64);
+      ctx.fillRect(226, 0, 30, 64);
+      ctx.strokeStyle = '#101522';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(2, 2, 252, 60);
+      // EU Gold Circle + 'I' for Italia
+      ctx.strokeStyle = '#ffd32a';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(17, 18, 7, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '900 22px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('I', 17, 53);
+      // Crisp Plate Characters + Small Tricolore Accent
+      ctx.fillStyle = '#0b1020';
+      ctx.font = '900 30px Orbitron, Arial, sans-serif';
+      ctx.fillText('ITALIA', 130, 43);
+      ctx.fillStyle = '#ffd32a';
+      ctx.beginPath();
+      ctx.arc(241, 22, 6, 0, Math.PI * 2);
+      ctx.fill();
+      return new THREE.CanvasTexture(c);
     }
 
     function buildSupercar() {
@@ -2841,38 +3405,39 @@
       const visual = new THREE.Group();
       root.add(visual);
 
-      const purrariWrapTex = createPurrariWrapTex();
-      const purrariDeckTex = createPurrariDeckTex();
+      const italiaSideTex = createItaliaSideTex();
+      const italiaDeckTex = createItaliaDeckTex();
+      const italiaPlateTex = createItaliaPlateTex();
 
-      // Iconic Sky-Blue Clearcoated Purrari 458 Paint
+      // Iconic Ferrari "Rosso Corsa" Clearcoated Italian Supercar Paint!
       const bodyPaint = new THREE.MeshPhysicalMaterial({
-        color: 0x2ba8ff,
-        emissive: 0x062042,
-        emissiveIntensity: 0.25,
-        metalness: 0.55,
-        roughness: 0.16,
+        color: 0xdc1426,
+        emissive: 0x380308,
+        emissiveIntensity: 0.28,
+        metalness: 0.48,
+        roughness: 0.15,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.06
+        clearcoatRoughness: 0.05
       });
       const sideWrapMat = new THREE.MeshPhysicalMaterial({
-        map: purrariWrapTex,
+        map: italiaSideTex,
         metalness: 0.35,
         roughness: 0.18,
         clearcoat: 1.0,
         clearcoatRoughness: 0.06
       });
       const deckWrapMat = new THREE.MeshPhysicalMaterial({
-        map: purrariDeckTex,
+        map: italiaDeckTex,
         metalness: 0.35,
-        roughness: 0.18,
+        roughness: 0.16,
         clearcoat: 1.0,
-        clearcoatRoughness: 0.06
+        clearcoatRoughness: 0.05
       });
       const carbonMat = new THREE.MeshStandardMaterial({ color: 0x10141f, metalness: 0.65, roughness: 0.35 });
       const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe6eefc, metalness: 0.96, roughness: 0.12 });
       const glassMat = new THREE.MeshPhysicalMaterial({ color: 0x060b18, metalness: 0.92, roughness: 0.05, clearcoat: 1.0 });
 
-      // Central Sculpted 458 Italia Fuselage (width 1.84m -> leaves clean wheel wells at ±1.22m!)
+      // Central Sculpted 458 Speciale Fuselage (width 1.84m -> leaves clean wheel wells at ±1.22m!)
       const hullShape = new THREE.Shape();
       hullShape.moveTo(-2.5, 0.34);
       hullShape.lineTo(2.45, 0.24);
@@ -2890,24 +3455,32 @@
       hullGeo.translate(0.86, 0, 0);
       visual.add(new THREE.Mesh(hullGeo, bodyPaint));
 
-      // Top Hood & Rear Deck Nyan Rainbow Racing Stripe Overlay (super visible from Hero Chase POV!)
+      // Bold Italian Tricolore (Verde · Bianco · Rosso) Hood, Roof Spine & Rear Deck Stripes!
       const hoodStripe = new THREE.Mesh(new THREE.PlaneGeometry(1.56, 1.55), deckWrapMat);
       hoodStripe.rotation.x = -Math.PI / 2 + 0.16;
       hoodStripe.position.set(0, 0.72, 1.68);
       visual.add(hoodStripe);
+
+      const roofTricolore = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.035, 1.18), deckWrapMat);
+      roofTricolore.position.set(0, 1.385, -0.32);
+      visual.add(roofTricolore);
 
       const rearDeckWrap = new THREE.Mesh(new THREE.PlaneGeometry(1.68, 1.12), deckWrapMat);
       rearDeckWrap.rotation.x = -Math.PI / 2 - 0.03;
       rearDeckWrap.position.set(0, 1.045, -1.85);
       visual.add(rearDeckWrap);
 
-      // Sculpted Purrari Nyan-Cat Sidepods strictly BETWEEN front & rear axles
+      // Sculpted Rosso Corsa + Tricolore + Scuderia Shield Sidepods between front & rear axles
       [-1.08, 1.08].forEach((sx) => {
         const pod = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.44, 1.88), sideWrapMat);
         pod.position.set(sx, 0.54, 0);
         visual.add(pod);
 
-        const skirtGlow = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 1.84), new THREE.MeshBasicMaterial({ color: 0xff77cc }));
+        // Tricolore glowing aero side-skirt accent (+X Screen-Left = Verde, -X Screen-Right = Rosso)
+        const skirtGlow = new THREE.Mesh(
+          new THREE.BoxGeometry(0.06, 0.06, 1.84),
+          new THREE.MeshBasicMaterial({ color: sx > 0 ? 0x00d455 : 0xff2438 })
+        );
         skirtGlow.position.set(sx + Math.sign(sx) * 0.22, 0.31, 0);
         visual.add(skirtGlow);
       });
@@ -2925,7 +3498,7 @@
       canopyGeo.translate(0.68, 0, 0);
       visual.add(new THREE.Mesh(canopyGeo, glassMat));
 
-      // Ferrari 458 Rear Glass V8 Engine Bay + Glowing Red V8 Intake Manifolds!
+      // Ferrari 458 Rear Glass V8 Engine Bay + Glowing Rosso Corsa V8 Intake Manifolds!
       const engineGlowMat = new THREE.MeshBasicMaterial({ color: 0xff2233 });
       [-0.24, 0.24].forEach((ex) => {
         const manifold = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.08, 0.85), engineGlowMat);
@@ -2933,14 +3506,30 @@
         visual.add(manifold);
       });
 
-      // Black Ferrari 458 Rear Mesh Fascia + Carbon Diffuser + Front Splitter
+      // Black Ferrari 458 Rear Mesh Fascia + Authentic "ITALIA" EU License Plate + Carbon Diffuser!
       const splitter = new THREE.Mesh(new THREE.BoxGeometry(2.38, 0.09, 0.55), carbonMat);
       splitter.position.set(0, 0.24, 2.38);
       visual.add(splitter);
 
+      // Subtle Tricolore front splitter nose lip (+X Left = Verde · Center = Bianco · -X Right = Rosso)
+      [[0.65, 0x009246], [0, 0xffffff], [-0.65, 0xce2b37]].forEach(([lx, col]) => {
+        const lipSeg = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.04, 0.08), new THREE.MeshBasicMaterial({ color: col }));
+        lipSeg.position.set(lx, 0.27, 2.64);
+        visual.add(lipSeg);
+      });
+
       const rearGrille = new THREE.Mesh(new THREE.BoxGeometry(1.76, 0.34, 0.1), carbonMat);
       rearGrille.position.set(0, 0.74, -2.56);
       visual.add(rearGrille);
+
+      // Illuminated Rear Italian License Plate ("I · ITALIA") right between the twin round taillights!
+      const rearPlate = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.78, 0.20),
+        new THREE.MeshBasicMaterial({ map: italiaPlateTex })
+      );
+      rearPlate.rotation.y = Math.PI;
+      rearPlate.position.set(0, 0.75, -2.62);
+      visual.add(rearPlate);
 
       const diffuser = new THREE.Mesh(new THREE.BoxGeometry(1.94, 0.26, 0.28), carbonMat);
       diffuser.position.set(0, 0.34, -2.54);
@@ -2951,7 +3540,7 @@
         visual.add(fin);
       }
 
-      // Purrari Rainbow-Trimmed Rear GT Wing (iconic deadmau5 custom rear wing!)
+      // Custom Ferrari Corse Clienti GT Wing with Tricolore Center Foil & Verde (Left) / Rosso (Right) Endplates!
       [-0.72, 0.72].forEach((wx) => {
         const strut = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.44, 0.3), carbonMat);
         strut.position.set(wx, 1.15, -2.28);
@@ -2962,8 +3551,12 @@
       wingMain.position.set(0, 1.38, -2.4);
       wingMain.rotation.x = -0.12;
       visual.add(wingMain);
-      [-1.22, 1.22].forEach((ex) => {
-        const ep = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.32, 0.56), new THREE.MeshStandardMaterial({ color: 0xff55aa, metalness: 0.4, roughness: 0.25 }));
+      // +1.22 (Screen-Left) = Italian Verde (#00a84f), -1.22 (Screen-Right) = Italian Rosso (#e6192b)
+      [[1.22, 0x00a84f], [-1.22, 0xe6192b]].forEach(([ex, epCol]) => {
+        const ep = new THREE.Mesh(
+          new THREE.BoxGeometry(0.07, 0.32, 0.56),
+          new THREE.MeshStandardMaterial({ color: epCol, emissive: epCol, emissiveIntensity: 0.28, metalness: 0.35, roughness: 0.22 })
+        );
         ep.position.set(ex, 1.37, -2.4);
         visual.add(ep);
       });
@@ -3018,13 +3611,14 @@
           if (isFront) frontSteerGroups.push(steer);
         });
 
-      // Signature Ferrari 458 TRIPLE-CENTER Chrome Exhausts + Triple Pulsing Nyan Nitro Flames!
+      // Signature Ferrari 458 TRIPLE-CENTER Chrome Exhausts + Italian Tricolore (Left=Verde · Center=Bianco · Right=Rosso)!
       const flameCones = [];
       const fConeGeo = new THREE.ConeGeometry(0.16, 2.1, 12);
       fConeGeo.rotateX(-Math.PI / 2);
       fConeGeo.translate(0, 0, -1.05);
-      const flameColors = [0xff2a85, 0xffd32a, 0x00e5ff];
-      [-0.24, 0, 0.24].forEach((fx, idx) => {
+      // fx = +0.24 is Screen-Left (Verde), 0 is Center (Bianco), -0.24 is Screen-Right (Rosso)
+      const flameColors = [0x00e65c, 0xffffff, 0xff2233];
+      [0.24, 0, -0.24].forEach((fx, idx) => {
         const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.105, 0.34, 12), chromeMat);
         pipe.rotation.x = Math.PI / 2;
         pipe.position.set(fx, 0.42, -2.58);
@@ -3032,7 +3626,7 @@
 
         const cone = new THREE.Mesh(
           fConeGeo,
-          new THREE.MeshBasicMaterial({ color: flameColors[idx], transparent: true, opacity: 0.88, blending: THREE.AdditiveBlending })
+          new THREE.MeshBasicMaterial({ color: flameColors[idx], transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending })
         );
         cone.position.set(fx, 0.42, -2.68);
         visual.add(cone);
@@ -3062,21 +3656,17 @@
       shadowPlane.position.y = 0.06;
       root.add(shadowPlane);
 
-      const underGlow = new THREE.PointLight(0x00e5ff, 2.8, 16);
+      const underGlow = new THREE.PointLight(0xff2438, 2.6, 16);
       underGlow.position.set(0, 0.85, 0);
       root.add(underGlow);
 
-      const brakeLight = new THREE.PointLight(0xff0033, 0, 15);
-      brakeLight.position.set(0, 0.85, -3.1);
-      root.add(brakeLight);
-
       scene.add(root);
-      return { root, visual, wheels, frontSteerGroups, flameCones, shadowPlane, underGlow, brakeLight, tailMat, engineGlowMat };
+      return { root, visual, wheels, frontSteerGroups, flameCones, shadowPlane, underGlow, tailMat, engineGlowMat };
     }
 
     const car = buildSupercar();
 
-    // Instanced Spark Pool (1 Draw Call)
+    // Instanced Spark Pool (1 Draw Call — Italian Tricolore + Modena Gold Sparks!)
     const SPARK_COUNT = 64;
     const sparkIMesh = new THREE.InstancedMesh(
       new THREE.OctahedronGeometry(0.2, 0),
@@ -3086,12 +3676,12 @@
     sparkIMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     scene.add(sparkIMesh);
     const sparks = [];
-    const NYAN_SPARK_HEX = [0xff1e2d, 0xff9500, 0xffe600, 0x2ee640, 0x00b4ff, 0x9c3bff];
+    const ITALIA_SPARK_HEX = [0x00e65c, 0xffffff, 0xff2438, 0xffd32a];
     for (let i = 0; i < SPARK_COUNT; i++) {
       sparks.push({ pos: new THREE.Vector3(0, -500, 0), vel: new THREE.Vector3(), life: 0, scale: 0 });
       dummy.position.set(0, -500, 0); dummy.scale.setScalar(0); dummy.updateMatrix();
       sparkIMesh.setMatrixAt(i, dummy.matrix);
-      tmpCol.setHex(NYAN_SPARK_HEX[i % NYAN_SPARK_HEX.length]);
+      tmpCol.setHex(ITALIA_SPARK_HEX[i % ITALIA_SPARK_HEX.length]);
       sparkIMesh.setColorAt(i, tmpCol);
     }
     if (sparkIMesh.instanceColor) sparkIMesh.instanceColor.needsUpdate = true;
@@ -3125,6 +3715,8 @@
       coyoteTimer: 0,
       jumpBufferTimer: 0,
       flipAngle: 0,
+      flipTimer: 0,
+      flipDuration: 0.78,
       flipAxis: 'x',        // 'x' = backflip, 'z' = barrel roll
       doingFlip: false,
       squash: 0,
@@ -3140,7 +3732,7 @@
       lapTime: 0,
       bestLapTime: (() => {
         try { const v = parseFloat(localStorage.getItem('cv_best_lap_sec')); return Number.isFinite(v) && v > 5 ? v : null; }
-        catch { return null; }
+        catch (_e) { return null; }
       })(),
       lastLapTenths: -1,
       orbsCollected: 0,
@@ -3183,6 +3775,8 @@
       sfx.jump();
       state.doingFlip = true;
       state.flipAngle = 0;
+      state.flipTimer = 0;
+      state.flipDuration = Math.max(0.55, (2 * power / state.gravity) * 0.92);
       state.flipAxis = (keys.left || keys.right) ? 'z' : 'x';
       showToast(state.flipAxis === 'z' ? '🌀 360° BARREL ROLL!' : '🔥 360° STUNT FLIP!');
     }
@@ -3312,15 +3906,18 @@
       state.cutscenePanel = null;
       state.cutsceneTimer = 0;
       state.cutsceneReady = false;
-      document.getElementById('nfsmw-overlay').classList.remove('active');
+      state.returnSwoopActive = false;
+      state.returnSwoopTimer = 0;
+      state.simTimeScale = 1.0;
+      document.getElementById('nfsmw-overlay').classList.remove('active', 'ready-click');
       document.getElementById('hud').classList.remove('cutscene-hide');
       state.mode = 'PLAYING';
       document.getElementById('pause-overlay').classList.remove('open');
       document.getElementById('collectibles-text').textContent = `0 / ${SKILL_NAMES.length}`;
       document.getElementById('lap-text').textContent = '1';
-      skillOrbs.forEach((o) => { o.collected = false; o.mesh.visible = true; });
-      nitroCanisters.forEach((n) => { n.collected = false; n.group.visible = true; });
-      skyRings.forEach((r) => { r.collected = false; r.mesh.visible = true; });
+      skillOrbs.forEach((o) => { o.collected = false; });
+      nitroCanisters.forEach((n) => { n.collected = false; });
+      skyRings.forEach((r) => { r.collected = false; });
       state.hitShake = 0;
       updateCVCard(0);
       updateFocusBtnUI();
@@ -3349,10 +3946,55 @@
 
     const _camUp = new THREE.Vector3(0, 1, 0);
     const _targetCamUp = new THREE.Vector3(0, 1, 0);
+    const _exitCamStart = new THREE.Vector3();
+    const _exitLookStart = new THREE.Vector3();
+    const _exitUpStart = new THREE.Vector3(0, 1, 0);
+    const chaseCamPos = new THREE.Vector3();
+    const chaseLookAt = new THREE.Vector3();
+    const chaseCamUp = new THREE.Vector3(0, 1, 0);
+    const _cutCamStart = new THREE.Vector3();
+    const _cutLookStart = new THREE.Vector3();
+    const _cutUpStart = new THREE.Vector3(0, 1, 0);
+    const _cutMidCtrl = new THREE.Vector3();
+    const _cutEndPos = new THREE.Vector3();
+    const _panelRight = new THREE.Vector3();
+    const _bezA = new THREE.Vector3();
+    const _bezB = new THREE.Vector3();
+
+    function startCameraReturnSwoop(duration = 1.80) {
+      _exitCamStart.copy(camera.position);
+      _exitLookStart.copy(smoothLookAt);
+      _exitUpStart.copy(_camUp);
+      state.returnStartFov = camera.fov;
+      state.returnStartTimeScale = state.simTimeScale;
+      state.returnPanelSide = state.cutscenePanel ? state.cutscenePanel.side : 1;
+      state.returnSwoopActive = true;
+      state.returnSwoopTimer = 0;
+      state.returnSwoopDur = duration;
+      sfx.resumeWhoosh();
+    }
+
+    function exitPanelFocus() {
+      if (state.mode !== 'FOCUSED') return;
+      state.mode = 'PLAYING';
+      state.deepZoom = false;
+      state.focusedPanelRef = null;
+      updateFocusBtnUI();
+    }
 
     function snapCameraToCurrent(focusedPanel = null) {
       getTrackFrame(state.t, _pt, _tan, _bin, _norm);
       _carPos.copy(_pt).addScaledVector(_bin, state.laneOffset);
+      if (focusedPanel && state.deepZoom) {
+        smoothCamPos.copy(focusedPanel.worldPos).addScaledVector(focusedPanel.forwardDir, IS_MOBILE ? 35 : 36);
+        smoothCamPos.y -= 0.2;
+        smoothLookAt.copy(focusedPanel.worldPos);
+        _camUp.set(0, 1, 0);
+        chaseCamPos.copy(smoothCamPos);
+        chaseLookAt.copy(smoothLookAt);
+        chaseCamUp.copy(_camUp);
+        return;
+      }
       const fb = focusedPanel ? 1.0 : 0.0;
       smoothCamPos.copy(_carPos)
         .addScaledVector(_tan, -11.4 - fb * 2.4)
@@ -3363,32 +4005,41 @@
         smoothLookAt.lerp(_panelLook, 0.58);
       }
       _camUp.set(0, 1, 0);
+      chaseCamPos.copy(smoothCamPos);
+      chaseLookAt.copy(smoothLookAt);
+      chaseCamUp.copy(_camUp);
     }
 
-    function jumpToPanel(panel, lockFocus = true, useDeepZoom = false) {
+    function jumpToPanel(panel, lockFocus = true, useDeepZoom = false, keepCarIfNear = false) {
       if (state.mode === 'CUTSCENE') return;
-      let targetT = panel.t - 0.017;
-      if (targetT < 0) targetT += 1;
-      state.t = targetT;
+      state.returnSwoopActive = false;
+      state.simTimeScale = 1.0;
+      const isAlreadyNear = keepCarIfNear && getCircularDistT(state.t, panel.t) < 0.06;
+      if (!isAlreadyNear) {
+        let targetT = panel.t - 0.017;
+        if (targetT < 0) targetT += 1;
+        state.t = targetT;
+        state.laneOffset = 0;
+        state.jumpY = 0;
+        state.jumpVel = 0;
+        state.isGrounded = true;
+      }
       state.speed = 0;
-      state.laneOffset = 0;
-      state.jumpY = 0;
-      state.jumpVel = 0;
-      state.isGrounded = true;
       state.mode = lockFocus ? 'FOCUSED' : 'PLAYING';
+      state.focusedPanelRef = lockFocus ? panel : null;
       state.focusBlend = lockFocus ? 1.0 : 0.0;
       state.deepZoom = useDeepZoom;
       state.deepZoomBlend = useDeepZoom ? 1.0 : 0.0;
       updateFocusBtnUI();
       updateTourUI();
       updateCVCard(panel.milestoneIdx);
-      snapCameraToCurrent(lockFocus ? panel : null);
+      if (!isAlreadyNear) snapCameraToCurrent(lockFocus ? panel : null);
       sfx.stage();
     }
 
     function warpToMilestone(idx) {
       const targetIdx = (idx + MILESTONES.length) % MILESTONES.length;
-      jumpToPanel(tracksidePanels[targetIdx], true);
+      jumpToPanel(tracksidePanels[targetIdx], true, true, true);
       showToast(`⚡ ${MILESTONES[targetIdx].shortName.toUpperCase()}`);
     }
 
@@ -3401,26 +4052,26 @@
       } else {
         curIdx = (curIdx + delta + tracksidePanels.length) % tracksidePanels.length;
       }
-      jumpToPanel(tracksidePanels[curIdx], true);
+      jumpToPanel(tracksidePanels[curIdx], true, true, true);
     }
 
     // Wire UI Buttons
     document.getElementById('btn-prev-log').addEventListener('click', () => stepPanel(-1));
     document.getElementById('btn-next-log').addEventListener('click', () => stepPanel(1));
     document.getElementById('btn-card-collapse').addEventListener('click', () => setCardCompact(!state.cardCompact));
-    document.getElementById('btn-focus-toggle').addEventListener('click', () => {
+    const triggerFocusToggle = () => {
       dismissOnboarding();
       if (state.mode === 'FOCUSED') {
-        state.mode = 'PLAYING';
-        state.deepZoom = false;
-        updateFocusBtnUI();
+        exitPanelFocus();
       } else {
         const nearest = tracksidePanels.reduce((best, p) =>
           getCircularDistT(state.t, p.t) < getCircularDistT(state.t, best.t) ? p : best
         , tracksidePanels[0]);
-        jumpToPanel(nearest, true, true);
+        jumpToPanel(nearest, true, true, true);
       }
-    });
+    };
+    document.getElementById('btn-focus-toggle').addEventListener('click', triggerFocusToggle);
+    document.getElementById('focus-indicator').addEventListener('click', triggerFocusToggle);
     document.getElementById('btn-tour').addEventListener('click', () => {
       dismissOnboarding();
       state.mode = (state.mode === 'TOUR') ? 'PLAYING' : 'TOUR';
@@ -3433,6 +4084,35 @@
     document.getElementById('btn-pause').addEventListener('click', () => setPaused(state.mode !== 'PAUSED'));
     document.getElementById('btn-resume').addEventListener('click', () => setPaused(false));
     document.getElementById('btn-reset-run').addEventListener('click', resetCircuit);
+    const btnQuality = document.getElementById('btn-quality');
+    function applyQualityPreset(nextPreset) {
+      qualityPreset = nextPreset;
+      if (btnQuality) btnQuality.textContent = `✨ FX: ${qualityPreset}`;
+      renderer.setPixelRatio(getTargetDPR(qualityPreset));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      if (qualityPreset === 'LITE') {
+        usePostFX = false;
+        rainLines.visible = false;
+        searchlights.forEach((s) => { s.mesh.visible = false; });
+      } else if (qualityPreset === 'HIGH') {
+        rainLines.visible = true;
+        searchlights.forEach((s) => { s.mesh.visible = true; });
+        usePostFX = !IS_LOW_END && ensurePostFX();
+      } else {
+        rainLines.visible = true;
+        searchlights.forEach((s) => { s.mesh.visible = true; });
+        usePostFX = false;
+      }
+      syncComposerResolution();
+    }
+    if (btnQuality) {
+      btnQuality.addEventListener('click', () => {
+        const order = ['AUTO', 'HIGH', 'LITE'];
+        const next = order[(order.indexOf(qualityPreset) + 1) % order.length];
+        applyQualityPreset(next);
+        showToast(`✨ GRAPHICS PRESET: ${next}`);
+      });
+    }
     document.getElementById('btn-sound').addEventListener('click', () => {
       sfx.setMuted(sfx.enabled);
       document.getElementById('sound-icon').textContent = sfx.enabled ? '🔊' : '🔇';
@@ -3469,11 +4149,17 @@
     };
 
     function getScreenAngle() {
+      // Prefer legacy window.orientation on iOS/iPadOS when present (-90 vs +90 directly matches Portrait-referenced sensor axes!)
+      if (typeof window.orientation === 'number') return window.orientation;
       if (screen.orientation && typeof screen.orientation.angle === 'number') return screen.orientation.angle;
-      return typeof window.orientation === 'number' ? window.orientation : 90;
+      return 90;
     }
 
-    const IS_IOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    // Accurate iOS + iPadOS 13+ & Tablet Natural-Orientation Gyro Engine!
+    const IS_IOS = Boolean(DEV.isIOS);
+    const IS_IPAD_DEV = Boolean(DEV.isIPad);
+    let iosLandscapeSign = 1; // Auto-locked physically from gravity pitch vector on iPad/iPhone!
+
     function onDeviceMotion(e) {
       if (!gyro.active) return;
       const ag = e.accelerationIncludingGravity;
@@ -3484,17 +4170,45 @@
       gyro.receivedEvent = true;
       const ang = getScreenAngle();
       const osSign = IS_IOS ? -1 : 1;
+      // Normalized W3C proper-acceleration frame (flat face-up on table => gz = +9.8)
+      const gx = ag.x * osSign;
       const gy = ag.y * osSign;
       const gz = ag.z * osSign;
 
-      // Pure gravity horizon steering (0° = level phone, ZERO calibration needed, ZERO drift!)
-      const sign = (ang === -90 || ang === 270) ? -1 : 1;
-      const rawSteerDeg = Math.asin(THREE.MathUtils.clamp((sign * gy) / gMag, -1, 1)) * (180 / Math.PI);
+      // Determine horizontal screen-steering acceleration across ALL devices:
+      // 1) iPhone & iPad (CoreMotion ALWAYS uses Portrait-referenced hardware axes: ag.y = long landscape axis, ag.x = short vertical axis):
+      //    - In Safari Desktop Mode on iPadOS, screen.orientation.angle reports 0/180 (not 90/270) or window.orientation is undefined!
+      //    - Even better: when held facing the user (|gx| > 2.0 m/s², gz > -1.5), Earth's gravity on the short axis gx
+      //      physically proves which long edge of the iPad/iPhone is on top:
+      //      gx < -2.0 => Landscape-Left (+1), gx > +2.0 => Landscape-Right (-1) — 100% immune to Safari UA/angle quirks!
+      // 2) Android Phones (ang = 90 / 270 / -90) vs Natural-Landscape Android Tablets (ang = 0 / 180, where ag.x is horizontal!):
+      let horizAccel = 0;
+      if (IS_IOS || IS_IPAD_DEV) {
+        if (Math.abs(gx) > 2.0 && gz > -1.5) {
+          iosLandscapeSign = gx < 0 ? 1 : -1;
+        } else if (ang === -90 || ang === 270 || ang === 180) {
+          iosLandscapeSign = -1;
+        } else if (ang === 90 || ang === 0) {
+          iosLandscapeSign = 1;
+        }
+        horizAccel = iosLandscapeSign * gy;
+      } else if (ang === 0 || ang === 180) {
+        // Natural-landscape Android tablet: hardware X is the horizontal steering axis!
+        horizAccel = (ang === 0 ? -1 : 1) * gx;
+      } else {
+        // Standard portrait-native Android phone rotated to landscape (90 or 270/-90)
+        horizAccel = ((ang === -90 || ang === 270) ? -1 : 1) * gy;
+      }
 
-      // Smooth progressive tilt-back braking with hysteresis (zero on/off flicker!)
+      // Pure gravity horizon steering (0° = level horizon, ZERO calibration needed, ZERO drift!)
+      const rawSteerDeg = Math.asin(THREE.MathUtils.clamp(horizAccel / gMag, -1, 1)) * (180 / Math.PI);
+
+      // Smooth progressive tilt-back braking with hysteresis (slightly steeper threshold on iPad since tablets are held more upright!)
       const zRatio = gz / gMag;
-      if (zRatio < 0.34) gyro.braking = true;
-      else if (zRatio > 0.42) gyro.braking = false;
+      const brakeOnZ = IS_TABLET ? 0.22 : 0.32;
+      const brakeOffZ = IS_TABLET ? 0.31 : 0.41;
+      if (zRatio < brakeOnZ) gyro.braking = true;
+      else if (zRatio > brakeOffZ) gyro.braking = false;
 
       // Snappy low-pass filter (0.38) removes hand tremor while reacting instantaneously to S-chicanes!
       gyro.smoothSteerDeg += (rawSteerDeg - gyro.smoothSteerDeg) * 0.38;
@@ -3550,7 +4264,7 @@
           }
         }, 1800);
         return true;
-      } catch {
+      } catch (_e) {
         gyro.active = false;
         updateGyroUI();
         showToast('📱 GYRO UNAVAILABLE · USING TOUCH');
@@ -3559,17 +4273,18 @@
     }
 
     window.addEventListener('orientationchange', () => {
+      syncResponsiveBodyClasses();
       gyro.steer = 0;
       gyro.smoothSteerDeg = 0;
       gyro.braking = false;
-      if (IS_MOBILE && window.innerHeight > window.innerWidth) {
+      if (IS_TOUCH_UI && window.innerHeight > window.innerWidth) {
         sfx.updateEngine(0, false, false);
         clearAllKeys();
       }
     });
 
-    // Show Mobile Gyro Launch Splash on smartphones when ready
-    if (IS_MOBILE && mobileGuard) mobileGuard.classList.add('show');
+    // Show Gyro / Touch Launch Splash on Smartphones & iPads when ready
+    if (IS_TOUCH_UI && mobileGuard) mobileGuard.classList.add('show');
 
     const btnMobileGyro = document.getElementById('btn-mobile-gyro');
     if (btnMobileGyro) {
@@ -3608,11 +4323,17 @@
     const btnMobileCv = document.getElementById('btn-mobile-cv');
     if (btnMobileCv) btnMobileCv.addEventListener('click', openCVModal);
 
-    // Direct 3D Panel Click -> Deep Zoom Inspection (Click outside to zoom back out!)
+    // Instant Snappy 3D Panel Click -> Crisp Straight-On Deep Zoom Inspection (Click anywhere outside to exit fast!)
     const raycaster = new THREE.Raycaster();
     const pointerNDC = new THREE.Vector2();
     const panelMeshes = tracksidePanels.map(p => p.screenMesh);
-    renderer.domElement.addEventListener('click', (e) => {
+    let pDownX = 0, pDownY = 0;
+    renderer.domElement.addEventListener('pointerdown', (e) => {
+      pDownX = e.clientX;
+      pDownY = e.clientY;
+    }, { passive: true });
+    renderer.domElement.addEventListener('pointerup', (e) => {
+      if (Math.hypot(e.clientX - pDownX, e.clientY - pDownY) > 10) return;
       if (state.mode === 'PAUSED' || state.mode === 'MODAL' || state.mode === 'CUTSCENE') return;
       pointerNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointerNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -3622,19 +4343,15 @@
         const panel = tracksidePanels.find(p => p.screenMesh === hits[0].object);
         if (panel) {
           dismissOnboarding();
-          if (state.mode === 'FOCUSED' && state.deepZoom && getCircularDistT(state.t, panel.t) < 0.025) {
-            state.mode = 'PLAYING';
-            state.deepZoom = false;
-            updateFocusBtnUI();
+          if (state.mode === 'FOCUSED' && state.deepZoom && state.focusedPanelRef === panel) {
+            exitPanelFocus();
           } else {
-            jumpToPanel(panel, true, true);
-            showToast('🔍 DEEP ZOOM · CLICK OUTSIDE TO EXIT');
+            jumpToPanel(panel, true, true, true);
+            showToast('🔍 PANEL ZOOM · CLICK OUTSIDE TO EXIT');
           }
         }
       } else if (state.mode === 'FOCUSED') {
-        state.mode = 'PLAYING';
-        state.deepZoom = false;
-        updateFocusBtnUI();
+        exitPanelFocus();
       }
     });
 
@@ -3657,16 +4374,28 @@
     const hudEl = document.getElementById('hud');
 
     function triggerSpottedCutscene(panel) {
+      // Capture exact live camera pose before switching into Speedbreaker Bezier crane
+      _cutCamStart.copy(camera.position);
+      _cutLookStart.copy(smoothLookAt);
+      _cutUpStart.copy(_camUp);
+      state.cutStartFov = camera.fov;
+
       state.spottedPanels.add(panel.milestone.id);
       state.cutsceneReturnMode = (state.mode === 'TOUR') ? 'TOUR' : 'PLAYING';
+      // Save natural cruise speed (zero post-panel boost, preserves held keyboard input!)
+      state.preCutsceneSpeed = Math.min(state.maxSpeed, Math.max(28, state.speed));
+      state.speed = state.preCutsceneSpeed;
+      state.padBoostTimer = 0;
+      keys.turbo = false;
       state.mode = 'CUTSCENE';
       state.cutscenePanel = panel;
       state.cutsceneTimer = 0;
       state.cutsceneReady = false;
-      clearAllKeys();
       updateCVCard(panel.milestoneIdx);
 
       // Populate tactical cinema bars + ultra-crisp Mobile HTML Reading Card
+      nfsmwOverlay.style.setProperty('--cut-accent', panel.milestone.color);
+      nfsmwOverlay.classList.remove('ready-click');
       nfsmwStageEl.textContent = `MILESTONE SPOTTED // ${panel.milestone.stage}`;
       nfsmwTitleEl.textContent = panel.milestone.title;
       nfsmwHeroEl.textContent = '⚡ ' + panel.milestone.heroStat;
@@ -3689,10 +4418,10 @@
       }
       nfsmwBtn.disabled = true;
       nfsmwBtn.classList.remove('ready');
-      nfsmwBtnFill.style.width = '0%';
-      nfsmwBtnText.textContent = 'READ PANEL · 1.0s';
+      nfsmwBtnFill.style.transform = 'scaleX(0)';
+      nfsmwBtnText.textContent = 'LOCKING ON · 0.9s';
 
-      // Trigger dramatic camera flash + letterbox bars + bass drop SFX!
+      // Trigger subtle Speedbreaker rim pulse + staggered letterbox bars + audio swell
       nfsmwFlash.classList.remove('flash');
       void nfsmwFlash.offsetWidth;
       nfsmwFlash.classList.add('flash');
@@ -3703,18 +4432,25 @@
 
     function closeSpottedCutscene() {
       if (state.mode !== 'CUTSCENE' || !state.cutsceneReady) return;
-      nfsmwOverlay.classList.remove('active');
+      nfsmwOverlay.classList.remove('active', 'ready-click');
       hudEl.classList.remove('cutscene-hide');
+      startCameraReturnSwoop(1.80);
       state.mode = state.cutsceneReturnMode || 'PLAYING';
       state.cutscenePanel = null;
       state.cutsceneReady = false;
-      // Launch forward with a crisp exit surge!
-      state.speed = Math.max(state.speed, 46);
-      state.padBoostTimer = 0.7;
-      sfx.boost();
+      // Smooth Need for Speed: Most Wanted 1.80s Bullet-Time Bezier Return — ZERO Boost After Panel!
+      state.padBoostTimer = 0;
+      keys.turbo = false;
+      state.speed = state.preCutsceneSpeed || 32;
       clock.getDelta();
     }
-    nfsmwBtn.addEventListener('click', closeSpottedCutscene);
+    nfsmwBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeSpottedCutscene();
+    });
+    nfsmwOverlay.addEventListener('click', () => {
+      if (state.mode === 'CUTSCENE' && state.cutsceneReady) closeSpottedCutscene();
+    });
 
     window.addEventListener('keydown', (e) => {
       if (state.mode === 'CUTSCENE') {
@@ -3733,19 +4469,23 @@
 
       if (e.code === 'KeyW' || e.code === 'ArrowUp') {
         dismissOnboarding(); keys.forward = true;
-        state.mode = 'PLAYING'; state.deepZoom = false; state.tourDwellTimer = 0;
+        if (state.mode === 'FOCUSED') exitPanelFocus();
+        else { state.mode = 'PLAYING'; state.deepZoom = false; }
+        state.tourDwellTimer = 0;
         updateTourUI(); updateFocusBtnUI();
       }
       if (e.code === 'KeyS' || e.code === 'ArrowDown') {
         dismissOnboarding(); keys.backward = true;
-        state.mode = 'PLAYING'; state.deepZoom = false; state.tourDwellTimer = 0;
+        if (state.mode === 'FOCUSED') exitPanelFocus();
+        else { state.mode = 'PLAYING'; state.deepZoom = false; }
+        state.tourDwellTimer = 0;
         updateTourUI(); updateFocusBtnUI();
       }
       if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.left = true;
       if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.right = true;
       if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
         keys.turbo = true;
-        if (state.mode === 'FOCUSED') { state.mode = 'PLAYING'; state.deepZoom = false; updateFocusBtnUI(); }
+        if (state.mode === 'FOCUSED') exitPanelFocus();
       }
       if (e.code === 'Space') { e.preventDefault(); state.jumpBufferTimer = 0.14; }
       if (e.code === 'KeyF') document.getElementById('btn-focus-toggle').click();
@@ -3846,7 +4586,7 @@
         sfx.updateEngine(0, false, false);
         return;
       }
-      if (IS_MOBILE && window.innerHeight > window.innerWidth) {
+      if (IS_TOUCH_UI && window.innerHeight > window.innerWidth) {
         sfx.updateEngine(0, false, false);
         return;
       }
@@ -3876,22 +4616,24 @@
         }
       }
 
-      // Handle 1.0-Second (1000ms) Countdown Lock during NFS Most Wanted Cutscene
+      // Handle 0.85s Lock-On Countdown during NFS Most Wanted Cutscene (zero-jank GPU scaleX!)
+      const CUT_LOCK_DUR = 0.85;
       const isCutscene = state.mode === 'CUTSCENE';
       if (isCutscene) {
         state.cutsceneTimer += dt;
-        const pct = Math.min(100, (state.cutsceneTimer / 1.0) * 100);
-        nfsmwBtnFill.style.width = `${pct}%`;
+        const pct = Math.min(1, state.cutsceneTimer / CUT_LOCK_DUR);
+        nfsmwBtnFill.style.transform = `scaleX(${pct})`;
         if (!state.cutsceneReady) {
-          const secsLeft = Math.max(0.1, 1.0 - state.cutsceneTimer).toFixed(1);
-          if (state.cutsceneTimer >= 1.0) {
+          const secsLeft = Math.max(0.1, CUT_LOCK_DUR - state.cutsceneTimer).toFixed(1);
+          if (state.cutsceneTimer >= CUT_LOCK_DUR) {
             state.cutsceneReady = true;
             nfsmwBtn.disabled = false;
             nfsmwBtn.classList.add('ready');
-            nfsmwBtnText.textContent = IS_MOBILE ? '▶ TAP TO CONTINUE' : '▶ CONTINUE DRIVING (SPACE)';
+            nfsmwOverlay.classList.add('ready-click');
+            nfsmwBtnText.textContent = IS_TOUCH_UI ? '▶ TAP TO CONTINUE' : '▶ CONTINUE DRIVING (SPACE)';
             sfx.stage();
           } else {
-            nfsmwBtnText.textContent = `READ PANEL · ${secsLeft}s`;
+            nfsmwBtnText.textContent = `LOCKING ON · ${secsLeft}s`;
           }
         }
       }
@@ -3905,13 +4647,32 @@
       const isTurbo = !isCutscene && !wantsBrake && (keys.turbo || state.padBoostTimer > 0) && state.turboCharge > 2 && (wantsForward || Math.abs(state.speed) > 5);
       if (state.padBoostTimer > 0 && !isCutscene) state.padBoostTimer -= dt;
 
-      // Freeze track progress cleanly during cutscene (city & car idle stay alive!)
-      state.simTimeScale = isCutscene ? 0.0 : 1.0;
+      // NFS Most Wanted Speedbreaker Bullet-Time: slows into 0.025x on entry, ramps smoothly back to 1.0x on return (ZERO boost!)
+      let returnEase = 1.0;
+      if (isCutscene) {
+        const slowIn = Math.min(1, state.cutsceneTimer / 0.62);
+        const slowEase = 1 - Math.pow(1 - slowIn, 3);
+        state.simTimeScale = THREE.MathUtils.lerp(0.68, 0.025, slowEase);
+      } else if (state.returnSwoopActive) {
+        state.returnSwoopTimer += dt;
+        const ru = Math.min(1, state.returnSwoopTimer / Math.max(0.4, state.returnSwoopDur || 1.80));
+        returnEase = quinticStep(ru);
+        state.simTimeScale = THREE.MathUtils.lerp(state.returnStartTimeScale || 0.025, 1.0, Math.pow(ru, 2.05));
+        if (ru >= 1) {
+          state.returnSwoopActive = false;
+          state.simTimeScale = 1.0;
+        }
+      } else {
+        state.simTimeScale = 1.0;
+      }
       const simDt = dt * state.simTimeScale;
+      const worldDt = dt * Math.max(0.03, state.simTimeScale);
+      state.worldElapsed = (state.worldElapsed || 0) + worldDt;
+      const wElapsed = state.worldElapsed;
 
       let activeHardBrake = false;
       if (isCutscene) {
-        // Hold speed frozen in time so the car blasts off immediately on exit!
+        // Preserve cruise momentum while bullet-time simDt eases world & car down to 0.025x!
       } else if (state.mode === 'FOCUSED') {
         state.speed = THREE.MathUtils.lerp(state.speed, 0, dt * 7.5);
         state.reverseDelay = 0;
@@ -3944,15 +4705,19 @@
           }
         } else {
           state.reverseDelay = 0;
-          if (state.speed > 0) state.speed = Math.max(0, state.speed - state.friction * dt);
-          if (state.speed < 0) state.speed = Math.min(0, state.speed + state.friction * dt);
+          if (state.returnSwoopActive && state.returnSwoopTimer < (state.returnSwoopDur || 1.80) * 0.75) {
+            // Hold natural cruise momentum during slow-mo return swoop so mouse players don't stall!
+            state.speed = Math.max(state.speed, (state.preCutsceneSpeed || 32) * 0.90);
+          } else {
+            if (state.speed > 0) state.speed = Math.max(0, state.speed - state.friction * simDt);
+            if (state.speed < 0) state.speed = Math.min(0, state.speed + state.friction * simDt);
+          }
         }
       }
 
-      // Dynamic brake light flare, nose-dive pitch & brake sparks
+      // Dynamic brake light flare & nose-dive pitch (zero extra PointLight shader cost!)
       const isBraking = activeHardBrake || wantsBrake || state.mode === 'FOCUSED';
       car.tailMat.color.setHex(isBraking ? 0xff0033 : 0xa61036);
-      car.brakeLight.intensity = THREE.MathUtils.lerp(car.brakeLight.intensity, activeHardBrake ? 6.0 : (isBraking ? 2.4 : 0), dt * 14);
       state.brakePitch = THREE.MathUtils.lerp(state.brakePitch, activeHardBrake ? 0.06 : 0, dt * 12);
 
       // 3. Snappy Arcade Steering (Keyboard, Touch, Gyro Tilt & Guided Tour!)
@@ -3963,15 +4728,7 @@
         else if (keys.right) targetLaneVel = 22;
         else if (gyro.active && Math.abs(gyro.steer) > 0.01) targetLaneVel = gyro.steer * 28;
         else if (isTour) {
-          let desiredLane = Math.sin(elapsed * 0.65) * 2.2;
-          // Auto-weave cleanly around upcoming laser barriers in Guided Tour
-          for (let i = 0; i < roadBarriers.length; i++) {
-            const fwdB = (roadBarriers[i].t - state.t + 1) % 1;
-            if (fwdB < 0.032 && Math.abs(desiredLane - roadBarriers[i].laneOffset) < 3.2) {
-              desiredLane = roadBarriers[i].laneOffset > 0 ? -4.0 : 4.0;
-              break;
-            }
-          }
+          const desiredLane = Math.sin(elapsed * 0.65) * 2.2;
           targetLaneVel = (desiredLane - state.laneOffset) * 4.5;
         }
       }
@@ -3985,10 +4742,21 @@
       const steerAngle = THREE.MathUtils.clamp(-state.laneVel * 0.022, -0.35, 0.35);
       for (let i = 0; i < car.frontSteerGroups.length; i++) car.frontSteerGroups[i].rotation.y = steerAngle;
 
-      // 4. Advance Track Parameter, Live Lap Timer & Best Lap Record!
+      // 4. Advance Track Parameter (True Constant Arc-Length Speed through the 360° Vertical Loop!), Live Lap Timer & Best Lap!
       const prevT = state.t;
-      state.t = (state.t + (state.speed * simDt) / trackLength) % 1;
+      const localDsDu = getTrackDsDu(state.t);
+      state.t = (state.t + (state.speed * simDt) / localDsDu) % 1;
       if (state.t < 0) state.t += 1;
+
+      // Automatic 360° Vertical Loop Booster Strip Surge!
+      if (state.speed > 4 && !isCutscene && crossedTargetT(prevT, state.t, LOOP_U0 + 0.001)) {
+        state.padBoostTimer = Math.max(state.padBoostTimer, 2.25);
+        state.turboCharge = Math.min(100, state.turboCharge + 35);
+        state.speed = Math.max(state.speed, 102);
+        sfx.boost();
+        spawnSparks(_carPos, _tan, 16, 16);
+        showToast('🔥 360° LOOP BOOST! +35% NITRO');
+      }
 
       // Lap timer runs while actively driving (pauses cleanly during cutscenes & reading focus!)
       if (!isCutscene && state.mode !== 'FOCUSED' && (state.lapTime > 0 || Math.abs(state.speed) > 1.5)) {
@@ -4006,7 +4774,7 @@
         if (isNewBest) {
           state.bestLapTime = finishedTime;
           bestLapEl.textContent = formatLapTime(state.bestLapTime);
-          try { localStorage.setItem('cv_best_lap_sec', String(finishedTime.toFixed(2))); } catch {}
+          try { localStorage.setItem('cv_best_lap_sec', String(finishedTime.toFixed(2))); } catch (_e) {}
         }
         state.lap++;
         state.lapTime = 0;
@@ -4015,8 +4783,8 @@
         lapTextEl.textContent = String(state.lap);
         state.tourLastDwelledIdx = -1;
         // Respawn Nitro Canisters & Sky Rings for fresh Time Attack laps!
-        nitroCanisters.forEach((n) => { n.collected = false; n.group.visible = true; });
-        skyRings.forEach((r) => { r.collected = false; r.mesh.visible = true; });
+        nitroCanisters.forEach((n) => { n.collected = false; });
+        skyRings.forEach((r) => { r.collected = false; });
         sfx.stage();
         showToast(isNewBest ? `🏆 NEW BEST LAP! ${formatLapTime(finishedTime)}` : `🏁 LAP ${state.lap - 1} · ${formatLapTime(finishedTime)}`);
       }
@@ -4034,8 +4802,10 @@
         state.jumpY += state.jumpVel * dt;
         state.jumpVel -= state.gravity * dt;
         if (state.doingFlip) {
-          state.flipAngle += Math.PI * 2.7 * dt;
-          if (state.flipAngle >= Math.PI * 2) { state.flipAngle = 0; state.doingFlip = false; }
+          state.flipTimer += dt;
+          const fu = Math.min(1, state.flipTimer / Math.max(0.25, state.flipDuration || 0.78));
+          state.flipAngle = Math.PI * 2 * (fu * fu * (3 - 2 * fu));
+          if (fu >= 1) { state.flipAngle = 0; state.doingFlip = false; }
         }
         if (state.jumpY <= 0) {
           state.jumpY = 0; state.jumpVel = 0; state.isGrounded = true;
@@ -4049,9 +4819,15 @@
       if (state.squash > 0.001) state.squash = THREE.MathUtils.lerp(state.squash, 0, dt * 12);
 
       // 6. Banked Car 3D Pose (Zero Allocations — leans naturally into every corner!)
+      let targetLoopBlend = 0.0;
+      if (state.t >= LOOP_U0 && state.t <= LOOP_U1) targetLoopBlend = 1.0;
+      else if (state.t >= LOOP_U0 - 0.006 && state.t < LOOP_U0) targetLoopBlend = quinticStep((state.t - (LOOP_U0 - 0.006)) / 0.006);
+      else if (state.t > LOOP_U1 && state.t <= LOOP_U1 + 0.012) targetLoopBlend = 1.0 - quinticStep((state.t - LOOP_U1) / 0.012);
+      state.loopCamBlend = THREE.MathUtils.lerp(state.loopCamBlend || 0, targetLoopBlend, 1 - Math.exp(-12.0 * dt));
+
       getTrackFrame(state.t, _pt, _tan, _bin, _norm);
 
-      _carPos.copy(_pt).addScaledVector(_bin, state.laneOffset).addScaledVector(_norm, state.jumpY);
+      _carPos.copy(_pt).addScaledVector(_bin, state.laneOffset).addScaledVector(_norm, state.jumpY + state.loopCamBlend * 0.11);
       car.root.position.copy(_carPos);
 
       _negBin.copy(_bin).negate();
@@ -4070,122 +4846,121 @@
       car.visual.scale.set(1 + state.squash * 0.35, 1 - state.squash, 1);
 
       const shScale = Math.max(0.35, 1.0 - state.jumpY * 0.08);
-      car.shadowPlane.position.y = -state.jumpY + 0.06;
+      car.shadowPlane.position.y = -state.jumpY + 0.06 + state.loopCamBlend * 0.08;
       car.shadowPlane.scale.setScalar(shScale);
       car.shadowPlane.material.opacity = Math.max(0.12, 0.88 - state.jumpY * 0.09);
 
       for (let i = 0; i < car.wheels.length; i++) car.wheels[i].rotation.x += state.speed * simDt * 0.72;
 
       const speedNorm = Math.min(1, Math.abs(state.speed) / state.maxSpeed);
-      // Subtle exhaust flame idle flicker even at 0 KM/H!
+      // Subtle Italian Tricolore (Verde · Bianco · Rosso) exhaust flame flicker even at 0 KM/H!
       const idleFlicker = 0.14 + Math.sin(elapsed * 28) * 0.05;
-      const flameLen = isTurbo ? (1.45 + Math.sin(elapsed * 45) * 0.25) : Math.max(idleFlicker, speedNorm * 0.55);
-      const purrariFlames = [0xff2a85, 0xffd32a, 0x00e5ff];
+      const flameLen = isTurbo ? (1.48 + Math.sin(elapsed * 45) * 0.25) : Math.max(idleFlicker, speedNorm * 0.55);
+      const italiaFlames = [0x00e65c, 0xffffff, 0xff2233];
       for (let i = 0; i < car.flameCones.length; i++) {
         const fc = car.flameCones[i];
         fc.visible = true;
         fc.scale.set(isTurbo ? 1.25 : 0.82, isTurbo ? 1.25 : 0.82, flameLen);
-        fc.material.color.setHex(purrariFlames[i % 3]);
+        fc.material.color.setHex(italiaFlames[i % 3]);
       }
-      // Breathing Ferrari Red V8 engine intake glow & Nyan sky-blue/pink underglow pulse
+      // Breathing Ferrari Red V8 engine intake glow & Rosso Corsa / Tricolore / Brake underglow pulse
       const breath = 0.78 + Math.sin(elapsed * 3.8) * 0.22;
       car.engineGlowMat.color.setRGB(1.0 * breath, 0.14 * breath, 0.18 * breath);
-      car.underGlow.color.setHex(isTurbo ? 0xff44aa : 0x35b4ff);
-      car.underGlow.intensity = isTurbo ? 4.8 : (2.4 + breath * 1.1);
+      car.underGlow.color.setHex(activeHardBrake ? 0xff0022 : (isTurbo ? 0x00ff77 : 0xff2438));
+      car.underGlow.intensity = activeHardBrake ? 5.2 : (isTurbo ? 4.8 : (2.3 + breath * 1.0));
 
-      // 7. Swept Anti-Tunneling Trigger Checks (Boost Pads, Ramps, Nitro Canisters, Sky Rings, Laser Barriers & Skill Orbs)
+      // 7. Swept Anti-Tunneling Trigger Checks & Batched Instanced Collectibles (Zero Scene-Graph Overhead!)
       if (state.hitShake > 0) state.hitShake = Math.max(0, state.hitShake - dt * 2.8);
 
-      if (state.speed > 0 && !isCutscene) {
-        if (state.isGrounded) {
-          for (let i = 0; i < jumpRamps.length; i++) {
-            const r = jumpRamps[i];
-            if ((crossedTargetT(prevT, state.t, r.t) || getCircularDistT(state.t, r.t) < 0.0045) && Math.abs(state.laneOffset - r.laneOffset) < 2.6 && state.speed > 18) {
-              executeJump(22.5);
-            }
-          }
-        }
-
-        // Laser Road Barriers: Dodge for Close Call, Jump Over for Hop Bonus, or Hit for Knockback!
-        for (let i = 0; i < roadBarriers.length; i++) {
-          const b = roadBarriers[i];
-          if (b.hitCooldown > 0) { b.hitCooldown -= dt; continue; }
-          if (crossedTargetT(prevT, state.t, b.t) || getCircularDistT(state.t, b.t) < 0.0032) {
-            const latDiff = Math.abs(state.laneOffset - b.laneOffset);
-            if (latDiff < 2.35) {
-              if (state.jumpY > 1.35) {
-                b.hitCooldown = 1.0;
-                state.turboCharge = Math.min(100, state.turboCharge + 20);
-                sfx.orb();
-                showToast('🚀 BARRIER HOP! +20% NITRO');
-              } else {
-                b.hitCooldown = 1.2;
-                state.speed = Math.max(12, state.speed * 0.46);
-                state.padBoostTimer = 0;
-                state.hitShake = 0.65;
-                sfx.crash();
-                spawnSparks(_carPos, _tan, 18, 12);
-                showToast('💥 BARRIER HIT! DODGE OR JUMP!');
-              }
-            } else if (latDiff < 3.6 && state.speed > 40) {
-              b.hitCooldown = 1.0;
-              state.turboCharge = Math.min(100, state.turboCharge + 15);
-              sfx.orb();
-              showToast('⚡ CLOSE CALL! +15% NITRO');
-            }
+      if (state.speed > 0 && !isCutscene && state.isGrounded) {
+        for (let i = 0; i < jumpRamps.length; i++) {
+          const r = jumpRamps[i];
+          if ((crossedTargetT(prevT, state.t, r.t) || getCircularDistT(state.t, r.t) < 0.0045) && Math.abs(state.laneOffset - r.laneOffset) < 2.6 && state.speed > 18) {
+            executeJump(22.5);
           }
         }
       }
 
-      // Collectible Glowing NITRO Canisters (ONLY refills +35% NITRO — press SHIFT when you want to fire it!)
+      // Batched Instanced NITRO Canisters (1 Draw Call!)
       for (let i = 0; i < nitroCanisters.length; i++) {
         const nc = nitroCanisters[i];
         if (!nc.collected) {
-          nc.group.rotation.y += dt * 3.2;
-          nc.group.position.copy(nc.basePos).addScaledVector(nc.norm, Math.sin(elapsed * 3.8 + i) * 0.32);
-          if (!isCutscene && _carPos.distanceToSquared(nc.group.position) < 15.0) {
+          nc.pos.copy(nc.basePos).addScaledVector(nc.norm, Math.sin(elapsed * 3.8 + i) * 0.32);
+          if (!isCutscene && _carPos.distanceToSquared(nc.pos) < 15.0) {
             nc.collected = true;
-            nc.group.visible = false;
+            dummy.position.set(0, -500, 0);
+            dummy.scale.setScalar(0);
+            dummy.updateMatrix();
+            nitroIMesh.setMatrixAt(i, dummy.matrix);
             state.turboCharge = Math.min(100, state.turboCharge + 35);
             sfx.nitroPickup();
             spawnSparks(_carPos, _tan, 12, 12);
             showToast('⛽ +35% NITRO REFILLED!');
+          } else {
+            dummy.position.copy(nc.pos);
+            dummy.rotation.set(0, elapsed * 3.2 + i * 0.4, 0.28);
+            dummy.scale.set(1, 1, 1);
+            dummy.updateMatrix();
+            nitroIMesh.setMatrixAt(i, dummy.matrix);
           }
         }
       }
+      nitroIMesh.instanceMatrix.needsUpdate = true;
 
-      // Aerial Golden Neon Sky Rings (Hit ramp -> Fly through for +40% NITRO + Turbo Surge!)
+      // Batched Instanced Aerial Golden Sky Rings (1 Draw Call!)
       for (let i = 0; i < skyRings.length; i++) {
         const sr = skyRings[i];
         if (!sr.collected) {
-          sr.mesh.rotation.z += dt * 2.2;
-          if (!isCutscene && state.jumpY > 1.8 && _carPos.distanceToSquared(sr.mesh.position) < 28.0) {
+          sr.spinZ += dt * 2.2;
+          if (!isCutscene && state.jumpY > 1.8 && _carPos.distanceToSquared(sr.pos) < 28.0) {
             sr.collected = true;
-            sr.mesh.visible = false;
+            dummy.position.set(0, -500, 0);
+            dummy.scale.setScalar(0);
+            dummy.updateMatrix();
+            skyRingIMesh.setMatrixAt(i, dummy.matrix);
             state.turboCharge = Math.min(100, state.turboCharge + 40);
             state.padBoostTimer = 1.25;
             sfx.nitroPickup();
             spawnSparks(_carPos, _tan, 18, 16);
             showToast('🌟 SKY RING! +40% NITRO SURGE!');
+          } else {
+            dummy.position.copy(sr.pos);
+            _scaleVec.set(0, 0, 1);
+            dummy.quaternion.copy(sr.baseQuat).multiply(_targetQuat.setFromAxisAngle(_scaleVec, sr.spinZ));
+            dummy.scale.set(1, 1, 1);
+            dummy.updateMatrix();
+            skyRingIMesh.setMatrixAt(i, dummy.matrix);
           }
         }
       }
+      skyRingIMesh.instanceMatrix.needsUpdate = true;
 
+      // Batched Instanced Skill Orbs (1 Draw Call!)
       for (let i = 0; i < skillOrbs.length; i++) {
         const orb = skillOrbs[i];
         if (!orb.collected) {
-          orb.mesh.rotation.y += dt * 2.4;
-          orb.mesh.position.y = orb.baseY + 1.55 + Math.sin(elapsed * 3.0 + i) * 0.35;
-          if (_carPos.distanceToSquared(orb.mesh.position) < 13.5) {
-            orb.collected = true; orb.mesh.visible = false;
+          orb.pos.copy(orb.basePos).addScaledVector(orb.norm, 1.55 + Math.sin(elapsed * 3.0 + i) * 0.35);
+          if (_carPos.distanceToSquared(orb.pos) < 13.5) {
+            orb.collected = true;
+            dummy.position.set(0, -500, 0);
+            dummy.scale.setScalar(0);
+            dummy.updateMatrix();
+            orbIMesh.setMatrixAt(i, dummy.matrix);
             state.orbsCollected++;
             state.turboCharge = Math.min(100, state.turboCharge + 18);
             orbsTextEl.textContent = `${state.orbsCollected} / ${SKILL_NAMES.length}`;
             sfx.orb();
             showToast(`✨ ${orb.name.toUpperCase()}`);
+          } else {
+            dummy.position.copy(orb.pos);
+            dummy.rotation.set(0, elapsed * 2.4 + i * 0.5, 0);
+            dummy.scale.set(1, 1, 1);
+            dummy.updateMatrix();
+            orbIMesh.setMatrixAt(i, dummy.matrix);
           }
         }
       }
+      orbIMesh.instanceMatrix.needsUpdate = true;
 
       // 8. Milestone Sync & Enlarging Gimbal 3D Panels
       let closestMIdx = state.activeMilestoneIdx;
@@ -4206,8 +4981,8 @@
         const tgtScale = isFoc ? 1.06 : 1.0;
         _scaleVec.set(tgtScale, tgtScale, 1);
         tp.screenMesh.scale.lerp(_scaleVec, dt * 6);
-        // Smooth anti-gravity hover bob beside the highway!
-        tp.group.position.y = tp.baseY + Math.sin(elapsed * 2.0 + i * 1.1) * 0.55;
+        // Smooth anti-gravity hover bob synced to bullet-time world clock (rock-steady while reading!)
+        tp.group.position.y = tp.baseY + Math.sin(wElapsed * 2.0 + i * 1.1) * 0.55;
       }
 
       const panelIdx = nearPanel ? nearPanel.milestoneIdx : -1;
@@ -4216,25 +4991,34 @@
         if (nearPanel && nearPanel.milestoneIdx !== state.activeMilestoneIdx) updateCVCard(nearPanel.milestoneIdx);
       }
 
-      // Auto-hide compact HUD card during Deep Zoom so zero UI overlaps the giant 3D billboard!
-      cvCardEl.classList.toggle('zoom-hidden', state.deepZoom);
+      // Deduplicated DOM State Updates (Zero redundant style recalcs per frame!)
+      if (state.lastDeepZoom !== state.deepZoom) {
+        state.lastDeepZoom = state.deepZoom;
+        cvCardEl.classList.toggle('zoom-hidden', state.deepZoom);
+      }
 
-      if ((nearPanel && !isTurbo) || state.mode === 'FOCUSED') {
-        focusIndEl.classList.add('active');
+      const showFocusPill = Boolean((nearPanel && !isTurbo) || state.mode === 'FOCUSED');
+      if (state.lastShowFocusPill !== showFocusPill) {
+        state.lastShowFocusPill = showFocusPill;
+        focusIndEl.classList.toggle('active', showFocusPill);
         dwellTrackEl.classList.remove('show');
-        focusStatusEl.textContent = state.deepZoom
+      }
+      if (showFocusPill) {
+        const nextFocusText = state.deepZoom
           ? '🔍 DEEP ZOOM · CLICK OUTSIDE OR PRESS W TO DRIVE'
           : (state.mode === 'FOCUSED'
             ? '🔍 FOCUSED · CLICK PANEL TO ZOOM MORE'
             : '⚡ GIANT PANEL AHEAD · CLICK TO ZOOM');
-      } else {
-        focusIndEl.classList.remove('active');
+        if (state.lastFocusText !== nextFocusText) {
+          state.lastFocusText = nextFocusText;
+          focusStatusEl.textContent = nextFocusText;
+        }
       }
 
-      // 9. Animate Living Shinjuku City (Flying Traffic, Neon Sign Flicker, Beacons, Searchlights, Rain!)
+      // 9. Animate Living Night City (Bullet-Time World Clock: Flying Traffic, Neon Signs, Beacons, Rain!)
       for (let i = 0; i < TRAFFIC_COUNT; i++) {
         const tr = trafficAgents[i];
-        tr.angle += tr.speed * dt;
+        tr.angle += tr.speed * worldDt;
         const tx = Math.cos(tr.angle) * tr.radius;
         const tz = Math.sin(tr.angle) * tr.radius;
         dummy.position.set(tx, tr.y, tz);
@@ -4247,7 +5031,7 @@
 
       for (let i = 0; i < animatedSigns.length; i++) {
         const s = animatedSigns[i];
-        const pulse = 0.84 + Math.sin(elapsed * s.speed + s.phase) * 0.16;
+        const pulse = 0.84 + Math.sin(wElapsed * s.speed + s.phase) * 0.16;
         s.mat.opacity = pulse;
       }
 
@@ -4255,7 +5039,7 @@
       if (frameCount % 3 === 0) {
         for (let i = 0; i < B_COUNT; i++) {
           const b = placedBuildings[i];
-          const blink = Math.sin(elapsed * 3.5 + i * 0.7) > 0.2 ? 1.1 : 0.2;
+          const blink = Math.sin(wElapsed * 3.5 + i * 0.7) > 0.2 ? 1.1 : 0.2;
           dummy.position.set(b.x, b.beaconY, b.z);
           dummy.rotation.set(0, 0, 0);
           dummy.scale.setScalar(blink);
@@ -4267,16 +5051,16 @@
 
       for (let i = 0; i < searchlights.length; i++) {
         const sl = searchlights[i];
-        sl.mesh.rotation.z = Math.sin(elapsed * 0.45 + sl.phase) * 0.32;
-        sl.mesh.rotation.x = Math.cos(elapsed * 0.38 + sl.phase) * 0.28;
+        sl.mesh.rotation.z = Math.sin(wElapsed * 0.45 + sl.phase) * 0.32;
+        sl.mesh.rotation.x = Math.cos(wElapsed * 0.38 + sl.phase) * 0.28;
       }
 
-      // Keep rain centered around car smoothly
+      // Keep rain centered around car smoothly (slows cleanly into Speedbreaker bullet-time!)
       const rArr = rainGeo.attributes.position.array;
       for (let i = 0; i < RAIN_COUNT; i++) {
         const idx6 = i * 6;
-        rArr[idx6 + 1] -= rainSpeeds[i] * dt;
-        rArr[idx6 + 4] -= rainSpeeds[i] * dt;
+        rArr[idx6 + 1] -= rainSpeeds[i] * worldDt;
+        rArr[idx6 + 4] -= rainSpeeds[i] * worldDt;
         if (rArr[idx6 + 1] < -20) {
           const rx = _carPos.x + (Math.random() - 0.5) * 220;
           const ry = _carPos.y + 65 + Math.random() * 55;
@@ -4291,8 +5075,8 @@
       const mArr = moteGeo.attributes.position.array;
       for (let i = 0; i < MOTE_COUNT; i++) {
         const i3 = i * 3;
-        mArr[i3 + 1] += (2.8 + (i % 4) * 0.7) * dt;
-        mArr[i3] += Math.sin(elapsed * 1.4 + i) * 0.6 * dt;
+        mArr[i3 + 1] += (2.8 + (i % 4) * 0.7) * worldDt;
+        mArr[i3] += Math.sin(wElapsed * 1.4 + i) * 0.6 * worldDt;
         if (mArr[i3 + 1] > _carPos.y + 38) {
           mArr[i3] = _carPos.x + (Math.random() - 0.5) * 130;
           mArr[i3 + 1] = _carPos.y - 6;
@@ -4309,11 +5093,11 @@
       for (let i = 0; i < SPARK_COUNT; i++) {
         const sp = sparks[i];
         if (sp.life > 0) {
-          sp.life -= dt * 3.2;
-          sp.pos.addScaledVector(sp.vel, dt);
+          sp.life -= worldDt * 3.2;
+          sp.pos.addScaledVector(sp.vel, worldDt);
           dummy.position.copy(sp.pos);
           dummy.scale.setScalar(Math.max(0, sp.life * sp.scale));
-          dummy.rotation.set(elapsed * 4, elapsed * 3, 0);
+          dummy.rotation.set(wElapsed * 4, wElapsed * 3, 0);
           dummy.updateMatrix();
           sparkIMesh.setMatrixAt(i, dummy.matrix);
         } else {
@@ -4323,64 +5107,112 @@
       }
       sparkIMesh.instanceMatrix.needsUpdate = true;
 
-      // 10. Dynamic Banked Camera + NFS Most Wanted Cut-In Sweep + Deep Zoom
+      // 10. Dynamic Banked Camera + NFS Most Wanted Bezier Crane Entry & Zero-Hitch Bezier Return
       if (isCutscene && state.cutscenePanel) {
-        // Iconic NFS Most Wanted dramatic whip-zoom straight onto the floating roadside Megaboard!
+        // Anchored 3D Quadratic Bezier Crane Arc from live gameplay pose straight onto the roadside Megaboard!
         const ct = state.cutsceneTimer;
         const cp = state.cutscenePanel;
+        const uIn = Math.min(1, ct / 0.96);
+        const ePos = 1 - Math.pow(1 - uIn, 3.6);
+        const uLook = Math.min(1, ct / 0.76);
+        const eLook = 1 - Math.pow(1 - uLook, 3.2);
 
-        // Quick dramatic push-in over first 0.75s, zoomed cleanly for razor-sharp HD readability on both Desktop and Phone!
-        const pushEase = Math.min(1, ct / 0.75);
-        const smoothEase = 1 - Math.pow(1 - pushEase, 3);
-        const distFront = THREE.MathUtils.lerp(IS_MOBILE ? 44 : 46, IS_MOBILE ? 35 : 36, smoothEase) - Math.min(ct, 5.0) * 0.22;
+        _panelRight.crossVectors(upVec, cp.forwardDir).normalize();
+        const driftX = Math.sin(ct * 1.15) * 0.26 * ePos;
+        const driftY = Math.cos(ct * 0.90) * 0.15 * ePos;
+        const distFront = (IS_MOBILE ? 35.0 : 36.0) - Math.min(ct, 6.0) * 0.16 * ePos;
 
-        _desCam.copy(cp.worldPos).addScaledVector(cp.forwardDir, distFront);
-        _desCam.y -= THREE.MathUtils.lerp(1.8, 0.2, smoothEase);
+        _cutEndPos.copy(cp.worldPos)
+          .addScaledVector(cp.forwardDir, distFront)
+          .addScaledVector(_panelRight, driftX);
+        _cutEndPos.y += -0.15 + driftY;
+
+        _cutMidCtrl.lerpVectors(_cutCamStart, _cutEndPos, 0.46);
+        _cutMidCtrl.y += 6.0;
+        _cutMidCtrl.addScaledVector(cp.forwardDir, 7.5);
+
+        _bezA.lerpVectors(_cutCamStart, _cutMidCtrl, ePos);
+        _bezB.lerpVectors(_cutMidCtrl, _cutEndPos, ePos);
+        smoothCamPos.lerpVectors(_bezA, _bezB, ePos);
 
         _desLook.copy(cp.worldPos);
+        smoothLookAt.lerpVectors(_cutLookStart, _desLook, eLook);
 
-        // Dramatic FOV punch with crisp HD billboard framing between cinema letterbox bars
-        const cutFov = THREE.MathUtils.lerp(62, IS_MOBILE ? 45 : 48, smoothEase);
-        camera.fov = THREE.MathUtils.lerp(camera.fov, cutFov, dt * 8);
+        // Speedbreaker optic FOV warp (+3.2 deg brief widen -> crisp 48 / 45 deg HD billboard framing)
+        const baseEndFov = IS_MOBILE ? 45 : 48;
+        const fovWarp = Math.sin(uIn * Math.PI) * 3.2 * (1 - uIn);
+        camera.fov = THREE.MathUtils.lerp(state.cutStartFov || 61, baseEndFov, ePos) + fovWarp;
         if (Math.abs(camera.fov - lastCamFov) > 0.01) {
           lastCamFov = camera.fov;
           camera.updateProjectionMatrix();
         }
 
-        // Subtle NFS Most Wanted Dutch-angle snap that levels cleanly to 0° for crisp reading!
-        const dutchAngle = (1 - smoothEase) * 0.10;
-        _targetCamUp.set(dutchAngle, 1, 0).normalize();
-        _camUp.lerp(_targetCamUp, dt * 8).normalize();
+        // True panel-space Dutch roll peaking gracefully mid-crane and leveling to 0 deg for crystal reading
+        const dutchWave = Math.sin(Math.pow(uIn, 0.75) * Math.PI) * 0.11 * (cp.side || 1);
+        _targetCamUp.copy(upVec).addScaledVector(_panelRight, dutchWave).normalize();
+        _camUp.lerpVectors(_cutUpStart, _targetCamUp, eLook).normalize();
         camera.up.copy(_camUp);
 
-        smoothCamPos.lerp(_desCam, dt * 9.0);
-        smoothLookAt.lerp(_desLook, dt * 11.0);
+        // Keep chase anchor synced behind the bullet-time car so return swoop has an exact handoff target
+        chaseCamPos.copy(_carPos).addScaledVector(_tan, -11.8).addScaledVector(_norm, 4.35);
+        chaseLookAt.copy(_carPos).addScaledVector(_tan, 26).addScaledVector(_norm, 2.05);
+        chaseCamUp.copy(upVec).lerp(_norm, 0.42).normalize();
+
+        camera.position.copy(smoothCamPos);
+        camera.lookAt(smoothLookAt);
+      } else if (state.mode === 'FOCUSED' && state.deepZoom && (state.focusedPanelRef || nearPanel)) {
+        // Snappy, Responsive Direct-Click 3D Panel Zoom (~0.14s fast whip-in, crisp straight-on HD framing!)
+        const fp = state.focusedPanelRef || nearPanel;
+        const fastAlpha = 1 - Math.exp(-22.0 * dt);
+        _desCam.copy(fp.worldPos).addScaledVector(fp.forwardDir, IS_MOBILE ? 35 : 36);
+        _desCam.y -= 0.2;
+        _desLook.copy(fp.worldPos);
+        camera.fov = THREE.MathUtils.lerp(camera.fov, IS_MOBILE ? 45 : 48, fastAlpha);
+        if (Math.abs(camera.fov - lastCamFov) > 0.01) {
+          lastCamFov = camera.fov;
+          camera.updateProjectionMatrix();
+        }
+        _targetCamUp.set(0, 1, 0);
+        _camUp.lerp(_targetCamUp, fastAlpha).normalize();
+        camera.up.copy(_camUp);
+        smoothCamPos.lerp(_desCam, fastAlpha);
+        smoothLookAt.lerp(_desLook, fastAlpha);
+        chaseCamPos.copy(smoothCamPos);
+        chaseLookAt.copy(smoothLookAt);
+        chaseCamUp.copy(_camUp);
         camera.position.copy(smoothCamPos);
         camera.lookAt(smoothLookAt);
       } else {
         const targetFocus = (state.mode === 'FOCUSED' && nearPanel) ? 1.0 : 0.0;
-        const focusAlpha = 1 - Math.exp(-6.0 * dt);
+        const focusAlpha = 1 - Math.exp(-12.0 * dt);
         state.focusBlend = THREE.MathUtils.lerp(state.focusBlend, targetFocus, focusAlpha);
         const targetDeep = (state.deepZoom && nearPanel && !isTurbo) ? 1.0 : 0.0;
         state.deepZoomBlend = THREE.MathUtils.lerp(state.deepZoomBlend, targetDeep, focusAlpha);
 
         // Dynamic speed-sense FOV (tighter & cinematic at idle, dramatic wide-angle rush at 400+ KM/H!)
         const baseFov = state.cameraMode === 1 ? 68 : 61;
-        const targetFov = isTurbo ? (baseFov + 19) : (baseFov - state.focusBlend * 5 - state.deepZoomBlend * 9 + speedNorm * 10);
-        camera.fov = THREE.MathUtils.lerp(camera.fov, targetFov, 1 - Math.exp(-7.0 * dt));
+        const liveTargetFov = isTurbo ? (baseFov + 19) : (baseFov - state.focusBlend * 5 - state.deepZoomBlend * 9 + speedNorm * 10);
+        const targetFov = state.returnSwoopActive
+          ? THREE.MathUtils.lerp(state.returnStartFov || camera.fov, liveTargetFov, returnEase)
+          : THREE.MathUtils.lerp(camera.fov, liveTargetFov, 1 - Math.exp(-7.0 * dt));
+        camera.fov = targetFov;
         if (Math.abs(camera.fov - lastCamFov) > 0.01) {
           lastCamFov = camera.fov;
           camera.updateProjectionMatrix();
         }
+
+        // Smooth 360° Loop Camera Mode: tracks seamlessly upside-down over the 74m vertical loop with zero gimbal lock!
+        const inVerticalLoop = (targetLoopBlend > 0.05);
+        const lb = state.loopCamBlend;
 
         if (state.cameraMode === 0) {
           // AAA Hero Chase POV: lower, closer, elastic Nitro pull-back & drift lateral lag!
           const turboStretch = isTurbo ? -2.0 : (-speedNorm * 0.8);
           const driftLag = -state.laneVel * 0.095;
           _desCam.copy(_carPos)
-            .addScaledVector(_tan, -11.4 + turboStretch - state.focusBlend * 1.8 + state.deepZoomBlend * 2.6)
+            .addScaledVector(_tan, -11.4 + lb * 1.6 + turboStretch - state.focusBlend * 1.8 + state.deepZoomBlend * 2.6)
             .addScaledVector(_bin, driftLag)
-            .addScaledVector(_norm, 4.35 + state.focusBlend * 1.9 + state.deepZoomBlend * 4.8);
+            .addScaledVector(_norm, 4.35 + lb * 0.6 + state.focusBlend * 1.9 + state.deepZoomBlend * 4.8);
 
           // Gentle handheld cinema sway when stopped so the scene feels alive!
           const idleFactor = Math.max(0, 1.0 - Math.abs(state.speed) / 8);
@@ -4393,52 +5225,87 @@
             _desCam.x += (Math.random() - 0.5) * totalShake;
             _desCam.y += (Math.random() - 0.5) * totalShake;
           }
-          // Long +26m look-ahead along road tangent so upcoming barriers, ramps & billboards are always crystal clear!
+          // Curves look-ahead upward along _norm inside the 360° loop so the camera follows the vertical wall!
           _desLook.copy(_carPos)
-            .addScaledVector(_tan, 26)
+            .addScaledVector(_tan, 26 - lb * 10)
             .addScaledVector(_bin, state.laneVel * 0.06)
-            .addScaledVector(_norm, 2.05);
+            .addScaledVector(_norm, 2.05 + lb * 3.4);
         } else if (state.cameraMode === 1) {
           // Hood / Bumper Speed-Rush POV!
           _desCam.copy(_carPos).addScaledVector(_tan, 1.4).addScaledVector(_norm, 1.55);
-          _desLook.copy(_carPos).addScaledVector(_tan, 34).addScaledVector(_norm, 1.45);
+          _desLook.copy(_carPos).addScaledVector(_tan, 34 - lb * 14).addScaledVector(_norm, 1.45 + lb * 3.5);
         } else {
           // Cinema Heli POV
           _desCam.copy(_carPos).addScaledVector(_tan, -26).addScaledVector(_bin, 15).addScaledVector(_norm, 21);
           _desLook.copy(_carPos).addScaledVector(_tan, 16);
         }
 
-        if (nearPanel && (state.focusBlend > 0.02 || !isTurbo)) {
+        if (nearPanel && !inVerticalLoop && !state.returnSwoopActive && (state.focusBlend > 0.02 || !isTurbo)) {
           _panelLook.copy(nearPanel.worldPos);
           const driveGlance = (!isTurbo && state.mode !== 'FOCUSED') ? 0.12 : 0.0;
           const lookWeight = Math.min(0.92, Math.max(driveGlance, state.focusBlend * 0.46 + state.deepZoomBlend * 0.44));
           _desLook.lerp(_panelLook, lookWeight);
         }
 
-        // Dynamic banking camera roll on corners (levels smoothly to upright when reading/zooming!)
-        const rollInfluence = (1.0 - state.deepZoomBlend) * (state.mode === 'FOCUSED' ? 0.0 : 0.42);
-        _targetCamUp.copy(upVec).lerp(_norm, rollInfluence).normalize();
-        _camUp.lerp(_targetCamUp, 1 - Math.exp(-6.5 * dt)).normalize();
-        camera.up.copy(_camUp);
+        // Dynamic banking camera roll on corners + full 360° upside-down inversion lock + zero-hitch Bezier return!
+        const baseRollInf = (1.0 - state.deepZoomBlend) * (state.mode === 'FOCUSED' ? 0.0 : 0.42);
+        const rollInfluence = THREE.MathUtils.lerp(baseRollInf, 1.0, lb);
+        _targetCamUp.copy(upVec).lerp(_norm, rollInfluence);
+        if (_targetCamUp.lengthSq() < 0.001) _targetCamUp.copy(_norm);
+        else _targetCamUp.normalize();
 
-        // Silky frame-rate-independent exponential camera damping (zero micro-jitter on 60Hz/120Hz!)
-        const camPosAlpha = 1 - Math.exp(-(state.cameraMode === 1 ? 22.0 : 10.5) * dt);
-        const camLookAlpha = 1 - Math.exp(-14.0 * dt);
-        smoothCamPos.lerp(_desCam, camPosAlpha);
-        smoothLookAt.lerp(_desLook, camLookAlpha);
-        camera.position.copy(smoothCamPos);
-        camera.lookAt(smoothLookAt);
+        const camUpAlpha = 1 - Math.exp(-(6.5 + lb * 18.0) * dt);
+        const camPosAlpha = 1 - Math.exp(-(state.cameraMode === 1 ? 22.0 : (10.5 + lb * 14.0)) * dt);
+        const camLookAlpha = 1 - Math.exp(-(14.0 + lb * 12.0) * dt);
+        chaseCamUp.lerp(_targetCamUp, camUpAlpha);
+        if (chaseCamUp.lengthSq() < 0.001) chaseCamUp.copy(_targetCamUp);
+        else chaseCamUp.normalize();
+        chaseCamPos.lerp(_desCam, camPosAlpha);
+        chaseLookAt.lerp(_desLook, camLookAlpha);
+
+        if (state.returnSwoopActive) {
+          const ru = Math.min(1, state.returnSwoopTimer / Math.max(0.4, state.returnSwoopDur || 1.80));
+          const lookEase = quinticStep(Math.min(1, ru * 1.14));
+          const swoopDutch = Math.sin(ru * Math.PI) * 0.085 * (state.returnPanelSide || 1);
+
+          _camUp.lerpVectors(_exitUpStart, chaseCamUp, returnEase).addScaledVector(_bin, swoopDutch);
+          if (_camUp.lengthSq() < 0.001) _camUp.copy(chaseCamUp);
+          else _camUp.normalize();
+          camera.up.copy(_camUp);
+
+          // 3D Quadratic Bezier Return Arc landing directly onto damped chaseCamPos with zero velocity jump!
+          _cutMidCtrl.lerpVectors(_exitCamStart, chaseCamPos, 0.48)
+            .addScaledVector(upVec, 3.8)
+            .addScaledVector(_bin, (state.returnPanelSide || 1) * 3.0);
+          _bezA.lerpVectors(_exitCamStart, _cutMidCtrl, returnEase);
+          _bezB.lerpVectors(_cutMidCtrl, chaseCamPos, returnEase);
+          smoothCamPos.lerpVectors(_bezA, _bezB, returnEase);
+          smoothLookAt.lerpVectors(_exitLookStart, chaseLookAt, lookEase);
+
+          camera.position.copy(smoothCamPos);
+          camera.lookAt(smoothLookAt);
+        } else {
+          _camUp.copy(chaseCamUp);
+          camera.up.copy(_camUp);
+          smoothCamPos.copy(chaseCamPos);
+          smoothLookAt.copy(chaseLookAt);
+          camera.position.copy(smoothCamPos);
+          camera.lookAt(smoothLookAt);
+        }
       }
 
-      // 11. Throttled Telemetry & Audio
+      // 11. Throttled Telemetry & Audio (Zero per-frame DOM thrashing!)
       const kmh = Math.round(Math.abs(state.speed) * 3.6);
       if (kmh !== state.lastSpeedKmh) {
         state.lastSpeedKmh = kmh;
         speedValEl.textContent = String(kmh).padStart(3, '0');
         if (speedBarFillEl) speedBarFillEl.style.width = `${Math.min(100, (kmh / 425) * 100)}%`;
       }
-      speedValEl.classList.toggle('turbo-text', isTurbo);
-      turboFxEl.classList.toggle('active', isTurbo);
+      if (state.lastIsTurbo !== isTurbo) {
+        state.lastIsTurbo = isTurbo;
+        speedValEl.classList.toggle('turbo-text', isTurbo);
+        turboFxEl.classList.toggle('active', isTurbo);
+      }
 
       const tPct = Math.round(state.turboCharge);
       if (tPct !== state.lastTurboPct) {
@@ -4455,38 +5322,32 @@
 
       sfx.updateEngine(Math.min(1, Math.abs(state.speed) / state.maxSpeed), isTurbo, true);
 
-      // Adaptive FPS Guard: steps down post-processing automatically if laptop GPU dips below 44 FPS
-      fpsAccumTime += dt;
-      fpsAccumFrames++;
-      if (fpsAccumTime >= 2.2) {
-        const avgFps = fpsAccumFrames / fpsAccumTime;
-        if (avgFps < 44 && perfTier > 0) {
-          perfTier--;
-          if (perfTier === 1) {
-            renderer.setPixelRatio(1.0);
-            composer.setSize(window.innerWidth, window.innerHeight);
-          } else if (perfTier === 0) {
+      // Adaptive FPS Guard: in AUTO mode, ONLY disables Bloom if sustained FPS < 30 over 4.5s — NEVER drops Retina pixel resolution!
+      if (qualityPreset === 'AUTO' && usePostFX) {
+        fpsAccumTime += dt;
+        fpsAccumFrames++;
+        if (fpsAccumTime >= 4.5) {
+          const avgFps = fpsAccumFrames / fpsAccumTime;
+          if (avgFps < 30) {
             usePostFX = false;
           }
+          fpsAccumTime = 0;
+          fpsAccumFrames = 0;
         }
-        fpsAccumTime = 0;
-        fpsAccumFrames = 0;
       }
 
-      if (usePostFX) composer.render();
+      if (usePostFX && composer) composer.render();
       else renderer.render(scene, camera);
     }
 
     // Resize, WebGL Context Loss & Clean Disposal Lifecycle
     function onResize() {
+      syncResponsiveBodyClasses();
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
+      renderer.setPixelRatio(getTargetDPR(qualityPreset));
       renderer.setSize(window.innerWidth, window.innerHeight);
-      composer.setSize(window.innerWidth, window.innerHeight);
-      bloomPass.resolution.set(
-        Math.max(1, Math.floor(window.innerWidth * 0.5)),
-        Math.max(1, Math.floor(window.innerHeight * 0.5))
-      );
+      syncComposerResolution();
     }
     window.addEventListener('resize', onResize);
 
