@@ -19,12 +19,14 @@
       --glass-border: rgba(255, 255, 255, 0.14);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
 
     body, html {
       width: 100%;
       height: 100%;
+      height: 100dvh;
       overflow: hidden;
+      overscroll-behavior: none;
       background: #04060e;
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       color: #f3f6ff;
@@ -47,10 +49,11 @@
       height: 100%;
       z-index: 1;
       cursor: grab;
+      touch-action: none;
     }
     #canvas-container:active { cursor: grabbing; }
 
-    /* GPU-Composited Turbo Vignette (Zero CPU Mask Re-Rasterization!) */
+    /* GPU-Composited Classic NFS Nitro Tunnel-Vision Overlay */
     #turbo-fx {
       position: absolute;
       top: 0; right: 0; bottom: 0; left: 0;
@@ -59,8 +62,8 @@
       z-index: 2;
       opacity: 0;
       will-change: opacity;
-      transition: opacity 0.2s ease;
-      background: radial-gradient(circle at center, transparent 54%, rgba(0, 229, 255, 0.15) 82%, rgba(255, 42, 133, 0.34) 100%);
+      transition: opacity 0.16s ease-out;
+      background: radial-gradient(ellipse at 50% 52%, transparent 46%, rgba(0, 210, 255, 0.15) 76%, rgba(30, 90, 255, 0.28) 91%, rgba(255, 42, 133, 0.36) 100%);
     }
     #turbo-fx.active { opacity: 1; }
 
@@ -98,10 +101,11 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: max(14px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
       text-align: center;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
     }
     #mobile-guard.show { display: flex !important; }
     .gyro-only { display: none !important; }
@@ -122,13 +126,6 @@
       flex-direction: column;
       align-items: center;
       gap: 14px;
-    }
-    @media (max-height: 520px) {
-      .mobile-guard-card { padding: 16px 20px; gap: 8px; }
-      .mobile-guard-icon { font-size: 2rem; }
-      .mobile-guard-card h2 { font-size: 1.15rem; }
-      .mobile-guard-card p { font-size: 0.9rem; line-height: 1.38; }
-      .mobile-guard-actions .action-btn { padding: 11px 16px; }
     }
     .mobile-guard-icon { font-size: 3.1rem; line-height: 1; }
     .mobile-guard-card h2 {
@@ -157,6 +154,15 @@
       font-size: 0.95rem;
       border-radius: 14px;
     }
+    @media (max-height: 520px) {
+      .mobile-guard-card { max-width: 580px; padding: 14px 20px; gap: 7px; border-radius: 16px; }
+      .mobile-guard-icon { font-size: 1.65rem; }
+      .mobile-guard-card h2 { font-size: 1.05rem; }
+      .mobile-guard-card p { font-size: 0.82rem; line-height: 1.32; }
+      .mobile-guard-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+      #btn-mobile-cv { grid-column: 1 / -1; }
+      .mobile-guard-actions .action-btn { padding: 10px 12px; font-size: 0.76rem; border-radius: 10px; }
+    }
 
     /* Pause Overlay */
     #pause-overlay {
@@ -164,15 +170,13 @@
       top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
       z-index: 40;
-      background: rgba(4, 6, 15, 0.78);
-      -webkit-backdrop-filter: blur(12px);
-      backdrop-filter: blur(12px);
+      background: rgba(4, 6, 15, 0.92);
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 14px;
-      padding: 20px;
+      padding: max(16px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
     }
     #pause-overlay.open { display: flex; }
     .pause-title {
@@ -195,7 +199,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      padding: 14px 20px;
+      padding: max(12px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
       gap: 10px;
       transition: opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1);
     }
@@ -287,6 +291,29 @@
       transform: scale(1.08);
     }
     .step-connector { width: 10px; height: 2px; background: rgba(255, 255, 255, 0.15); border-radius: 2px; }
+    .stepper-caption-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+    }
+    .step-mini-arrow {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      font-size: 0.62rem;
+      font-weight: 800;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .step-mini-arrow:active { background: var(--neon-pink); border-color: var(--neon-gold); }
     .stepper-caption {
       font-family: 'Rajdhani', sans-serif;
       font-size: 0.76rem;
@@ -295,6 +322,7 @@
       letter-spacing: 0.65px;
       text-transform: uppercase;
       white-space: nowrap;
+      cursor: pointer;
     }
     .stepper-progress-rail {
       width: 100%;
@@ -402,12 +430,18 @@
     .cv-card.compact .cv-bullets, .cv-card.compact .cv-tags { display: none; }
     .cv-card.compact { width: 320px; padding: 9px 12px; }
     .cv-card.zoom-hidden { opacity: 0; pointer-events: none; transform: translateY(10px); }
-    @keyframes stagePulse {
-      0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.7), 0 16px 42px rgba(0,0,0,0.65); transform: translateX(0); }
-      35% { box-shadow: 0 0 28px 4px rgba(255, 42, 133, 0.55), 0 16px 42px rgba(0,0,0,0.65); transform: translateX(5px); }
-      100% { box-shadow: 0 16px 42px rgba(0,0,0,0.65); transform: translateX(0); }
+    @keyframes stagePulseA {
+      0% { transform: translateX(0); }
+      35% { transform: translateX(5px); }
+      100% { transform: translateX(0); }
     }
-    .cv-card.stage-pulse { animation: stagePulse 0.65s ease-out; }
+    @keyframes stagePulseB {
+      0% { transform: translateX(0); }
+      35% { transform: translateX(5px); }
+      100% { transform: translateX(0); }
+    }
+    .cv-card.stage-pulse-a { animation: stagePulseA 0.55s ease-out; }
+    .cv-card.stage-pulse-b { animation: stagePulseB 0.55s ease-out; }
     .cv-impact {
       font-size: 0.83rem;
       font-weight: 600;
@@ -660,12 +694,17 @@
     .speed-unit { font-family: 'Orbitron', sans-serif; font-size: 0.56rem; color: #8fa6cc; letter-spacing: 1.4px; margin-top: 3px; }
 
     .touch-controls { display: none; gap: 6px; }
+    .bottom-right-cluster { display: flex; align-items: flex-end; gap: 8px; }
+    .right-touch-controls { display: none; gap: 6px; }
     body.is-mobile-ui .touch-controls,
-    body.is-tablet-ui .touch-controls { display: flex; }
+    body.is-tablet-ui .touch-controls,
+    body.is-mobile-ui .right-touch-controls,
+    body.is-tablet-ui .right-touch-controls { display: flex; }
     body.is-mobile-ui .controls-row,
     body.is-tablet-ui .controls-row { display: none !important; }
     @media (pointer: coarse), (max-width: 960px), (max-height: 520px) {
-      .touch-controls { display: flex; }
+      .touch-controls,
+      .right-touch-controls { display: flex; }
       .controls-row { display: none !important; }
       #onboarding-hint, .brand-sub { display: none; }
     }
@@ -675,12 +714,23 @@
       color: #fff;
       font-family: 'Orbitron', sans-serif;
       font-weight: 800;
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       padding: 8px 11px;
-      border-radius: 8px;
+      min-height: 46px;
+      min-width: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
       cursor: pointer;
-      touch-action: manipulation;
+      touch-action: none;
+      transition: transform 0.08s ease, background 0.1s ease, border-color 0.1s ease;
       -webkit-tap-highlight-color: transparent;
+    }
+    .touch-btn.pressed, .touch-btn:active {
+      transform: scale(0.94);
+      background: rgba(0, 229, 255, 0.34);
+      border-color: var(--neon-cyan);
     }
 
     /* FULL CV MODAL */
@@ -689,13 +739,11 @@
       top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
       z-index: 150;
-      background: rgba(4, 6, 15, 0.92);
-      -webkit-backdrop-filter: blur(14px);
-      backdrop-filter: blur(14px);
+      background: rgba(4, 6, 15, 0.96);
       display: flex;
       justify-content: center;
       align-items: center;
-      padding: 16px;
+      padding: max(12px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
@@ -713,12 +761,16 @@
       width: 960px;
       max-width: 95vw;
       max-height: 90vh;
+      max-height: 90dvh;
       background: linear-gradient(160deg, #0f162e, #070b18);
       border: 1px solid rgba(0, 229, 255, 0.32);
       border-top: 5px solid var(--neon-pink);
       border-radius: 20px;
       padding: 26px 30px;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+      overscroll-behavior: contain;
       box-shadow: 0 25px 70px rgba(0, 0, 0, 0.85);
       color: #e4ecfa;
     }
@@ -736,14 +788,25 @@
     .contact-strip { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; font-size: 0.85rem; color: #a9bce0; }
     .contact-strip a { color: var(--neon-cyan); text-decoration: none; }
     .cv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media (max-width: 780px) {
+    @media (max-width: 780px), (max-height: 520px) {
       .cv-grid { grid-template-columns: 1fr; }
       .cv-card { width: 310px; max-width: 85vw; }
-      .cv-modal-box { max-width: 100%; width: 100%; max-height: 92dvh; padding: 20px 18px; border-radius: 16px; }
+      .cv-modal-box { max-width: 100%; width: 100%; max-height: 92dvh; padding: 16px 18px; border-radius: 16px; }
       #cv-modal.open .cv-modal-box { transform: scale(1) translateY(0); }
-    .modal-top { flex-direction: column; gap: 12px; }
-      .modal-name { font-size: 1.38rem; }
-      .cv-item p { font-size: 0.92rem; line-height: 1.52; }
+      .modal-top {
+        position: sticky;
+        top: -16px;
+        z-index: 3;
+        background: #0d1328;
+        padding-top: 6px;
+        padding-bottom: 12px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px;
+      }
+      .modal-name { font-size: 1.3rem; }
+      .cv-item p { font-size: 0.9rem; line-height: 1.5; }
     }
     .cv-sec-title {
       font-family: 'Orbitron', sans-serif;
@@ -876,11 +939,16 @@
       opacity: 0;
       will-change: opacity;
     }
-    @keyframes nfsmwFlashAnim {
+    @keyframes nfsmwFlashAnimA {
       0% { opacity: 0.28; }
       100% { opacity: 0; }
     }
-    #nfsmw-flash.flash { animation: nfsmwFlashAnim 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes nfsmwFlashAnimB {
+      0% { opacity: 0.28; }
+      100% { opacity: 0; }
+    }
+    #nfsmw-flash.flash-a { animation: nfsmwFlashAnimA 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    #nfsmw-flash.flash-b { animation: nfsmwFlashAnimB 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
     #nfsmw-overlay {
       --cut-accent: #00e5ff;
@@ -916,9 +984,7 @@
       position: relative;
       z-index: 2;
       width: 100%;
-      background: linear-gradient(90deg, rgba(4, 7, 18, 0.95), rgba(8, 13, 30, 0.90));
-      -webkit-backdrop-filter: blur(10px);
-      backdrop-filter: blur(10px);
+      background: linear-gradient(90deg, rgba(4, 7, 18, 0.97), rgba(8, 13, 30, 0.94));
       padding: 14px 28px;
       display: flex;
       align-items: center;
@@ -937,11 +1003,17 @@
     .nfsmw-bar-top {
       border-bottom: 2px solid var(--cut-accent);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
+      padding-top: max(10px, env(safe-area-inset-top));
+      padding-left: max(18px, env(safe-area-inset-left));
+      padding-right: max(18px, env(safe-area-inset-right));
       transform: translateY(-110%);
     }
     .nfsmw-bar-bottom {
       border-top: 2px solid var(--neon-pink);
       box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.65);
+      padding-bottom: max(10px, env(safe-area-inset-bottom));
+      padding-left: max(18px, env(safe-area-inset-left));
+      padding-right: max(18px, env(safe-area-inset-right));
       transform: translateY(110%);
     }
     #nfsmw-overlay.active .nfsmw-bar-top,
@@ -1020,6 +1092,28 @@
       color: var(--neon-gold);
       letter-spacing: 0.6px;
     }
+    .nfsmw-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    #btn-nfsmw-inspect {
+      padding: 11px 14px;
+      font-size: 0.72rem;
+      border-color: rgba(0, 229, 255, 0.45);
+      color: #88f3ff;
+      background: rgba(0, 229, 255, 0.12);
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    #btn-nfsmw-inspect.ready {
+      opacity: 1;
+      cursor: pointer;
+      border-color: var(--neon-cyan);
+      color: #ffffff;
+      box-shadow: 0 0 14px rgba(0, 229, 255, 0.35);
+    }
     #btn-nfsmw-proceed {
       position: relative;
       overflow: hidden;
@@ -1059,114 +1153,186 @@
     }
     #btn-nfsmw-proceed.ready:hover { filter: brightness(1.14); transform: scale(1.06); }
 
-    /* Ultra-Crisp Native HTML Cutscene Reading Card (Mobile Only — 100% Effortless Readability on 6" Phones!) */
-    #nfsmw-mobile-card {
+    /* Keep 3D Megaboard Unobstructed on Phones During Cutscene (Inspect via #panel-dock / #mobile-stage-sheet) */
+    #nfsmw-mobile-card { display: none !important; }
+
+    /* Mobile & Tablet Focused Panel Inspector Dock + Scrollable Native Text Sheet */
+    #panel-dock {
       display: none;
-      align-self: center;
-      width: 90vw;
-      max-width: 540px;
-      background: linear-gradient(155deg, rgba(6, 10, 24, 0.94), rgba(10, 17, 38, 0.96));
-      border: 2px solid var(--neon-cyan);
-      border-radius: 14px;
-      padding: 12px 16px;
-      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.85), 0 0 24px rgba(0, 229, 255, 0.25);
-      pointer-events: none;
-      visibility: hidden;
-      opacity: 0;
-      transform: scale(0.94);
-      transition: opacity 0.68s cubic-bezier(0.22, 1, 0.36, 1), transform 0.68s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0.68s;
-    }
-    body.is-mobile-ui #nfsmw-mobile-card {
-      display: flex;
-      flex-direction: column;
+      position: fixed;
+      left: 50%;
+      bottom: max(10px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 22;
+      align-items: center;
       gap: 6px;
-    }
-    body.is-mobile-ui #nfsmw-overlay.active #nfsmw-mobile-card {
-      visibility: visible;
+      padding: 6px 10px;
+      border-radius: 14px;
+      background: rgba(6, 10, 24, 0.94);
+      border: 1px solid rgba(0, 229, 255, 0.42);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.78), 0 0 18px rgba(0, 229, 255, 0.22);
+      max-width: calc(100vw - 24px);
       pointer-events: auto;
-      opacity: 1;
-      transform: scale(1);
-      transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s;
     }
-    .nmc-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-    .nmc-title { font-family: 'Orbitron', sans-serif; font-size: 0.98rem; font-weight: 900; color: #ffffff; line-height: 1.2; }
-    .nmc-date { font-family: 'Rajdhani', sans-serif; font-size: 0.84rem; font-weight: 700; color: var(--neon-gold); white-space: nowrap; }
-    .nmc-sub { font-family: 'Rajdhani', sans-serif; font-size: 0.84rem; font-weight: 700; color: var(--neon-cyan); }
-    .nmc-hero {
+    body.is-panel-focused.is-mobile-ui #panel-dock,
+    body.is-panel-focused.is-tablet-ui #panel-dock {
+      display: flex;
+    }
+    body.is-panel-focused.is-mobile-ui .bottom-bar,
+    body.is-panel-focused.is-tablet-ui .bottom-bar,
+    body.is-panel-focused.is-mobile-ui #focus-indicator {
+      display: none !important;
+    }
+    .dock-stage-label {
       font-family: 'Orbitron', sans-serif;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       font-weight: 800;
-      color: #ffe159;
-      background: rgba(255, 211, 42, 0.14);
-      border: 1px solid rgba(255, 211, 42, 0.55);
-      border-radius: 7px;
-      padding: 5px 9px;
-      text-align: center;
+      color: var(--neon-gold);
+      padding: 0 6px;
+      white-space: nowrap;
     }
-    .nmc-impact { font-size: 0.86rem; line-height: 1.38; color: #eef5ff; font-weight: 500; }
-    .nmc-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 2px; }
+    .dock-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 800;
+      min-height: 40px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      touch-action: manipulation;
+    }
+    .dock-btn.active {
+      background: rgba(0, 229, 255, 0.24);
+      border-color: var(--neon-cyan);
+      color: #e6fcff;
+    }
+    .dock-btn.primary {
+      background: linear-gradient(135deg, var(--neon-pink), var(--neon-amber));
+      border-color: var(--neon-gold);
+      color: #ffffff;
+    }
+
+    #mobile-stage-sheet {
+      display: none;
+      position: fixed;
+      left: 50%;
+      bottom: max(64px, calc(env(safe-area-inset-bottom) + 58px));
+      transform: translateX(-50%);
+      z-index: 25;
+      width: min(560px, 92vw);
+      max-height: calc(100dvh - 122px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+      overscroll-behavior: contain;
+      flex-direction: column;
+      gap: 7px;
+      padding: 13px 16px;
+      border-radius: 15px;
+      background: rgba(7, 11, 26, 0.96);
+      border: 1px solid rgba(0, 229, 255, 0.45);
+      border-top: 4px solid var(--neon-cyan);
+      box-shadow: 0 20px 54px rgba(0, 0, 0, 0.88);
+      pointer-events: auto;
+    }
+    #mobile-stage-sheet.open { display: flex; }
+    .mss-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+    .mss-bullets { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+    .mss-bullets li {
+      font-size: 0.84rem;
+      line-height: 1.42;
+      color: #e0ebff;
+      padding-left: 14px;
+      position: relative;
+    }
+    .mss-bullets li::before {
+      content: "▸";
+      position: absolute;
+      left: 0;
+      color: var(--neon-cyan);
+      font-weight: 700;
+    }
 
     /* Compact Phone Responsive HUD (Placed last so it cleanly overrides desktop rules!) */
     @media (max-width: 960px) and (max-height: 560px), (max-width: 760px) {
       .gyro-only { display: inline-flex; }
-      #hud { padding: 8px 10px; gap: 6px; }
-      .top-bar { gap: 4px; }
-      .stepper-pill, .brand-sub, #onboarding-hint, #btn-tour { display: none !important; }
+      #hud { padding: max(7px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(7px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); gap: 6px; }
+      .top-bar { gap: 5px; }
+      .brand-sub, #onboarding-hint { display: none !important; }
+      .stepper-dots { display: none !important; }
+      .step-mini-arrow { display: inline-flex; }
+      .stepper-pill {
+        min-width: 0 !important;
+        padding: 3px 7px;
+        gap: 2px;
+        flex: 1 1 auto;
+        max-width: 245px;
+      }
+      .stepper-caption { font-size: 0.68rem; overflow: hidden; text-overflow: ellipsis; max-width: 155px; }
       .brand-badge { padding: 5px 8px; flex-shrink: 1; min-width: 0; }
-      .brand-title { font-size: 0.7rem; letter-spacing: 0.6px; white-space: nowrap; }
+      .brand-title { font-size: 0.68rem; letter-spacing: 0.5px; white-space: nowrap; }
       .top-actions { gap: 4px; }
       .action-btn { padding: 5px 7px; font-size: 0.56rem; gap: 3px; }
-      .mid-section { align-items: flex-start; padding-top: 2px; }
+      .mid-section { align-items: flex-end; padding-top: 2px; }
       .cv-card.compact { width: 100%; max-width: 100%; padding: 7px 10px; gap: 3px; }
       .cv-title { font-size: 0.78rem; }
       .cv-subtitle, .cv-card.compact .cv-tags, .cv-card-footer { display: none !important; }
       .cv-impact { font-size: 0.72rem; padding: 4px 7px; line-height: 1.3; }
-      .bottom-bar { flex-direction: column-reverse; align-items: stretch; gap: 6px; }
-      .controls-bar { width: 100%; padding: 6px; justify-content: center; }
-      .touch-controls { width: 100%; justify-content: space-between; gap: 5px; }
-      .touch-btn { flex: 1; padding: 12px 4px; font-size: 0.7rem; text-align: center; touch-action: none; }
-      .telemetry-cluster { width: 100%; padding: 6px 10px; justify-content: space-between; gap: 10px; }
-      .gauges-col { flex: 1; min-width: 0; gap: 2px; }
-      .speed-box { min-width: 58px; }
-      .speed-val { font-size: 1.28rem; }
-      .nfsmw-bar { padding: 10px 14px; flex-wrap: wrap; gap: 8px; }
+      .bottom-bar { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 8px; }
+      .controls-bar { width: auto; padding: 5px; justify-content: center; }
+      .touch-controls, .right-touch-controls { gap: 5px; }
+      .touch-btn { flex: none; padding: 8px 10px; font-size: 0.72rem; min-height: 46px; min-width: 46px; }
+      .telemetry-cluster { width: auto; padding: 6px 9px; gap: 8px; }
+      .gauges-col { min-width: 82px; gap: 2px; }
+      .speed-box { min-width: 50px; }
+      .speed-val { font-size: 1.24rem; }
+      .nfsmw-bar { padding: 8px 14px; flex-wrap: wrap; gap: 8px; }
       .nfsmw-alert { font-size: 0.72rem; letter-spacing: 1.2px; }
-      .nfsmw-bottom-title { font-size: 0.86rem; }
-      .nfsmw-bottom-sub { font-size: 0.76rem; }
-      #btn-nfsmw-proceed { min-width: 180px; padding: 10px 14px; font-size: 0.7rem; width: 100%; }
+      .nfsmw-bottom-title { font-size: 0.84rem; }
+      .nfsmw-bottom-sub { font-size: 0.74rem; }
+      .nfsmw-actions { width: 100%; justify-content: flex-end; }
+      #btn-nfsmw-proceed { min-width: 140px; padding: 9px 12px; font-size: 0.68rem; flex: 1; }
+      #btn-nfsmw-inspect { padding: 9px 12px; font-size: 0.68rem; }
     }
 
     /* Dedicated iPad & Tablet Landscape HUD (Spacious 768px-1366px Touch Layout!) */
     body.is-tablet-ui #onboarding-hint,
     body.is-tablet-ui .brand-sub { display: none !important; }
-    body.is-tablet-ui #hud { padding: 12px 18px; }
+    body.is-tablet-ui #hud { padding: max(12px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left)); }
     body.is-tablet-ui .stepper-pill { display: flex !important; min-width: 244px; padding: 5px 10px; }
     body.is-tablet-ui .bottom-bar { flex-direction: row !important; align-items: flex-end !important; justify-content: space-between !important; gap: 12px; }
     body.is-tablet-ui .controls-bar { width: auto !important; padding: 7px 10px; opacity: 0.95; background: rgba(6, 10, 22, 0.74); }
-    body.is-tablet-ui .touch-controls { width: auto !important; gap: 8px; }
-    body.is-tablet-ui .touch-btn { flex: none !important; padding: 13px 16px; font-size: 0.8rem; border-radius: 10px; touch-action: none; }
+    body.is-tablet-ui .touch-controls,
+    body.is-tablet-ui .right-touch-controls { width: auto !important; gap: 8px; }
+    body.is-tablet-ui .touch-btn { flex: none !important; padding: 12px 15px; font-size: 0.78rem; border-radius: 10px; min-height: 48px; min-width: 48px; touch-action: none; }
     body.is-tablet-ui .telemetry-cluster { width: auto !important; padding: 9px 14px; }
     body.is-tablet-ui .cv-card.compact { width: 308px; max-width: 38vw; }
 
     /* Landscape Smartphone Optimization (Ultra-Clean 90%+ Open 3D Highway!) */
     @media (max-height: 520px) and (orientation: landscape) {
-      #hud { padding: 6px 12px; gap: 4px; }
-      .top-bar { gap: 6px; }
-      .brand-title { font-size: 0.78rem; }
-      .action-btn { padding: 5px 8px; font-size: 0.58rem; background: rgba(6, 10, 22, 0.68); }
+      #hud { padding: max(6px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); gap: 4px; }
+      .top-bar { gap: 5px; }
+      .brand-title { font-size: 0.72rem; }
+      .action-btn { padding: 5px 8px; font-size: 0.56rem; background: rgba(6, 10, 22, 0.72); }
       .mid-section { align-items: flex-end; padding-bottom: 2px; }
-      /* Hide floating CV card while driving on phones — mobile gets crisp native HTML cutscene card + FULL CV! */
+      /* Hide floating CV card while driving on phones — inspect via #panel-dock + #mobile-stage-sheet or FULL CV! */
       body.is-mobile-ui #cv-card { display: none !important; }
-      .bottom-bar { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 10px; }
-      .controls-bar { width: auto; padding: 4px 6px; opacity: 0.92; background: rgba(6, 10, 22, 0.54); }
-      .touch-controls { width: auto; gap: 6px; }
-      .touch-btn { flex: none; padding: 10px 14px; font-size: 0.72rem; background: rgba(255, 42, 133, 0.22); }
-      .telemetry-cluster { width: auto; padding: 5px 10px; gap: 10px; background: rgba(6, 10, 22, 0.66); }
-      .gauges-col { min-width: 94px; }
+      .bottom-bar { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 8px; }
+      .controls-bar { width: auto; padding: 4px 6px; opacity: 0.94; background: rgba(6, 10, 22, 0.58); }
+      .touch-controls, .right-touch-controls { width: auto; gap: 5px; }
+      .touch-btn { flex: none; padding: 8px 11px; font-size: 0.72rem; min-height: 46px; min-width: 46px; background: rgba(255, 42, 133, 0.22); }
+      .telemetry-cluster { width: auto; padding: 5px 9px; gap: 8px; background: rgba(6, 10, 22, 0.68); }
+      .gauges-col { min-width: 78px; }
       .mobile-hide-stat { display: none !important; }
-      .speed-val { font-size: 1.32rem; }
-      .nfsmw-bar { padding: 7px 16px; flex-wrap: nowrap; }
-      #btn-nfsmw-proceed { width: auto; min-width: 200px; padding: 8px 14px; }
+      .speed-val { font-size: 1.24rem; }
+      .nfsmw-bar { padding: 7px 14px; flex-wrap: nowrap; }
+      .nfsmw-actions { width: auto; }
+      #btn-nfsmw-proceed { width: auto; min-width: 155px; padding: 8px 12px; }
+      #btn-nfsmw-inspect { padding: 8px 12px; }
     }
     .rotate-tip {
       display: none;
@@ -1323,10 +1489,13 @@
         <div class="nfsmw-bottom-title" id="nfsmw-title">Profile &amp; Core Technical Arsenal</div>
         <div class="nfsmw-bottom-sub" id="nfsmw-hero">⚡ PYTHON · JAVA · SAP · TENSORFLOW · DOCKER</div>
       </div>
-      <button id="btn-nfsmw-proceed" disabled>
-        <div class="nfsmw-btn-fill" id="nfsmw-btn-fill"></div>
-        <span id="nfsmw-btn-text">READ PANEL · 1.0s</span>
-      </button>
+      <div class="nfsmw-actions">
+        <button id="btn-nfsmw-inspect" class="action-btn" disabled title="Park &amp; Inspect 3D Panel">🔍 INSPECT</button>
+        <button id="btn-nfsmw-proceed" disabled>
+          <div class="nfsmw-btn-fill" id="nfsmw-btn-fill"></div>
+          <span id="nfsmw-btn-text">READ PANEL · 0.5s</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1359,7 +1528,7 @@
     <div class="brand-title" style="font-size:1.15rem;">ALESSIO GATTO</div>
     <h2>Rotate to Landscape to Play</h2>
     <p>Turn your phone sideways into <strong>landscape mode</strong> to drive with Gyroscope steering — or read the full CV right here:</p>
-    <button class="action-btn primary" style="padding:14px 24px;font-size:0.86rem;" onclick="document.getElementById('cv-modal').classList.add('open')">📄 READ FULL CV</button>
+    <button class="action-btn primary" id="btn-rotate-cv" style="padding:14px 24px;font-size:0.86rem;">📄 READ FULL CV</button>
   </div>
 
   <!-- SMARTPHONE MOBILE GYROSCOPE LAUNCH SPLASH -->
@@ -1400,7 +1569,11 @@
       <!-- COMPACT 7-STAGE STEPPER + LIVE CIRCUIT BAR -->
       <div class="stepper-pill interactive">
         <div class="stepper-dots" id="stepper-dots"></div>
-        <div class="stepper-caption" id="stepper-caption">01 · Profile &amp; Stack</div>
+        <div class="stepper-caption-row">
+          <button class="step-mini-arrow" id="btn-m-prev" aria-label="Previous Stage">◀</button>
+          <div class="stepper-caption" id="stepper-caption" title="Tap to Inspect 3D Panel">01 · Profile &amp; Stack</div>
+          <button class="step-mini-arrow" id="btn-m-next" aria-label="Next Stage">▶</button>
+        </div>
         <div class="stepper-progress-rail"><div id="circuit-bar"></div></div>
       </div>
 
@@ -1458,7 +1631,7 @@
       </div>
     </div>
 
-    <!-- BOTTOM BAR -->
+    <!-- BOTTOM BAR (Two-Thumb Mobile Controls + Telemetry) -->
     <div class="bottom-bar">
       <div class="controls-bar interactive">
         <div class="controls-row" style="display:flex;gap:10px;flex-wrap:wrap;">
@@ -1469,12 +1642,9 @@
           <div class="key-item"><span class="kbd">P</span> Pause</div>
         </div>
         <div class="touch-controls">
-          <button class="touch-btn gyro-hide" id="t-left">◀</button>
-          <button class="touch-btn gyro-hide" id="t-right">▶</button>
-          <button class="touch-btn gyro-hide" id="t-gas">▲</button>
-          <button class="touch-btn" id="t-brake">🛑</button>
-          <button class="touch-btn" id="t-turbo">🔥 NITRO</button>
-          <button class="touch-btn" id="t-jump">🚀 FLIP</button>
+          <button class="touch-btn gyro-hide" id="t-left" aria-label="Steer Left">◀</button>
+          <button class="touch-btn gyro-hide" id="t-right" aria-label="Steer Right">▶</button>
+          <button class="touch-btn" id="t-cam" aria-label="Switch Camera">🎥</button>
         </div>
       </div>
 
@@ -1482,37 +1652,68 @@
         💡 Drive with <strong>WASD</strong> + <strong>SHIFT</strong> Turbo or click <strong>▶ GUIDED TOUR</strong> — Click any giant 3D panel to zoom in!
       </div>
 
-      <div class="telemetry-cluster interactive">
-        <div class="gauges-col">
-          <div class="gauge-row">
-            <span style="color:#ff79b0">NITRO</span>
-            <span id="turbo-pct">100%</span>
-          </div>
-          <div class="gauge-track"><div id="turbo-bar"></div></div>
-          <div class="gauge-row" style="display:none;">
-            <span style="color:#00ff9d">SKILLS</span>
-            <span id="collectibles-text">0 / 21</span>
-          </div>
-          <div class="gauge-row mobile-hide-stat" style="margin-top:2px;">
-            <span style="color:#ffd32a">LAP</span>
-            <span id="lap-text">1</span>
-          </div>
-          <div class="gauge-row">
-            <span style="color:#88f3ff">TIME</span>
-            <span id="lap-time-text">00:00.0</span>
-          </div>
-          <div class="gauge-row mobile-hide-stat">
-            <span style="color:#ffd32a">BEST</span>
-            <span id="best-lap-text">--:--.-</span>
-          </div>
+      <div class="bottom-right-cluster">
+        <div class="right-touch-controls interactive">
+          <button class="touch-btn" id="t-brake" aria-label="Brake or Reverse">🛑</button>
+          <button class="touch-btn gyro-hide" id="t-gas" aria-label="Accelerate">▲</button>
+          <button class="touch-btn" id="t-turbo" aria-label="Nitro Boost">🔥</button>
+          <button class="touch-btn" id="t-jump" aria-label="Stunt Flip">🚀</button>
         </div>
-        <div class="speed-box">
-          <div class="speed-val" id="speed-val">000</div>
-          <div class="speed-bar-rail"><div id="speed-bar-fill"></div></div>
-          <div class="speed-unit">KM/H</div>
+        <div class="telemetry-cluster interactive">
+          <div class="gauges-col">
+            <div class="gauge-row">
+              <span style="color:#ff79b0">NITRO</span>
+              <span id="turbo-pct">100%</span>
+            </div>
+            <div class="gauge-track"><div id="turbo-bar"></div></div>
+            <div class="gauge-row" style="display:none;">
+              <span style="color:#00ff9d">SKILLS</span>
+              <span id="collectibles-text">0 / 21</span>
+            </div>
+            <div class="gauge-row mobile-hide-stat" style="margin-top:2px;">
+              <span style="color:#ffd32a">LAP</span>
+              <span id="lap-text">1</span>
+            </div>
+            <div class="gauge-row">
+              <span style="color:#88f3ff">TIME</span>
+              <span id="lap-time-text">00:00.0</span>
+            </div>
+            <div class="gauge-row mobile-hide-stat">
+              <span style="color:#ffd32a">BEST</span>
+              <span id="best-lap-text">--:--.-</span>
+            </div>
+          </div>
+          <div class="speed-box">
+            <div class="speed-val" id="speed-val">000</div>
+            <div class="speed-bar-rail"><div id="speed-bar-fill"></div></div>
+            <div class="speed-unit">KM/H</div>
+          </div>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- MOBILE / TABLET SCROLLABLE NATIVE STAGE READER SHEET -->
+  <div id="mobile-stage-sheet" class="interactive">
+    <div class="mss-head">
+      <span class="cv-stage-badge" id="mss-stage">01 / 07 · OVERVIEW</span>
+      <span class="cv-date-label" id="mss-date">SUMMARY &amp; SKILLS</span>
+      <button class="dock-btn" id="btn-mss-close" style="min-height:30px;padding:4px 10px;">✕</button>
+    </div>
+    <div class="cv-title" id="mss-title">Profile &amp; Core Technical Arsenal</div>
+    <div class="cv-subtitle" id="mss-sub">Freising (Munich), Germany</div>
+    <div class="cv-impact" id="mss-impact">Software &amp; automation engineer focused on efficient algorithms, enterprise B2B systems, and deep learning.</div>
+    <ul class="mss-bullets" id="mss-bullets"></ul>
+    <div class="cv-tags" id="mss-tags"></div>
+  </div>
+
+  <!-- MOBILE / TABLET PANEL INSPECTOR DOCK -->
+  <div id="panel-dock" class="interactive">
+    <button class="dock-btn" id="dock-prev" aria-label="Previous Milestone">◀</button>
+    <span class="dock-stage-label" id="dock-stage">01 / 07</span>
+    <button class="dock-btn" id="dock-details">📖 READ TEXT</button>
+    <button class="dock-btn" id="dock-next" aria-label="Next Milestone">▶</button>
+    <button class="dock-btn primary" id="dock-drive">▶ DRIVE</button>
   </div>
 
   <!-- FULL CV MODAL -->
@@ -2031,7 +2232,7 @@
 
     const camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 1.2, 2400);
     // High-Efficiency Crisp Retina DPR:
-    // Caps AUTO at 2.0x Retina on Desktop (1.75x on iPad/Phone, 1.15x on Low-End) + Direct Hardware MSAA -> 3x-4x Higher FPS with Razor-Sharp Edges!
+    // Caps AUTO at 1.65x Retina on Desktop (1.5x on iPad/Phone, 1.15x on Low-End) + Direct Hardware MSAA -> 3x-4x Higher FPS with Razor-Sharp Edges!
     function getTargetDPR(preset) {
       const nativeDpr = window.devicePixelRatio || 1;
       if (preset === 'LITE') return 1.0;
@@ -2039,9 +2240,9 @@
       if (preset === 'HIGH') {
         return Math.min(Math.max(nativeDpr, 1.75), IS_TOUCH_UI ? 2.0 : 2.25);
       }
-      // AUTO: Fast Locked 60-120 FPS + Crisp Native Retina!
-      if (IS_TOUCH_UI) return Math.min(nativeDpr, 1.75);
-      return Math.min(Math.max(nativeDpr, 1.5), 2.0);
+      // AUTO: Fast Locked 60-120 FPS + Crisp Retina!
+      if (IS_TOUCH_UI) return Math.min(nativeDpr, 1.5);
+      return Math.min(Math.max(nativeDpr, 1.35), 1.65);
     }
     const DEFAULT_MAX_DPR = getTargetDPR('AUTO');
     renderer.setPixelRatio(DEFAULT_MAX_DPR);
@@ -2066,8 +2267,8 @@
 
     // Moody Shinjuku Tokyo Night Lighting (deep shadows + crisp cyan/magenta/amber accents)
     scene.add(new THREE.HemisphereLight(0x5288c4, 0x160a22, IS_TOUCH_UI ? 0.96 : 0.76));
-    const keyLight = new THREE.DirectionalLight(0xffdfc2, 1.15);
-    keyLight.position.set(160, 260, 140);
+    const keyLight = new THREE.DirectionalLight(0xedf3ff, 1.18);
+    keyLight.position.set(320, 260, 120);
     scene.add(keyLight);
     const rimLight = new THREE.DirectionalLight(0xff2a85, 0.65);
     rimLight.position.set(-220, 140, -240);
@@ -2121,6 +2322,92 @@
         usePostFX = false;
         return false;
       }
+    }
+
+    // Classic Need for Speed Radial Zoom Motion Blur + Chromatic Tunnel Pass (Active ONLY during Nitro!)
+    let nitroRT = null;
+    const nitroPostScene = new THREE.Scene();
+    const nitroPostCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    const nitroBlurUniforms = {
+      tDiffuse: { value: null },
+      uStrength: { value: 0.0 },
+      uCenter: { value: new THREE.Vector2(0.5, 0.48) }
+    };
+    const nitroBlurMat = new THREE.ShaderMaterial({
+      uniforms: nitroBlurUniforms,
+      toneMapped: true,
+      depthTest: false,
+      depthWrite: false,
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = vec4(position.xy, 0.0, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform float uStrength;
+        uniform vec2 uCenter;
+        varying vec2 vUv;
+        void main() {
+          vec2 dir = vUv - uCenter;
+          float dist = length(dir);
+          // Keep Ferrari & immediate center road tack-sharp; branchless 8-tap radial zoom blur toward edges!
+          float edgeMask = smoothstep(0.12, 0.68, dist) * uStrength;
+          float maxZoom = 0.25 * edgeMask;
+          float chroma = 0.012 * edgeMask;
+          vec3 acc = vec3(0.0);
+          const float INV_SAMPLES = 1.0 / 8.0;
+          for (int i = 0; i < 8; i++) {
+            float f = float(i) * (1.0 / 7.0);
+            float scale = 1.0 - f * maxZoom;
+            vec3 sCol = texture2D(tDiffuse, uCenter + dir * scale).rgb;
+            acc += sCol;
+          }
+          vec3 col = acc * INV_SAMPLES;
+          col.r = mix(col.r, texture2D(tDiffuse, uCenter + dir * (1.0 - chroma)).r, 0.42 * step(0.002, edgeMask));
+          col += vec3(0.01, 0.042, 0.085) * edgeMask * smoothstep(0.32, 0.78, dist);
+          gl_FragColor = vec4(col, 1.0);
+          #include <tonemapping_fragment>
+          #include <colorspace_fragment>
+        }
+      `
+    });
+    const nitroQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), nitroBlurMat);
+    nitroQuad.frustumCulled = false;
+    nitroPostScene.add(nitroQuad);
+
+    function getNitroRTDPR() {
+      return Math.min(renderer.getPixelRatio(), IS_LOW_END ? 0.85 : (IS_TOUCH_UI ? 1.0 : 1.25));
+    }
+
+    function syncNitroRT() {
+      if (!nitroRT) return;
+      const dpr = getNitroRTDPR();
+      nitroRT.setSize(
+        Math.max(1, Math.floor(window.innerWidth * dpr)),
+        Math.max(1, Math.floor(window.innerHeight * dpr))
+      );
+    }
+
+    function ensureNitroRT() {
+      if (nitroRT) return nitroRT;
+      const dpr = getNitroRTDPR();
+      const rtOpts = {
+        minFilter: THREE.LinearFilter,
+        magFilter: THREE.LinearFilter,
+        type: IS_WEBGL2 ? THREE.HalfFloatType : THREE.UnsignedByteType,
+        depthBuffer: true,
+        stencilBuffer: false
+      };
+      nitroRT = new THREE.WebGLRenderTarget(
+        Math.max(1, Math.floor(window.innerWidth * dpr)),
+        Math.max(1, Math.floor(window.innerHeight * dpr)),
+        rtOpts
+      );
+      nitroBlurUniforms.tDiffuse.value = nitroRT.texture;
+      return nitroRT;
     }
 
     // ============================================================================
@@ -2709,6 +2996,106 @@
     );
     scene.add(skyDome);
 
+    // Atmospheric Full Moon & Silver-Blue Lunar Corona at Optical Infinity (behind skyscrapers & highway!)
+    const MOON_SKY_OFFSET = new THREE.Vector3(1350, 435, 500);
+    const moonGroup = new THREE.Group();
+    {
+      const mCanvas = document.createElement('canvas');
+      mCanvas.width = 512; mCanvas.height = 512;
+      const mCtx = mCanvas.getContext('2d');
+      mCtx.save();
+      mCtx.beginPath();
+      mCtx.arc(256, 256, 240, 0, Math.PI * 2);
+      mCtx.clip();
+
+      const limbGrad = mCtx.createRadialGradient(226, 224, 30, 256, 256, 244);
+      limbGrad.addColorStop(0.0, '#ffffff');
+      limbGrad.addColorStop(0.55, '#eef4ff');
+      limbGrad.addColorStop(0.84, '#cdd9ec');
+      limbGrad.addColorStop(1.0, '#9fb0cc');
+      mCtx.fillStyle = limbGrad;
+      mCtx.fillRect(0, 0, 512, 512);
+
+      // Authentic Lunar Maria patches (Imbrium, Serenitatis, Tranquillitatis, Procellarum, Crisium)
+      const mariaPatches = [
+        [185, 175, 92, 0.28], [268, 168, 68, 0.24], [322, 226, 62, 0.26],
+        [142, 268, 86, 0.22], [295, 290, 54, 0.20], [372, 185, 34, 0.25],
+        [218, 252, 58, 0.16]
+      ];
+      mariaPatches.forEach(([mx, my, mr, ma]) => {
+        const g = mCtx.createRadialGradient(mx, my, mr * 0.12, mx, my, mr);
+        g.addColorStop(0, `rgba(96, 114, 146, ${ma})`);
+        g.addColorStop(0.65, `rgba(112, 130, 160, ${ma * 0.65})`);
+        g.addColorStop(1, 'rgba(130, 148, 178, 0)');
+        mCtx.fillStyle = g;
+        mCtx.beginPath();
+        mCtx.arc(mx, my, mr, 0, Math.PI * 2);
+        mCtx.fill();
+      });
+
+      // Subtle bright crater rims (Tycho, Copernicus & Kepler highlights)
+      [[242, 378, 22, 0.42], [176, 224, 18, 0.34], [134, 242, 12, 0.28], [330, 315, 14, 0.26]]
+        .forEach(([cx, cy, cr, ca]) => {
+          const cg = mCtx.createRadialGradient(cx, cy, 1, cx, cy, cr);
+          cg.addColorStop(0, `rgba(255, 255, 255, ${ca})`);
+          cg.addColorStop(0.45, `rgba(240, 248, 255, ${ca * 0.5})`);
+          cg.addColorStop(1, 'rgba(255, 255, 255, 0)');
+          mCtx.fillStyle = cg;
+          mCtx.beginPath();
+          mCtx.arc(cx, cy, cr, 0, Math.PI * 2);
+          mCtx.fill();
+        });
+      mCtx.restore();
+
+      const moonDiscTex = new THREE.CanvasTexture(mCanvas);
+      moonDiscTex.anisotropy = MAX_ANISO;
+      moonDiscTex.minFilter = THREE.LinearMipmapLinearFilter;
+      moonDiscTex.magFilter = THREE.LinearFilter;
+      moonDiscTex.generateMipmaps = true;
+
+      const hCanvas = document.createElement('canvas');
+      hCanvas.width = 256; hCanvas.height = 256;
+      const hCtx = hCanvas.getContext('2d');
+      const hGrad = hCtx.createRadialGradient(128, 128, 12, 128, 128, 128);
+      hGrad.addColorStop(0.0, 'rgba(235, 244, 255, 0.46)');
+      hGrad.addColorStop(0.16, 'rgba(215, 234, 255, 0.44)');
+      hGrad.addColorStop(0.42, 'rgba(130, 185, 255, 0.16)');
+      hGrad.addColorStop(0.72, 'rgba(90, 130, 235, 0.04)');
+      hGrad.addColorStop(1.0, 'rgba(0, 0, 0, 0)');
+      hCtx.fillStyle = hGrad;
+      hCtx.fillRect(0, 0, 256, 256);
+      const moonHaloTex = new THREE.CanvasTexture(hCanvas);
+
+      const moonHalo = new THREE.Mesh(
+        new THREE.PlaneGeometry(390, 390),
+        new THREE.MeshBasicMaterial({
+          map: moonHaloTex,
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+          fog: false,
+          toneMapped: false
+        })
+      );
+      moonHalo.position.z = -2;
+      moonGroup.add(moonHalo);
+
+      const moonDisc = new THREE.Mesh(
+        new THREE.PlaneGeometry(126, 126),
+        new THREE.MeshBasicMaterial({
+          map: moonDiscTex,
+          transparent: true,
+          depthWrite: false,
+          fog: false,
+          toneMapped: false
+        })
+      );
+      moonGroup.add(moonDisc);
+      moonGroup.position.copy(MOON_SKY_OFFSET);
+      moonGroup.lookAt(0, 0, 0);
+      scene.add(moonGroup);
+    }
+
     // Subtle Dark Reflective City Ground Grid
     const floorGrid = new THREE.GridHelper(3400, 170, 0xff2a85, 0x0f1a38);
     floorGrid.position.y = -32;
@@ -2753,6 +3140,15 @@
       const halfDiag = Math.hypot(bw, bd) * 0.5;
       // Strict clearance from entire highway track AND giant roadside billboards (zero overlaps!)
       if (distToTrackXZ(bx, bz) < halfDiag + 44) return false;
+      // Keep starting-grid sightline to the Full Moon clear above a low-rise skyline horizon!
+      const rx = bx - 5, rz = bz - 420;
+      const moonProj = rx * 0.9378 + rz * 0.3472;
+      const moonPerp = Math.abs(-rx * 0.3472 + rz * 0.9378);
+      if (moonProj > 25 && moonPerp < halfDiag + moonProj * 0.10 + 24) {
+        const maxMoonSafeH = moonProj * 0.16 - 10;
+        if (maxMoonSafeH < 52) return false;
+        bh = Math.min(bh, maxMoonSafeH);
+      }
       // Strict clearance from every other building (zero buildings inside each other!)
       for (let i = 0; i < placedBuildings.length; i++) {
         const b = placedBuildings[i];
@@ -3132,10 +3528,17 @@
     const tracksidePanels = [];
     const panelScreenGeo = new THREE.BoxGeometry(27.0, 14.85, 0.64);
 
+    if (document.fonts && document.fonts.ready) {
+      try {
+        await Promise.race([document.fonts.ready, new Promise((r) => setTimeout(r, 380))]);
+      } catch (_fErr) {}
+    }
+
     await yieldBootFrame(82, 'Rendering 2K HD CV Megaboards...');
     for (let mIdx = 0; mIdx < MILESTONES.length; mIdx++) {
       const m = MILESTONES[mIdx];
-      if (mIdx === 3) await yieldBootFrame(88, 'Baking Crisp 3D Milestone Panels...');
+      if (mIdx === 2) await yieldBootFrame(86, 'Uploading 3D Milestone Textures...');
+      else if (mIdx === 5) await yieldBootFrame(91, 'Pre-Loading 2K Panel Mipmaps...');
       // Pure Clean Floating Megaboard hovering beside the highway (ZERO base, ZERO track collision!)
       const panelT = (m.t + 0.032) % 1;
       const pPt = trackCurve.getPointAt(panelT);
@@ -3173,11 +3576,13 @@
       const baseQuat = hoverGroup.quaternion.clone();
 
       const frameMat = new THREE.MeshStandardMaterial({ color: m.accent, emissive: m.accent, emissiveIntensity: 0.35 });
+      const panelTex = createPanelTex(m);
       const screenFaceMat = new THREE.MeshBasicMaterial({
-        map: createPanelTex(m),
+        map: panelTex,
         polygonOffset: true,
         polygonOffsetFactor: -1
       });
+      try { renderer.initTexture(panelTex); } catch (_tErr) {}
       const screenMesh = new THREE.Mesh(
         panelScreenGeo,
         [frameMat, frameMat, frameMat, frameMat, screenFaceMat, screenFaceMat]
@@ -3200,23 +3605,6 @@
         milestone: m,
         milestoneIdx: mIdx
       });
-    }
-
-    // Staggered Non-Blocking Font Re-Bake (1 panel per frame so zero main-thread hitch!)
-    if (document.fonts && document.fonts.ready) {
-      document.fonts.ready.then(() => {
-        let pIdx = 0;
-        function rebakeNextPanel() {
-          if (pIdx >= tracksidePanels.length) return;
-          const tp = tracksidePanels[pIdx++];
-          const oldTex = tp.screenFaceMat.map;
-          tp.screenFaceMat.map = createPanelTex(tp.milestone);
-          tp.screenFaceMat.needsUpdate = true;
-          if (oldTex) oldTex.dispose();
-          requestAnimationFrame(rebakeNextPanel);
-        }
-        requestAnimationFrame(rebakeNextPanel);
-      }).catch(() => {});
     }
 
     // ============================================================================
@@ -3450,37 +3838,49 @@
 
     function createItaliaPlateTex() {
       const c = document.createElement('canvas');
-      c.width = 512; c.height = 128;
+      c.width = 1024; c.height = 256;
       const ctx = c.getContext('2d');
-      ctx.scale(2, 2);
-      // Authentic Italian EU Rear License Plate: [EU/I Blue Band] [AG · ITALIA] [Blue Band]
-      ctx.fillStyle = '#f4f7fc';
-      ctx.fillRect(0, 0, 256, 64);
+      // Crisp high-contrast reflective white Italian EU plate background
+      ctx.fillStyle = '#f8faff';
+      ctx.fillRect(0, 0, 1024, 256);
+      // Slim left & right EU Italia blue bands (maximizes center space for "ALESSIO"!)
       ctx.fillStyle = '#003399';
-      ctx.fillRect(0, 0, 34, 64);
-      ctx.fillRect(226, 0, 30, 64);
-      ctx.strokeStyle = '#101522';
-      ctx.lineWidth = 4;
-      ctx.strokeRect(2, 2, 252, 60);
-      // EU Gold Circle + 'I' for Italia
+      ctx.fillRect(0, 0, 106, 256);
+      ctx.fillRect(930, 0, 94, 256);
+      // Crisp dark plate frame border
+      ctx.strokeStyle = '#0a0f1d';
+      ctx.lineWidth = 12;
+      ctx.strokeRect(6, 6, 1012, 244);
+      // Left band: EU gold star ring + bold 'I'
       ctx.strokeStyle = '#ffd32a';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 6;
       ctx.beginPath();
-      ctx.arc(17, 18, 7, 0, Math.PI * 2);
+      ctx.arc(53, 68, 24, 0, Math.PI * 2);
       ctx.stroke();
       ctx.fillStyle = '#ffffff';
-      ctx.font = '900 22px Arial, sans-serif';
+      ctx.font = '900 76px Inter, Arial, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('I', 17, 53);
-      // Crisp Plate Characters + Small Tricolore Accent
-      ctx.fillStyle = '#0b1020';
-      ctx.font = '900 30px Orbitron, Arial, sans-serif';
-      ctx.fillText('ITALIA', 130, 43);
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillText('I', 53, 214);
+      // Center: Ultra-legible bold "ALESSIO" plate characters
+      ctx.fillStyle = '#050812';
+      ctx.font = '900 142px Inter, "Arial Black", "Helvetica Neue", Arial, sans-serif';
+      ctx.fillText('ALESSIO', 518, 180, 796);
+      // Right band: Modena gold registration circle + subtle mini Tricolore bar
       ctx.fillStyle = '#ffd32a';
       ctx.beginPath();
-      ctx.arc(241, 22, 6, 0, Math.PI * 2);
+      ctx.arc(977, 78, 22, 0, Math.PI * 2);
       ctx.fill();
-      return new THREE.CanvasTexture(c);
+      ctx.fillStyle = '#009246'; ctx.fillRect(949, 178, 19, 36);
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(968, 178, 18, 36);
+      ctx.fillStyle = '#ce2b37'; ctx.fillRect(986, 178, 19, 36);
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.anisotropy = MAX_ANISO;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.generateMipmaps = true;
+      return tex;
     }
 
     function buildSupercar() {
@@ -3605,13 +4005,17 @@
       rearGrille.position.set(0, 0.74, -2.56);
       visual.add(rearGrille);
 
-      // Illuminated Rear Italian License Plate ("I · ITALIA") right between the twin round taillights!
+      // Illuminated Rear Italian License Plate ("I · ALESSIO") framed cleanly between the twin round taillights!
+      const plateHolder = new THREE.Mesh(new THREE.BoxGeometry(1.04, 0.29, 0.045), carbonMat);
+      plateHolder.position.set(0, 0.74, -2.665);
+      visual.add(plateHolder);
+
       const rearPlate = new THREE.Mesh(
-        new THREE.PlaneGeometry(0.78, 0.20),
-        new THREE.MeshBasicMaterial({ map: italiaPlateTex })
+        new THREE.PlaneGeometry(0.98, 0.245),
+        new THREE.MeshBasicMaterial({ map: italiaPlateTex, color: 0xf4f7ff, toneMapped: false })
       );
-      rearPlate.rotation.y = Math.PI;
-      rearPlate.position.set(0, 0.75, -2.62);
+      rearPlate.position.set(0, 0.74, -2.695);
+      rearPlate.lookAt(0, 1.05, -6.0);
       visual.add(rearPlate);
 
       const diffuser = new THREE.Mesh(new THREE.BoxGeometry(1.94, 0.26, 0.28), carbonMat);
@@ -3749,6 +4153,56 @@
 
     await yieldBootFrame(94, 'Preparing Tricolore Supercar & Shaders...');
     const car = buildSupercar();
+    ensureNitroRT();
+
+    // Classic Need for Speed Crimson Taillight Streak Ribbons (1 single dynamic BufferGeometry draw call!)
+    const TRAIL_SEGS = 16;
+    const trailHistL = Array.from({ length: TRAIL_SEGS }, () => new THREE.Vector3());
+    const trailHistR = Array.from({ length: TRAIL_SEGS }, () => new THREE.Vector3());
+    const trailHistBin = Array.from({ length: TRAIL_SEGS }, () => new THREE.Vector3(1, 0, 0));
+    let trailInitialized = false;
+    const trailPosArr = new Float32Array(TRAIL_SEGS * 4 * 3);
+    const trailColArr = new Float32Array(TRAIL_SEGS * 4 * 3);
+    const trailIndices = [];
+    for (let k = 0; k < TRAIL_SEGS; k++) {
+      const fade = Math.pow(1 - k / (TRAIL_SEGS - 1), 1.65);
+      const rC = 1.0 * fade, gC = 0.14 * fade, bC = 0.24 * fade;
+      for (let v = 0; v < 4; v++) {
+        const ci = (k * 4 + v) * 3;
+        trailColArr[ci] = rC;
+        trailColArr[ci + 1] = gC;
+        trailColArr[ci + 2] = bC;
+      }
+      if (k < TRAIL_SEGS - 1) {
+        const lA = k * 4, lB = (k + 1) * 4;
+        trailIndices.push(lA, lA + 1, lB, lA + 1, lB + 1, lB);
+        const rA = k * 4 + 2, rB = (k + 1) * 4 + 2;
+        trailIndices.push(rA, rA + 1, rB, rA + 1, rB + 1, rB);
+      }
+    }
+    const tailTrailGeo = new THREE.BufferGeometry();
+    tailTrailGeo.setAttribute('position', new THREE.BufferAttribute(trailPosArr, 3));
+    tailTrailGeo.setAttribute('color', new THREE.BufferAttribute(trailColArr, 3));
+    tailTrailGeo.setIndex(trailIndices);
+    const tailTrailMat = new THREE.MeshBasicMaterial({
+      vertexColors: true,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+      opacity: 0,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    });
+    const tailTrailMesh = new THREE.Mesh(tailTrailGeo, tailTrailMat);
+    tailTrailMesh.frustumCulled = false;
+    tailTrailMesh.visible = false;
+    scene.add(tailTrailMesh);
+    const _tailPosL = new THREE.Vector3();
+    const _tailPosR = new THREE.Vector3();
+
+    function resetTaillightTrails() {
+      trailInitialized = false;
+      tailTrailMesh.visible = false;
+    }
 
     // Instanced Spark Pool (1 Draw Call — Italian Tricolore + Modena Gold Sparks!)
     const SPARK_COUNT = 64;
@@ -3806,6 +4260,9 @@
       squash: 0,
       turboCharge: 100,
       padBoostTimer: 0,
+      nitroBlur: 0,
+      nitroKick: 0,
+      wasTurbo: false,
       hitShake: 0,
       focusBlend: 0,
       tourDwellTimer: 0,
@@ -3830,7 +4287,8 @@
       cutsceneReady: false,
       lastSpeedKmh: -1,
       lastTurboPct: -1,
-      lastProgPct: -1
+      lastProgPct: -1,
+      lastBodyFocused: false
     };
 
     const rawKeys = { forward: false, backward: false, left: false, right: false, turbo: false };
@@ -3886,8 +4344,9 @@
       showToast(state.flipAxis === 'z' ? '🌀 360° BARREL ROLL!' : '🔥 360° STUNT FLIP!');
     }
 
-    // Build 7-step top stepper dots
+    // Build 7-step top stepper dots & cache CV card DOM references (Zero querySelector / offsetWidth reflows!)
     const stepperDotsEl = document.getElementById('stepper-dots');
+    const stepBtnEls = [];
     MILESTONES.forEach((m, idx) => {
       if (idx > 0) {
         const conn = document.createElement('div');
@@ -3900,62 +4359,142 @@
       btn.title = `${m.shortName} (${m.date})`;
       btn.addEventListener('click', () => { dismissOnboarding(); warpToMilestone(idx); });
       stepperDotsEl.appendChild(btn);
+      stepBtnEls.push(btn);
     });
 
-    function updateCVCard(idx) {
-      const changed = state.activeMilestoneIdx !== idx;
-      state.activeMilestoneIdx = idx;
+    const stepperCaptionEl = document.getElementById('stepper-caption');
+    const cardRootEl = document.getElementById('cv-card');
+    const cardStageBadgeEl = document.getElementById('card-stage');
+    const cardDateEl = document.getElementById('card-date');
+    const cardTitleEl = document.getElementById('card-title');
+    const cardSubtitleEl = document.getElementById('card-subtitle');
+    const cardImpactEl = document.getElementById('card-impact');
+    const cardBulletsEl = document.getElementById('card-bullets');
+    const cardTagsEl = document.getElementById('card-tags');
+    const btnCardCollapseEl = document.getElementById('btn-card-collapse');
+    const dockStageEl = document.getElementById('dock-stage');
+    const dockDetailsEl = document.getElementById('dock-details');
+    const mobileStageSheetEl = document.getElementById('mobile-stage-sheet');
+    const mssStageEl = document.getElementById('mss-stage');
+    const mssDateEl = document.getElementById('mss-date');
+    const mssTitleEl = document.getElementById('mss-title');
+    const mssSubEl = document.getElementById('mss-sub');
+    const mssImpactEl = document.getElementById('mss-impact');
+    const mssBulletsEl = document.getElementById('mss-bullets');
+    const mssTagsEl = document.getElementById('mss-tags');
+
+    let lastRenderedCardIdx = -1;
+    let lastRenderedVisitedCount = -1;
+    let cardDetailsRenderedIdx = -1;
+    let mssRenderedIdx = -1;
+    let mobileSheetOpen = false;
+    let stagePulseToggle = false;
+
+    function renderMobileStageSheet(idx) {
       const m = MILESTONES[idx];
-      state.visitedMilestones.add(m.id);
-
-      document.getElementById('stepper-caption').textContent = `0${idx + 1} · ${m.shortName}  (${state.visitedMilestones.size}/7)`;
-      stepperDotsEl.querySelectorAll('.step-btn').forEach((b, i) => {
-        b.classList.toggle('active', i === idx);
-        if (state.visitedMilestones.has(MILESTONES[i].id)) b.classList.add('visited');
-      });
-
-      const cardEl = document.getElementById('cv-card');
-      const badge = document.getElementById('card-stage');
-      badge.textContent = m.stage;
-      badge.style.borderColor = m.color;
-      badge.style.color = m.color;
-      cardEl.style.borderTopColor = m.color;
-      document.getElementById('card-date').textContent = m.date;
-      document.getElementById('card-title').textContent = m.title;
-      document.getElementById('card-subtitle').textContent = m.subtitle;
-      const impactEl = document.getElementById('card-impact');
-      if (impactEl) {
-        impactEl.textContent = '⚡ ' + m.impact;
-        impactEl.style.borderLeftColor = m.color;
-      }
-      if (changed) {
-        cardEl.classList.remove('stage-pulse');
-        void cardEl.offsetWidth;
-        cardEl.classList.add('stage-pulse');
-      }
-
-      const ul = document.getElementById('card-bullets');
-      ul.innerHTML = '';
+      if (!m || !mssStageEl) return;
+      mssRenderedIdx = idx;
+      mssStageEl.textContent = m.stage;
+      mssStageEl.style.borderColor = m.color;
+      mssStageEl.style.color = m.color;
+      mobileStageSheetEl.style.borderTopColor = m.color;
+      mssDateEl.textContent = m.date;
+      mssTitleEl.textContent = m.title;
+      mssSubEl.textContent = m.subtitle;
+      mssImpactEl.textContent = '⚡ ' + m.impact;
+      mssImpactEl.style.borderLeftColor = m.color;
+      mssBulletsEl.innerHTML = '';
       m.bullets.forEach((b) => {
         const li = document.createElement('li');
         li.textContent = b;
-        ul.appendChild(li);
+        mssBulletsEl.appendChild(li);
       });
+      mssTagsEl.innerHTML = '';
+      m.tags.slice(0, 5).forEach((t) => {
+        const s = document.createElement('span');
+        s.className = 'skill-chip';
+        s.textContent = t;
+        mssTagsEl.appendChild(s);
+      });
+    }
 
-      const tagsEl = document.getElementById('card-tags');
-      tagsEl.innerHTML = '';
+    function setMobileSheetOpen(open) {
+      mobileSheetOpen = Boolean(open);
+      if (mobileStageSheetEl) mobileStageSheetEl.classList.toggle('open', mobileSheetOpen);
+      if (dockDetailsEl) {
+        dockDetailsEl.classList.toggle('active', mobileSheetOpen);
+        dockDetailsEl.textContent = mobileSheetOpen ? '✕ HIDE TEXT' : '📖 READ TEXT';
+      }
+      if (mobileSheetOpen && mssRenderedIdx !== state.activeMilestoneIdx) {
+        renderMobileStageSheet(state.activeMilestoneIdx);
+      }
+    }
+
+    function renderCardDetails(idx) {
+      const m = MILESTONES[idx];
+      cardDetailsRenderedIdx = idx;
+      cardBulletsEl.innerHTML = '';
+      m.bullets.forEach((b) => {
+        const li = document.createElement('li');
+        li.textContent = b;
+        cardBulletsEl.appendChild(li);
+      });
+      cardTagsEl.innerHTML = '';
       m.tags.slice(0, 4).forEach((t) => {
         const s = document.createElement('span');
         s.className = 'skill-chip';
         s.textContent = t;
-        tagsEl.appendChild(s);
+        cardTagsEl.appendChild(s);
       });
+    }
+
+    function updateCVCard(idx) {
+      const m = MILESTONES[idx];
+      state.activeMilestoneIdx = idx;
+      state.visitedMilestones.add(m.id);
+      const visitedCount = state.visitedMilestones.size;
+
+      if (lastRenderedCardIdx !== idx || lastRenderedVisitedCount !== visitedCount) {
+        stepperCaptionEl.textContent = `0${idx + 1} · ${m.shortName}  (${visitedCount}/7)`;
+        if (dockStageEl) dockStageEl.textContent = `0${idx + 1} / 07`;
+        for (let i = 0; i < stepBtnEls.length; i++) {
+          const b = stepBtnEls[i];
+          b.classList.toggle('active', i === idx);
+          if (state.visitedMilestones.has(MILESTONES[i].id)) b.classList.add('visited');
+        }
+        lastRenderedVisitedCount = visitedCount;
+      }
+
+      if (lastRenderedCardIdx === idx) return;
+      lastRenderedCardIdx = idx;
+
+      cardStageBadgeEl.textContent = m.stage;
+      cardStageBadgeEl.style.borderColor = m.color;
+      cardStageBadgeEl.style.color = m.color;
+      cardRootEl.style.borderTopColor = m.color;
+      cardDateEl.textContent = m.date;
+      cardTitleEl.textContent = m.title;
+      cardSubtitleEl.textContent = m.subtitle;
+      if (cardImpactEl) {
+        cardImpactEl.textContent = '⚡ ' + m.impact;
+        cardImpactEl.style.borderLeftColor = m.color;
+      }
+
+      stagePulseToggle = !stagePulseToggle;
+      cardRootEl.classList.remove(stagePulseToggle ? 'stage-pulse-b' : 'stage-pulse-a');
+      cardRootEl.classList.add(stagePulseToggle ? 'stage-pulse-a' : 'stage-pulse-b');
+
+      if (!state.cardCompact) renderCardDetails(idx);
+      if (mobileSheetOpen) renderMobileStageSheet(idx);
     }
 
     function setCardCompact(compact) {
       state.cardCompact = compact;
-      document.getElementById('cv-card').classList.toggle('compact', compact);
-      document.getElementById('btn-card-collapse').textContent = compact ? '📖 DETAILS' : 'HIDE DETAILS';
+      cardRootEl.classList.toggle('compact', compact);
+      btnCardCollapseEl.textContent = compact ? '📖 DETAILS' : 'HIDE DETAILS';
+      if (!compact && cardDetailsRenderedIdx !== state.activeMilestoneIdx) {
+        renderCardDetails(state.activeMilestoneIdx);
+      }
     }
 
     function updateFocusBtnUI() {
@@ -3969,8 +4508,9 @@
       const btn = document.getElementById('btn-tour');
       const isTour = state.mode === 'TOUR';
       btn.classList.toggle('active-toggle', isTour);
-      document.getElementById('tour-label').textContent = isTour ? 'TOUR: ON' : 'GUIDED TOUR';
+      document.getElementById('tour-label').textContent = isTour ? 'TOUR: ON' : (IS_PHONE ? 'TOUR' : 'GUIDED TOUR');
     }
+    updateTourUI();
 
     function setPaused(paused) {
       if (paused && state.mode !== 'PAUSED' && state.mode !== 'MODAL') {
@@ -4025,6 +4565,10 @@
       nitroCanisters.forEach((n) => { n.collected = false; });
       skyRings.forEach((r) => { r.collected = false; });
       state.hitShake = 0;
+      state.nitroBlur = 0;
+      state.nitroKick = 0;
+      state.wasTurbo = false;
+      resetTaillightTrails();
       updateCVCard(0);
       updateFocusBtnUI();
       updateTourUI();
@@ -4080,11 +4624,28 @@
       sfx.resumeWhoosh();
     }
 
+    function getPanelCameraSpec() {
+      const fov = IS_PHONE ? 43 : (IS_TABLET ? 45 : 48);
+      const fh = IS_PHONE ? 0.65 : (IS_TABLET ? 0.59 : 0.48);
+      const fw = IS_PHONE ? 0.84 : (IS_TABLET ? 0.82 : 0.80);
+      const halfTan = Math.tan(THREE.MathUtils.degToRad(fov * 0.5));
+      const asp = Math.max(0.65, camera.aspect || (window.innerWidth / Math.max(1, window.innerHeight)));
+      const dH = (14.85 / fh) / (2 * halfTan);
+      const dW = (27.0 / fw) / (2 * halfTan * asp);
+      return {
+        fov,
+        dist: Math.max(dH, dW),
+        yOffset: IS_PHONE ? -0.85 : (IS_TABLET ? -0.50 : -0.20)
+      };
+    }
+
     function exitPanelFocus() {
       if (state.mode !== 'FOCUSED') return;
+      setMobileSheetOpen(false);
       state.mode = 'PLAYING';
       state.deepZoom = false;
       state.focusedPanelRef = null;
+      if (gyro.active && state.speed < 10) state.speed = 16;
       updateFocusBtnUI();
       refocusGameCanvas();
     }
@@ -4093,9 +4654,11 @@
       getTrackFrame(state.t, _pt, _tan, _bin, _norm);
       _carPos.copy(_pt).addScaledVector(_bin, state.laneOffset);
       if (focusedPanel && state.deepZoom) {
-        smoothCamPos.copy(focusedPanel.worldPos).addScaledVector(focusedPanel.forwardDir, IS_MOBILE ? 35 : 36);
-        smoothCamPos.y -= 0.2;
+        const spec = getPanelCameraSpec();
+        smoothCamPos.copy(focusedPanel.worldPos).addScaledVector(focusedPanel.forwardDir, spec.dist);
+        smoothCamPos.y += spec.yOffset;
         smoothLookAt.copy(focusedPanel.worldPos);
+        smoothLookAt.y += spec.yOffset;
         _camUp.set(0, 1, 0);
         chaseCamPos.copy(smoothCamPos);
         chaseLookAt.copy(smoothLookAt);
@@ -4140,7 +4703,10 @@
       updateFocusBtnUI();
       updateTourUI();
       updateCVCard(panel.milestoneIdx);
-      if (!isAlreadyNear) snapCameraToCurrent(lockFocus ? panel : null);
+      if (!isAlreadyNear) {
+        resetTaillightTrails();
+        snapCameraToCurrent(lockFocus ? panel : null);
+      }
       sfx.stage();
       refocusGameCanvas();
     }
@@ -4160,9 +4726,16 @@
       jumpToPanel(tracksidePanels[nextIdx], true, true, true);
     }
 
-    // Wire UI Buttons
+    // Wire UI Buttons & Mobile Panel Dock / Sheet
     document.getElementById('btn-prev-log').addEventListener('click', () => stepPanel(-1));
     document.getElementById('btn-next-log').addEventListener('click', () => stepPanel(1));
+    document.getElementById('btn-m-prev').addEventListener('click', () => stepPanel(-1));
+    document.getElementById('btn-m-next').addEventListener('click', () => stepPanel(1));
+    document.getElementById('dock-prev').addEventListener('click', () => stepPanel(-1));
+    document.getElementById('dock-next').addEventListener('click', () => stepPanel(1));
+    document.getElementById('dock-drive').addEventListener('click', exitPanelFocus);
+    if (dockDetailsEl) dockDetailsEl.addEventListener('click', () => setMobileSheetOpen(!mobileSheetOpen));
+    document.getElementById('btn-mss-close').addEventListener('click', () => setMobileSheetOpen(false));
     document.getElementById('btn-card-collapse').addEventListener('click', () => setCardCompact(!state.cardCompact));
     const triggerFocusToggle = () => {
       dismissOnboarding();
@@ -4177,6 +4750,7 @@
     };
     document.getElementById('btn-focus-toggle').addEventListener('click', triggerFocusToggle);
     document.getElementById('focus-indicator').addEventListener('click', triggerFocusToggle);
+    stepperCaptionEl.addEventListener('click', triggerFocusToggle);
     document.getElementById('btn-tour').addEventListener('click', () => {
       dismissOnboarding();
       state.mode = (state.mode === 'TOUR') ? 'PLAYING' : 'TOUR';
@@ -4241,6 +4815,9 @@
     document.getElementById('btn-cv-modal').addEventListener('click', openCVModal);
     document.getElementById('btn-pause-cv').addEventListener('click', openCVModal);
     document.getElementById('btn-close-modal').addEventListener('click', closeCVModal);
+    const btnRotateCv = document.getElementById('btn-rotate-cv');
+    if (btnRotateCv) btnRotateCv.addEventListener('click', openCVModal);
+    cvModal.addEventListener('click', (e) => { if (e.target === cvModal) closeCVModal(); });
     document.addEventListener('click', (e) => {
       const btn = e.target && e.target.closest ? e.target.closest('button') : null;
       if (btn && state.mode !== 'MODAL' && state.mode !== 'PAUSED') {
@@ -4435,33 +5012,81 @@
     const btnMobileCv = document.getElementById('btn-mobile-cv');
     if (btnMobileCv) btnMobileCv.addEventListener('click', openCVModal);
 
-    // Instant Snappy 3D Panel Click -> Crisp Straight-On Deep Zoom Inspection (Click anywhere outside to exit fast!)
+    // Instant Snappy 3D Panel Click / Touch Swipe Navigation + Forgiving Touch Panel Hitbox
     const raycaster = new THREE.Raycaster();
     const pointerNDC = new THREE.Vector2();
     const panelMeshes = tracksidePanels.map(p => p.screenMesh);
-    let pDownX = 0, pDownY = 0;
+    const _touchProj = new THREE.Vector3();
+    const _touchR = new THREE.Vector3();
+    const _touchU = new THREE.Vector3();
+    let pDownX = 0, pDownY = 0, pDownTime = 0;
+
+    function findForgivingTouchPanel(clientX, clientY) {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const pad = 28;
+      let bestPanel = null;
+      let bestDist = Infinity;
+      for (let i = 0; i < tracksidePanels.length; i++) {
+        const tp = tracksidePanels[i];
+        const distSq = camera.position.distanceToSquared(tp.worldPos);
+        if (distSq > 115 * 115) continue;
+        _touchR.set(1, 0, 0).applyQuaternion(tp.baseQuat).multiplyScalar(13.5);
+        _touchU.set(0, 1, 0).applyQuaternion(tp.baseQuat).multiplyScalar(7.425);
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        let inFront = true;
+        for (let cx = -1; cx <= 1; cx += 2) {
+          for (let cy = -1; cy <= 1; cy += 2) {
+            _touchProj.copy(tp.worldPos).addScaledVector(_touchR, cx).addScaledVector(_touchU, cy).project(camera);
+            if (_touchProj.z > 1) { inFront = false; break; }
+            const sx = (_touchProj.x * 0.5 + 0.5) * w;
+            const sy = (-_touchProj.y * 0.5 + 0.5) * h;
+            if (sx < minX) minX = sx;
+            if (sx > maxX) maxX = sx;
+            if (sy < minY) minY = sy;
+            if (sy > maxY) maxY = sy;
+          }
+          if (!inFront) break;
+        }
+        if (inFront && clientX >= minX - pad && clientX <= maxX + pad && clientY >= minY - pad && clientY <= maxY + pad) {
+          if (distSq < bestDist) { bestDist = distSq; bestPanel = tp; }
+        }
+      }
+      return bestPanel;
+    }
+
     renderer.domElement.addEventListener('pointerdown', (e) => {
       pDownX = e.clientX;
       pDownY = e.clientY;
+      pDownTime = performance.now();
       refocusGameCanvas();
     }, { passive: true });
     renderer.domElement.addEventListener('pointerup', (e) => {
-      if (Math.hypot(e.clientX - pDownX, e.clientY - pDownY) > 10) return;
       if (state.mode === 'PAUSED' || state.mode === 'MODAL' || state.mode === 'CUTSCENE') return;
+      const dx = e.clientX - pDownX;
+      const dy = e.clientY - pDownY;
+      const dist = Math.hypot(dx, dy);
+      const dtMs = performance.now() - pDownTime;
+      if (state.mode === 'FOCUSED' && Math.abs(dx) > 38 && Math.abs(dx) > Math.abs(dy) * 1.35 && dtMs < 650) {
+        stepPanel(dx < 0 ? 1 : -1);
+        return;
+      }
+      if (dist > (e.pointerType === 'touch' ? 16 : 10)) return;
       pointerNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointerNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(pointerNDC, camera);
       const hits = raycaster.intersectObjects(panelMeshes, false);
-      if (hits.length > 0) {
-        const panel = tracksidePanels.find(p => p.screenMesh === hits[0].object);
-        if (panel) {
-          dismissOnboarding();
-          if (state.mode === 'FOCUSED' && state.deepZoom && state.focusedPanelRef === panel) {
-            exitPanelFocus();
-          } else {
-            jumpToPanel(panel, true, true, true);
-            showToast('🔍 PANEL ZOOM · CLICK OUTSIDE TO EXIT');
-          }
+      let panel = hits.length > 0 ? tracksidePanels.find(p => p.screenMesh === hits[0].object) : null;
+      if (!panel && (e.pointerType === 'touch' || IS_TOUCH_UI) && state.mode !== 'FOCUSED') {
+        panel = findForgivingTouchPanel(e.clientX, e.clientY);
+      }
+      if (panel) {
+        dismissOnboarding();
+        if (state.mode === 'FOCUSED' && state.deepZoom && state.focusedPanelRef === panel) {
+          exitPanelFocus();
+        } else {
+          jumpToPanel(panel, true, true, true);
+          showToast(IS_TOUCH_UI ? '🔍 SWIPE ◀ ▶ OR TAP DRIVE' : '🔍 PANEL ZOOM · CLICK OUTSIDE TO EXIT');
         }
       } else if (state.mode === 'FOCUSED') {
         exitPanelFocus();
@@ -4482,9 +5107,11 @@
     const nfsmwTitleEl = document.getElementById('nfsmw-title');
     const nfsmwHeroEl = document.getElementById('nfsmw-hero');
     const nfsmwBtn = document.getElementById('btn-nfsmw-proceed');
+    const nfsmwInspectBtn = document.getElementById('btn-nfsmw-inspect');
     const nfsmwBtnFill = document.getElementById('nfsmw-btn-fill');
     const nfsmwBtnText = document.getElementById('nfsmw-btn-text');
     const hudEl = document.getElementById('hud');
+    let flashToggle = false;
 
     function triggerSpottedCutscene(panel) {
       // Capture exact live camera pose before switching into Speedbreaker Bezier crane
@@ -4506,41 +5133,51 @@
       state.cutsceneReady = false;
       updateCVCard(panel.milestoneIdx);
 
-      // Populate tactical cinema bars + ultra-crisp Mobile HTML Reading Card
+      // Populate tactical cinema bars (3D Megaboard stays unobstructed in the center!)
       nfsmwOverlay.style.setProperty('--cut-accent', panel.milestone.color);
       nfsmwOverlay.classList.remove('ready-click');
       nfsmwStageEl.textContent = `MILESTONE SPOTTED // ${panel.milestone.stage}`;
       nfsmwTitleEl.textContent = panel.milestone.title;
       nfsmwHeroEl.textContent = '⚡ ' + panel.milestone.heroStat;
-      const nmcCard = document.getElementById('nfsmw-mobile-card');
-      if (nmcCard) {
-        nmcCard.style.borderColor = panel.milestone.color;
-        document.getElementById('nmc-title').textContent = panel.milestone.title;
-        document.getElementById('nmc-date').textContent = panel.milestone.date;
-        document.getElementById('nmc-sub').textContent = panel.milestone.subtitle;
-        document.getElementById('nmc-hero').textContent = '⚡ ' + panel.milestone.heroStat;
-        document.getElementById('nmc-impact').textContent = panel.milestone.impact;
-        const nmcTags = document.getElementById('nmc-tags');
-        nmcTags.innerHTML = '';
-        panel.milestone.tags.slice(0, 4).forEach((t) => {
-          const s = document.createElement('span');
-          s.className = 'skill-chip';
-          s.textContent = t;
-          nmcTags.appendChild(s);
-        });
-      }
       nfsmwBtn.disabled = true;
       nfsmwBtn.classList.remove('ready');
+      if (nfsmwInspectBtn) {
+        nfsmwInspectBtn.disabled = true;
+        nfsmwInspectBtn.classList.remove('ready');
+      }
       nfsmwBtnFill.style.transform = 'scaleX(0)';
-      nfsmwBtnText.textContent = 'LOCKING ON · 0.9s';
+      nfsmwBtnText.textContent = IS_TOUCH_UI ? 'LOCKING ON · 0.5s' : 'LOCKING ON · 0.9s';
 
-      // Trigger subtle Speedbreaker rim pulse + staggered letterbox bars + audio swell
-      nfsmwFlash.classList.remove('flash');
-      void nfsmwFlash.offsetWidth;
-      nfsmwFlash.classList.add('flash');
+      // Trigger subtle Speedbreaker rim pulse + staggered letterbox bars + audio swell (Zero layout reflow!)
+      flashToggle = !flashToggle;
+      nfsmwFlash.classList.remove(flashToggle ? 'flash-b' : 'flash-a');
+      nfsmwFlash.classList.add(flashToggle ? 'flash-a' : 'flash-b');
       nfsmwOverlay.classList.add('active');
       hudEl.classList.add('cutscene-hide');
       sfx.spotted();
+    }
+
+    function inspectFromCutscene() {
+      if (state.mode !== 'CUTSCENE' || !state.cutsceneReady || !state.cutscenePanel) return;
+      const panel = state.cutscenePanel;
+      nfsmwOverlay.classList.remove('active', 'ready-click');
+      hudEl.classList.remove('cutscene-hide');
+      state.returnSwoopActive = false;
+      state.simTimeScale = 1.0;
+      state.padBoostTimer = 0;
+      state.speed = 0;
+      state.mode = 'FOCUSED';
+      state.focusedPanelRef = panel;
+      state.focusBlend = 1.0;
+      state.deepZoom = true;
+      state.deepZoomBlend = 1.0;
+      state.cutscenePanel = null;
+      state.cutsceneReady = false;
+      updateCVCard(panel.milestoneIdx);
+      updateFocusBtnUI();
+      updateTourUI();
+      clock.getDelta();
+      refocusGameCanvas();
     }
 
     function closeSpottedCutscene() {
@@ -4557,6 +5194,12 @@
       state.speed = state.preCutsceneSpeed || 32;
       clock.getDelta();
       refocusGameCanvas();
+    }
+    if (nfsmwInspectBtn) {
+      nfsmwInspectBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        inspectFromCutscene();
+      });
     }
     nfsmwBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -4656,11 +5299,16 @@
     function bindHold(id, prop) {
       const el = document.getElementById(id);
       if (!el) return;
-      const release = () => { holdKeys[prop] = false; syncDriveKeys(); };
+      const release = () => {
+        el.classList.remove('pressed');
+        holdKeys[prop] = false;
+        syncDriveKeys();
+      };
       el.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         e.stopPropagation();
         try { el.setPointerCapture(e.pointerId); } catch (_err) {}
+        el.classList.add('pressed');
         holdKeys[prop] = true;
         syncDriveKeys();
         if (state.mode === 'CUTSCENE') {
@@ -4686,14 +5334,32 @@
     bindHold('t-turbo', 'turbo');
     const tJump = document.getElementById('t-jump');
     if (tJump) {
+      const clearJumpPress = () => tJump.classList.remove('pressed');
       tJump.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         e.stopPropagation();
+        tJump.classList.add('pressed');
         if (state.mode === 'CUTSCENE' && state.cutsceneReady) closeSpottedCutscene();
         else if (state.mode === 'FOCUSED') wakeFromPanelForDrive(true);
         state.jumpBufferTimer = 0.14;
         refocusGameCanvas();
       });
+      tJump.addEventListener('pointerup', clearJumpPress);
+      tJump.addEventListener('pointercancel', clearJumpPress);
+    }
+    const tCam = document.getElementById('t-cam');
+    if (tCam) {
+      const clearCamPress = () => tCam.classList.remove('pressed');
+      tCam.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        tCam.classList.add('pressed');
+        state.cameraMode = (state.cameraMode + 1) % 3;
+        showToast(['🎥 HERO CHASE POV', '🎥 HOOD / BUMPER POV', '🎥 CINEMA HELI POV'][state.cameraMode]);
+        refocusGameCanvas();
+      });
+      tCam.addEventListener('pointerup', clearCamPress);
+      tCam.addEventListener('pointercancel', clearCamPress);
     }
 
     // ============================================================================
@@ -4789,9 +5455,10 @@
         }
       }
 
-      // Handle 0.85s Lock-On Countdown during NFS Most Wanted Cutscene (zero-jank GPU scaleX!)
-      const CUT_LOCK_DUR = 0.85;
+      // Handle Lock-On Countdown during NFS Most Wanted Cutscene (zero-jank GPU scaleX!)
+      const CUT_LOCK_DUR = IS_TOUCH_UI ? 0.48 : 0.85;
       const isCutscene = state.mode === 'CUTSCENE';
+      const isFocused = state.mode === 'FOCUSED';
       if (isCutscene) {
         state.cutsceneTimer += dt;
         const pct = Math.min(1, state.cutsceneTimer / CUT_LOCK_DUR);
@@ -4802,6 +5469,10 @@
             state.cutsceneReady = true;
             nfsmwBtn.disabled = false;
             nfsmwBtn.classList.add('ready');
+            if (nfsmwInspectBtn) {
+              nfsmwInspectBtn.disabled = false;
+              nfsmwInspectBtn.classList.add('ready');
+            }
             nfsmwOverlay.classList.add('ready-click');
             nfsmwBtnText.textContent = IS_TOUCH_UI ? '▶ TAP TO CONTINUE' : '▶ CONTINUE DRIVING (SPACE)';
             sfx.stage();
@@ -4814,12 +5485,25 @@
       // Guided Tour glides continuously past every giant billboard — NEVER stops!
       const isTour = state.mode === 'TOUR';
 
-      // 2. Acceleration, Turbo, Auto-Gas + Tilt-Back Brake in Mobile Gyro Mode & Snappy ABS Braking!
-      const wantsBrake = !isCutscene && (keys.backward || (gyro.active && gyro.braking));
-      const nitroActiveInput = !isCutscene && !wantsBrake && (keys.turbo || state.padBoostTimer > 0) && state.turboCharge > 2;
-      const wantsForward = !isCutscene && !wantsBrake && (keys.forward || nitroActiveInput || gyro.active || isTour);
+      // 2. Acceleration, Turbo, Auto-Gas + Tilt-Back Brake in Mobile Gyro Mode (parked while FOCUSED!) & Snappy ABS Braking!
+      const wantsBrake = !isCutscene && !isFocused && (keys.backward || (gyro.active && gyro.braking));
+      const nitroActiveInput = !isCutscene && !isFocused && !wantsBrake && (keys.turbo || state.padBoostTimer > 0) && state.turboCharge > 2;
+      const wantsForward = !isCutscene && !isFocused && !wantsBrake && (keys.forward || nitroActiveInput || gyro.active || isTour);
       const isTurbo = nitroActiveInput && state.speed >= -1.0;
       if (state.padBoostTimer > 0 && !isCutscene) state.padBoostTimer -= dt;
+
+      // Classic Need for Speed Nitro Ignition Kick & Radial Motion Blur Envelope
+      if (isTurbo && !state.wasTurbo) {
+        state.nitroKick = 1.0;
+        if (state.padBoostTimer <= 0) sfx.boost();
+      }
+      state.wasTurbo = isTurbo;
+      state.nitroKick = Math.max(0, (state.nitroKick || 0) - dt * 3.0);
+      const speedBlurScale = 0.55 + 0.45 * Math.min(1, Math.abs(state.speed) / 72);
+      const targetNitroBlur = (isTurbo && !isCutscene) ? speedBlurScale : 0.0;
+      const blurRate = isTurbo ? 9.5 : 5.0;
+      state.nitroBlur = THREE.MathUtils.lerp(state.nitroBlur || 0, targetNitroBlur, 1 - Math.exp(-blurRate * dt));
+      if (!isTurbo && state.nitroBlur < 0.002) state.nitroBlur = 0;
 
       // NFS Most Wanted Speedbreaker Bullet-Time: slows into 0.025x on entry, ramps smoothly back to 1.0x on return (ZERO boost!)
       let returnEase = 1.0;
@@ -4897,7 +5581,7 @@
       // 3. Snappy Arcade Steering (Keyboard, Touch, Gyro Tilt & Guided Tour!)
       const steerLimit = TRACK_WIDTH * 0.40;
       let targetLaneVel = 0;
-      if (!isCutscene) {
+      if (!isCutscene && !isFocused) {
         if (keys.left) targetLaneVel = -22;
         else if (keys.right) targetLaneVel = 22;
         else if (gyro.active && Math.abs(gyro.steer) > 0.01) targetLaneVel = gyro.steer * 28;
@@ -5011,9 +5695,10 @@
       const baseRoll = -state.laneVel * 0.011;
       car.visual.rotation.z = (state.doingFlip && state.flipAxis === 'z') ? state.flipAngle : baseRoll;
       car.visual.rotation.y = -state.laneVel * 0.008;
+      const nitroSquatPitch = state.isGrounded ? (-state.nitroKick * 0.032 - (isTurbo ? 0.014 : 0)) : 0;
       car.visual.rotation.x = (state.doingFlip && state.flipAxis === 'x')
         ? -state.flipAngle
-        : (state.isGrounded ? state.brakePitch : -state.jumpVel * 0.022);
+        : ((state.isGrounded ? state.brakePitch : -state.jumpVel * 0.022) + nitroSquatPitch);
       // Living V10 engine idle micro-pulse even when completely stopped!
       const idleHum = Math.sin(elapsed * 24) * 0.014;
       car.visual.position.y = state.isGrounded ? idleHum : 0;
@@ -5027,15 +5712,59 @@
       for (let i = 0; i < car.wheels.length; i++) car.wheels[i].rotation.x += state.speed * simDt * 0.72;
 
       const speedNorm = Math.min(1, Math.abs(state.speed) / state.maxSpeed);
-      // Subtle Italian Tricolore (Verde · Bianco · Rosso) exhaust flame flicker even at 0 KM/H!
+      // Subtle Italian Tricolore (Verde · Bianco · Rosso) exhaust flame flicker + long classic NFS Nitro jets!
       const idleFlicker = 0.14 + Math.sin(elapsed * 28) * 0.05;
-      const flameLen = isTurbo ? (1.48 + Math.sin(elapsed * 45) * 0.25) : Math.max(idleFlicker, speedNorm * 0.55);
+      const flameLen = isTurbo ? (2.35 + Math.sin(elapsed * 55) * 0.42) : Math.max(idleFlicker, speedNorm * 0.55);
       const italiaFlames = [0x00e65c, 0xffffff, 0xff2233];
       for (let i = 0; i < car.flameCones.length; i++) {
         const fc = car.flameCones[i];
         fc.visible = true;
-        fc.scale.set(isTurbo ? 1.25 : 0.82, isTurbo ? 1.25 : 0.82, flameLen);
+        fc.scale.set(isTurbo ? 1.45 : 0.82, isTurbo ? 1.45 : 0.82, flameLen);
         fc.material.color.setHex(italiaFlames[i % 3]);
+      }
+
+      // 3D Crimson Taillight Light-Trail Ribbons during Nitro
+      if (state.nitroBlur > 0.015 && !isCutscene) {
+        _tailPosL.copy(_carPos).addScaledVector(_negBin, 0.74).addScaledVector(_norm, 0.80).addScaledVector(_tan, -2.58);
+        _tailPosR.copy(_carPos).addScaledVector(_negBin, -0.74).addScaledVector(_norm, 0.80).addScaledVector(_tan, -2.58);
+        if (!trailInitialized) {
+          for (let k = 0; k < TRAIL_SEGS; k++) {
+            trailHistL[k].copy(_tailPosL);
+            trailHistR[k].copy(_tailPosR);
+            trailHistBin[k].copy(_bin);
+          }
+          trailInitialized = true;
+        } else {
+          if (_tailPosL.distanceToSquared(trailHistL[1]) > 0.42) {
+            for (let k = TRAIL_SEGS - 1; k >= 1; k--) {
+              trailHistL[k].copy(trailHistL[k - 1]);
+              trailHistR[k].copy(trailHistR[k - 1]);
+              trailHistBin[k].copy(trailHistBin[k - 1]);
+            }
+          }
+          trailHistL[0].copy(_tailPosL);
+          trailHistR[0].copy(_tailPosR);
+          trailHistBin[0].copy(_bin);
+        }
+        const posAttr = tailTrailGeo.attributes.position;
+        const arr = posAttr.array;
+        for (let k = 0; k < TRAIL_SEGS; k++) {
+          const halfW = 0.14 * (1 - k / (TRAIL_SEGS * 1.15));
+          const b = trailHistBin[k];
+          const bx = b.x * halfW, by = b.y * halfW, bz = b.z * halfW;
+          const hl = trailHistL[k], hr = trailHistR[k];
+          const base = k * 12;
+          arr[base]     = hl.x - bx; arr[base + 1]  = hl.y - by; arr[base + 2]  = hl.z - bz;
+          arr[base + 3] = hl.x + bx; arr[base + 4]  = hl.y + by; arr[base + 5]  = hl.z + bz;
+          arr[base + 6] = hr.x - bx; arr[base + 7]  = hr.y - by; arr[base + 8]  = hr.z - bz;
+          arr[base + 9] = hr.x + bx; arr[base + 10] = hr.y + by; arr[base + 11] = hr.z + bz;
+        }
+        posAttr.needsUpdate = true;
+        tailTrailMat.opacity = state.nitroBlur * 0.88;
+        tailTrailMesh.visible = true;
+      } else {
+        tailTrailMesh.visible = false;
+        trailInitialized = false;
       }
       // Breathing Ferrari Red V8 engine intake glow & Rosso Corsa / Tricolore / Brake underglow pulse
       const breath = 0.78 + Math.sin(elapsed * 3.8) * 0.22;
@@ -5166,6 +5895,12 @@
       }
 
       // Deduplicated DOM State Updates (Zero redundant style recalcs per frame!)
+      if (state.lastBodyFocused !== isFocused) {
+        state.lastBodyFocused = isFocused;
+        document.body.classList.toggle('is-panel-focused', isFocused);
+        if (!isFocused && mobileSheetOpen) setMobileSheetOpen(false);
+      }
+
       if (state.lastDeepZoom !== state.deepZoom) {
         state.lastDeepZoom = state.deepZoom;
         cvCardEl.classList.toggle('zoom-hidden', state.deepZoom);
@@ -5179,10 +5914,10 @@
       }
       if (showFocusPill) {
         const nextFocusText = state.deepZoom
-          ? '🔍 DEEP ZOOM · CLICK OUTSIDE OR PRESS W TO DRIVE'
+          ? (IS_TOUCH_UI ? '🔍 SWIPE ◀ ▶ STAGES · TAP OUTSIDE TO DRIVE' : '🔍 DEEP ZOOM · CLICK OUTSIDE OR PRESS W TO DRIVE')
           : (state.mode === 'FOCUSED'
-            ? '🔍 FOCUSED · CLICK PANEL TO ZOOM MORE'
-            : '⚡ GIANT PANEL AHEAD · CLICK TO ZOOM');
+            ? (IS_TOUCH_UI ? '🔍 FOCUSED · TAP PANEL TO ZOOM MORE' : '🔍 FOCUSED · CLICK PANEL TO ZOOM MORE')
+            : (IS_TOUCH_UI ? '⚡ PANEL AHEAD · TAP TO INSPECT' : '⚡ GIANT PANEL AHEAD · CLICK TO ZOOM'));
         if (state.lastFocusText !== nextFocusText) {
           state.lastFocusText = nextFocusText;
           focusStatusEl.textContent = nextFocusText;
@@ -5292,14 +6027,15 @@
         const eLook = 1 - Math.pow(1 - uLook, 3.2);
 
         _panelRight.crossVectors(upVec, cp.forwardDir).normalize();
-        const driftX = Math.sin(ct * 1.15) * 0.26 * ePos;
-        const driftY = Math.cos(ct * 0.90) * 0.15 * ePos;
-        const distFront = (IS_MOBILE ? 35.0 : 36.0) - Math.min(ct, 6.0) * 0.16 * ePos;
+        const panelSpec = getPanelCameraSpec();
+        const driftX = Math.sin(ct * 1.15) * 0.24 * ePos;
+        const driftY = Math.cos(ct * 0.90) * 0.14 * ePos;
+        const distFront = panelSpec.dist - Math.min(ct, 6.0) * 0.16 * ePos;
 
         _cutEndPos.copy(cp.worldPos)
           .addScaledVector(cp.forwardDir, distFront)
           .addScaledVector(_panelRight, driftX);
-        _cutEndPos.y += -0.15 + driftY;
+        _cutEndPos.y += panelSpec.yOffset + driftY;
 
         _cutMidCtrl.lerpVectors(_cutCamStart, _cutEndPos, 0.46);
         _cutMidCtrl.y += 6.0;
@@ -5310,10 +6046,11 @@
         smoothCamPos.lerpVectors(_bezA, _bezB, ePos);
 
         _desLook.copy(cp.worldPos);
+        _desLook.y += panelSpec.yOffset;
         smoothLookAt.lerpVectors(_cutLookStart, _desLook, eLook);
 
-        // Speedbreaker optic FOV warp (+3.2 deg brief widen -> crisp 48 / 45 deg HD billboard framing)
-        const baseEndFov = IS_MOBILE ? 45 : 48;
+        // Speedbreaker optic FOV warp (+3.2 deg brief widen -> crisp aspect-aware HD billboard framing)
+        const baseEndFov = panelSpec.fov;
         const fovWarp = Math.sin(uIn * Math.PI) * 3.2 * (1 - uIn);
         camera.fov = THREE.MathUtils.lerp(state.cutStartFov || 61, baseEndFov, ePos) + fovWarp;
         if (Math.abs(camera.fov - lastCamFov) > 0.01) {
@@ -5335,13 +6072,15 @@
         camera.position.copy(smoothCamPos);
         camera.lookAt(smoothLookAt);
       } else if (state.mode === 'FOCUSED' && state.deepZoom && (state.focusedPanelRef || nearPanel)) {
-        // Snappy, Responsive Direct-Click 3D Panel Zoom (~0.14s fast whip-in, crisp straight-on HD framing!)
+        // Snappy, Responsive Direct-Click 3D Panel Zoom (~0.14s fast whip-in, aspect-aware straight-on HD framing!)
         const fp = state.focusedPanelRef || nearPanel;
+        const panelSpec = getPanelCameraSpec();
         const fastAlpha = 1 - Math.exp(-22.0 * dt);
-        _desCam.copy(fp.worldPos).addScaledVector(fp.forwardDir, IS_MOBILE ? 35 : 36);
-        _desCam.y -= 0.2;
+        _desCam.copy(fp.worldPos).addScaledVector(fp.forwardDir, panelSpec.dist);
+        _desCam.y += panelSpec.yOffset;
         _desLook.copy(fp.worldPos);
-        camera.fov = THREE.MathUtils.lerp(camera.fov, IS_MOBILE ? 45 : 48, fastAlpha);
+        _desLook.y += panelSpec.yOffset;
+        camera.fov = THREE.MathUtils.lerp(camera.fov, panelSpec.fov, fastAlpha);
         if (Math.abs(camera.fov - lastCamFov) > 0.01) {
           lastCamFov = camera.fov;
           camera.updateProjectionMatrix();
@@ -5363,9 +6102,9 @@
         const targetDeep = (state.deepZoom && nearPanel && !isTurbo) ? 1.0 : 0.0;
         state.deepZoomBlend = THREE.MathUtils.lerp(state.deepZoomBlend, targetDeep, focusAlpha);
 
-        // Dynamic speed-sense FOV (tighter & cinematic at idle, dramatic wide-angle rush at 400+ KM/H!)
+        // Dynamic speed-sense FOV (tighter & cinematic at idle, dramatic NFS wide-angle Nitro rush at 400+ KM/H!)
         const baseFov = state.cameraMode === 1 ? 68 : 61;
-        const liveTargetFov = isTurbo ? (baseFov + 19) : (baseFov - state.focusBlend * 5 - state.deepZoomBlend * 9 + speedNorm * 10);
+        const liveTargetFov = baseFov - state.focusBlend * 5 - state.deepZoomBlend * 9 + speedNorm * 10 + state.nitroBlur * 16 + state.nitroKick * 4;
         const targetFov = state.returnSwoopActive
           ? THREE.MathUtils.lerp(state.returnStartFov || camera.fov, liveTargetFov, returnEase)
           : THREE.MathUtils.lerp(camera.fov, liveTargetFov, 1 - Math.exp(-7.0 * dt));
@@ -5380,13 +6119,13 @@
         const lb = state.loopCamBlend;
 
         if (state.cameraMode === 0) {
-          // AAA Hero Chase POV: lower, closer, elastic Nitro pull-back & drift lateral lag!
-          const turboStretch = isTurbo ? -2.0 : (-speedNorm * 0.8);
+          // AAA Hero Chase POV: lower, closer, elastic NFS Nitro pull-back & drift lateral lag!
+          const turboStretch = -speedNorm * 0.8 - state.nitroBlur * 2.4 - state.nitroKick * 1.1;
           const driftLag = -state.laneVel * 0.095;
           _desCam.copy(_carPos)
             .addScaledVector(_tan, -11.4 + lb * 1.6 + turboStretch - state.focusBlend * 1.8 + state.deepZoomBlend * 2.6)
             .addScaledVector(_bin, driftLag)
-            .addScaledVector(_norm, 4.35 + lb * 0.6 + state.focusBlend * 1.9 + state.deepZoomBlend * 4.8);
+            .addScaledVector(_norm, 4.35 - state.nitroBlur * 0.55 + lb * 0.6 + state.focusBlend * 1.9 + state.deepZoomBlend * 4.8);
 
           // Gentle handheld cinema sway when stopped so the scene feels alive!
           const idleFactor = Math.max(0, 1.0 - Math.abs(state.speed) / 8);
@@ -5468,6 +6207,9 @@
         }
       }
 
+      moonGroup.position.copy(camera.position).add(MOON_SKY_OFFSET);
+      moonGroup.lookAt(camera.position);
+
       // 11. Throttled Telemetry & Audio (Zero per-frame DOM thrashing!)
       const kmh = Math.round(Math.abs(state.speed) * 3.6);
       if (kmh !== state.lastSpeedKmh) {
@@ -5510,8 +6252,20 @@
         }
       }
 
-      if (usePostFX && composer) composer.render();
-      else renderer.render(scene, camera);
+      if (state.nitroBlur > 0.004 && !isCutscene) {
+        const rt = ensureNitroRT();
+        nitroBlurUniforms.uStrength.value = state.nitroBlur;
+        const steerShift = THREE.MathUtils.clamp(-state.laneVel * 0.0022, -0.06, 0.06);
+        nitroBlurUniforms.uCenter.value.set(0.5 + steerShift, state.cameraMode === 1 ? 0.52 : 0.47);
+        renderer.setRenderTarget(rt);
+        renderer.render(scene, camera);
+        renderer.setRenderTarget(null);
+        renderer.render(nitroPostScene, nitroPostCam);
+      } else if (usePostFX && composer) {
+        composer.render();
+      } else {
+        renderer.render(scene, camera);
+      }
     }
 
     // Resize, WebGL Context Loss & Clean Disposal Lifecycle
@@ -5522,6 +6276,7 @@
       renderer.setPixelRatio(getTargetDPR(qualityPreset));
       renderer.setSize(window.innerWidth, window.innerHeight);
       syncComposerResolution();
+      syncNitroRT();
     }
     window.addEventListener('resize', onResize);
 
@@ -5531,8 +6286,37 @@
       document.getElementById('fallback-msg').textContent = 'WebGL rendering context was lost. Click Retry 3D or open the Full CV.';
       document.getElementById('boot-fallback').classList.add('show');
     });
+    function prewarmGPUPipelines() {
+      const culledMeshes = [];
+      scene.traverse((obj) => {
+        if (obj.isMesh && obj.frustumCulled) {
+          culledMeshes.push(obj);
+          obj.frustumCulled = false;
+        }
+      });
+      const prevTrailVis = tailTrailMesh.visible;
+      const prevTrailOpacity = tailTrailMat.opacity;
+      tailTrailMesh.visible = true;
+      tailTrailMat.opacity = 0.001;
+      try {
+        const warmRT = ensureNitroRT();
+        nitroBlurUniforms.uStrength.value = 0.5;
+        renderer.setRenderTarget(warmRT);
+        renderer.render(scene, camera);
+        renderer.setRenderTarget(null);
+        renderer.render(nitroPostScene, nitroPostCam);
+        nitroBlurUniforms.uStrength.value = 0.0;
+        renderer.render(scene, camera);
+      } catch (_compileErr) {}
+      tailTrailMesh.visible = prevTrailVis;
+      tailTrailMat.opacity = prevTrailOpacity;
+      for (let i = 0; i < culledMeshes.length; i++) culledMeshes[i].frustumCulled = true;
+    }
+
     renderer.domElement.addEventListener('webglcontextrestored', () => {
       document.getElementById('boot-fallback').classList.remove('show');
+      if (nitroRT) { try { nitroRT.dispose(); } catch (_dErr) {} nitroRT = null; }
+      prewarmGPUPipelines();
       clock.getDelta();
       animate();
     });
@@ -5542,6 +6326,8 @@
       window.removeEventListener('resize', onResize);
       sfx.dispose();
       if (envRT) envRT.dispose();
+      if (nitroRT) nitroRT.dispose();
+      nitroBlurMat.dispose();
       scene.traverse((obj) => {
         if (obj.geometry) obj.geometry.dispose();
         if (obj.material) {
@@ -5553,7 +6339,8 @@
     }
     window.addEventListener('pagehide', disposeScene);
 
-    try { renderer.compile(scene, camera); } catch (_compileErr) {}
+    await yieldBootFrame(95, 'Pre-Warming Shaders & GPU Buffers...');
+    prewarmGPUPipelines();
     clock.getDelta();
     animate();
     await yieldBootFrame(99, 'Ignition Ready!');
