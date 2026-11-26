@@ -777,7 +777,8 @@
       align-items: center;
       justify-content: center;
       background: radial-gradient(circle at 50% 42%, #111836 0%, #050712 72%);
-      transition: opacity 0.45s ease, transform 0.45s ease;
+      transition: opacity 0.52s cubic-bezier(0.22, 1, 0.36, 1), transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: opacity, transform;
     }
     #loading-screen.fade-out {
       opacity: 0;
@@ -817,6 +818,7 @@
       margin-top: -6px;
     }
     .load-bar-track {
+      position: relative;
       width: 100%;
       height: 10px;
       background: rgba(255, 255, 255, 0.08);
@@ -824,14 +826,30 @@
       border-radius: 99px;
       overflow: hidden;
       margin-top: 6px;
+      transform: translateZ(0);
     }
     #load-bar-fill {
-      width: 8%;
+      position: relative;
+      width: 100%;
       height: 100%;
-      border-radius: 99px;
+      transform: scaleX(0.02);
+      transform-origin: left center;
       background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink), var(--neon-gold));
-      box-shadow: 0 0 14px rgba(0, 229, 255, 0.75);
-      transition: width 0.22s ease-out;
+      box-shadow: 0 0 16px rgba(0, 229, 255, 0.75);
+      will-change: transform;
+    }
+    #load-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; bottom: 0; left: 0;
+      inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.52) 50%, transparent 100%);
+      transform: translateX(-100%);
+      animation: loadBarShimmer 1.35s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes loadBarShimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
     }
     .load-meta {
       width: 100%;
@@ -843,7 +861,7 @@
       letter-spacing: 1px;
     }
     #load-status { color: #b9d3f4; font-family: 'Rajdhani', sans-serif; font-size: 0.88rem; font-weight: 600; letter-spacing: 0.5px; }
-    #load-pct { color: var(--neon-cyan); font-weight: 800; }
+    #load-pct { color: var(--neon-cyan); font-weight: 800; font-variant-numeric: tabular-nums; min-width: 42px; text-align: right; }
 
     /* NFS MOST WANTED STYLE FIRST-SIGHT CINEMATIC CUT-IN (LAP 1 ONLY!) */
     #hud.cutscene-hide { opacity: 0; pointer-events: none !important; transition: opacity 0.28s ease; }
@@ -1320,7 +1338,7 @@
       <div class="load-bar-track"><div id="load-bar-fill"></div></div>
       <div class="load-meta">
         <span id="load-status">Loading 3D Engine...</span>
-        <span id="load-pct">8%</span>
+        <span id="load-pct">2%</span>
       </div>
     </div>
   </div>
@@ -1595,34 +1613,87 @@
       window.__IS_MOBILE_DEVICE = window.__DEVICE_INFO.isPhone;
     })();
     window.__GAME_BOOTED = false;
-    window.__loadPct = 8;
-    window.__setLoadProgress = function (pct, status) {
-      window.__loadPct = Math.max(window.__loadPct, Math.min(100, pct));
-      var fill = document.getElementById('load-bar-fill');
+    (function () {
+      var targetPct = 6;
+      var displayPct = 2;
+      var lastShownPct = 2;
+      var bootCompleted = false;
+      var loaderDone = false;
+      var loaderRaf = 0;
+      var lastNow = performance.now();
+      var fillEl = document.getElementById('load-bar-fill');
       var pctEl = document.getElementById('load-pct');
       var stEl = document.getElementById('load-status');
-      if (fill) fill.style.width = window.__loadPct + '%';
-      if (pctEl) pctEl.textContent = Math.round(window.__loadPct) + '%';
-      if (stEl && status) stEl.textContent = status;
-    };
-    window.__hideLoadingScreen = function () {
-      var ls = document.getElementById('loading-screen');
-      if (!ls) return;
-      ls.classList.add('fade-out');
-      setTimeout(function () { ls.style.display = 'none'; }, 480);
-    };
 
-    var __bootTick = setInterval(function () {
-      if (window.__GAME_BOOTED || window.__loadPct >= 34) { clearInterval(__bootTick); return; }
-      window.__setLoadProgress(window.__loadPct + 4, 'Loading 3D Engine...');
-    }, 120);
-    setTimeout(function () {
-      if (!window.__GAME_BOOTED) {
-        clearInterval(__bootTick);
-        window.__hideLoadingScreen();
-        document.getElementById('boot-fallback').classList.add('show');
+      function applyVisual(pctVal) {
+        var frac = Math.max(0.02, Math.min(1, pctVal * 0.01));
+        if (fillEl) fillEl.style.transform = 'scaleX(' + frac.toFixed(4) + ')';
+        var rounded = Math.round(pctVal);
+        if (pctEl && rounded !== lastShownPct) {
+          lastShownPct = rounded;
+          pctEl.textContent = rounded + '%';
+        }
       }
-    }, 15000);
+
+      window.__setLoadProgress = function (pct, status) {
+        if (typeof pct === 'number') targetPct = Math.max(targetPct, Math.min(100, pct));
+        if (stEl && status) stEl.textContent = status;
+      };
+
+      window.__hideLoadingScreen = function () {
+        if (loaderDone) return;
+        loaderDone = true;
+        if (loaderRaf) cancelAnimationFrame(loaderRaf);
+        var ls = document.getElementById('loading-screen');
+        if (!ls) return;
+        ls.classList.add('fade-out');
+        setTimeout(function () { ls.style.display = 'none'; }, 540);
+      };
+
+      window.__completeBoot = function () {
+        targetPct = 100;
+        bootCompleted = true;
+        window.__setLoadProgress(100, 'Ignition Ready!');
+      };
+
+      function tickLoader(now) {
+        if (loaderDone) return;
+        var dt = Math.min(0.05, Math.max(0.001, (now - lastNow) * 0.001));
+        lastNow = now;
+
+        if (!window.__GAME_BOOTED && targetPct < 34) {
+          targetPct += (34 - targetPct) * Math.min(1, dt * 1.65);
+        }
+
+        var diff = targetPct - displayPct;
+        if (diff > 0.01) {
+          var step = diff * (1 - Math.exp(-(bootCompleted ? 13.0 : 8.0) * dt));
+          if (bootCompleted) step = Math.max(step, 32 * dt);
+          step = Math.min(diff, Math.min(step, (bootCompleted ? 195 : 150) * dt));
+          displayPct += step;
+        }
+
+        if (bootCompleted && displayPct >= 99.6) {
+          displayPct = 100;
+          applyVisual(100);
+          setTimeout(function () { window.__hideLoadingScreen(); }, 140);
+          return;
+        }
+
+        applyVisual(displayPct);
+        loaderRaf = requestAnimationFrame(tickLoader);
+      }
+
+      applyVisual(displayPct);
+      loaderRaf = requestAnimationFrame(tickLoader);
+
+      setTimeout(function () {
+        if (!window.__GAME_BOOTED) {
+          window.__hideLoadingScreen();
+          document.getElementById('boot-fallback').classList.add('show');
+        }
+      }, 15000);
+    })();
   </script>
 
   <script type="module">
@@ -1632,6 +1703,12 @@
     import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
+    const yieldBootFrame = (pct, label) => new Promise((resolve) => {
+      if (window.__setLoadProgress) window.__setLoadProgress(pct, label);
+      requestAnimationFrame(() => setTimeout(resolve, 0));
+    });
+
+    (async function bootInteractiveCV() {
     const DEV = window.__DEVICE_INFO || { isIPad: false, isIOS: false, isTouch: false, isTablet: false, isPhone: false, isLowEnd: false };
     let IS_PHONE = Boolean(DEV.isPhone);
     let IS_TABLET = Boolean(DEV.isTablet);
@@ -1652,7 +1729,7 @@
     syncResponsiveBodyClasses();
 
     window.__GAME_BOOTED = true;
-    window.__setLoadProgress(42, IS_TOUCH_UI ? 'Optimizing 3D Engine for Touch Device...' : 'Initializing WebGL & PBR Lighting...');
+    await yieldBootFrame(38, IS_TOUCH_UI ? 'Optimizing 3D Engine for Touch Device...' : 'Initializing WebGL & Studio Lighting...');
 
     // ============================================================================
     // 1. CV MILESTONE DATA (DE-DUPLICATED & FAITHFUL TO Curriculum_vitae.pdf)
@@ -1971,6 +2048,8 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = IS_TOUCH_UI ? 1.07 : 1.04;
+    renderer.domElement.tabIndex = -1;
+    renderer.domElement.style.outline = 'none';
     container.appendChild(renderer.domElement);
     const MAX_ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy() || 8);
 
@@ -2047,6 +2126,7 @@
     // ============================================================================
     // 4. EXCITING BANKED TOKYO EXPRESSWAY ROLLER-COASTER CIRCUIT (ZERO OVERLAPS!)
     // ============================================================================
+    await yieldBootFrame(50, 'Computing 360° Loop & Banked Spline...');
     const TRACK_WIDTH = 15.2;
     // 30% Longer Dramatic Roller-Coaster & Banked S-Chicane Tokyo Bay Expressway (~3.9 km!):
     // Strictly monotonic polar progression (r: 375..535m) — 100% impossible to self-intersect!
@@ -2587,9 +2667,9 @@
       return group;
     }
 
-    window.__setLoadProgress(65, 'Building Banked Tokyo Expressway...');
+    await yieldBootFrame(62, 'Building Neon Tokyo Expressway...');
     scene.add(buildTokyoExpressway(trackCurve, TRACK_SEGMENTS, TRACK_WIDTH));
-    window.__setLoadProgress(80, 'Constructing Shinjuku Skyline & CV Billboards...');
+    await yieldBootFrame(72, 'Constructing Shinjuku Night Skyline...');
 
     // ============================================================================
     // 5. ANIMATED LIVING SHINJUKU / NEON TOKYO METROPOLIS (ZERO OVERLAPS!)
@@ -3052,7 +3132,10 @@
     const tracksidePanels = [];
     const panelScreenGeo = new THREE.BoxGeometry(27.0, 14.85, 0.64);
 
-    MILESTONES.forEach((m, mIdx) => {
+    await yieldBootFrame(82, 'Rendering 2K HD CV Megaboards...');
+    for (let mIdx = 0; mIdx < MILESTONES.length; mIdx++) {
+      const m = MILESTONES[mIdx];
+      if (mIdx === 3) await yieldBootFrame(88, 'Baking Crisp 3D Milestone Panels...');
       // Pure Clean Floating Megaboard hovering beside the highway (ZERO base, ZERO track collision!)
       const panelT = (m.t + 0.032) % 1;
       const pPt = trackCurve.getPointAt(panelT);
@@ -3117,7 +3200,7 @@
         milestone: m,
         milestoneIdx: mIdx
       });
-    });
+    }
 
     // Staggered Non-Blocking Font Re-Bake (1 panel per frame so zero main-thread hitch!)
     if (document.fonts && document.fonts.ready) {
@@ -3664,6 +3747,7 @@
       return { root, visual, wheels, frontSteerGroups, flameCones, shadowPlane, underGlow, tailMat, engineGlowMat };
     }
 
+    await yieldBootFrame(94, 'Preparing Tricolore Supercar & Shaders...');
     const car = buildSupercar();
 
     // Instanced Spark Pool (1 Draw Call — Italian Tricolore + Modena Gold Sparks!)
@@ -3749,9 +3833,30 @@
       lastProgPct: -1
     };
 
+    const rawKeys = { forward: false, backward: false, left: false, right: false, turbo: false };
+    const holdKeys = { forward: false, backward: false, left: false, right: false, turbo: false };
     const keys = { forward: false, backward: false, left: false, right: false, turbo: false };
+    function syncDriveKeys() {
+      keys.forward = rawKeys.forward || holdKeys.forward;
+      keys.backward = rawKeys.backward || holdKeys.backward;
+      keys.left = rawKeys.left || holdKeys.left;
+      keys.right = rawKeys.right || holdKeys.right;
+      keys.turbo = rawKeys.turbo || holdKeys.turbo;
+    }
     function clearAllKeys() {
-      keys.forward = keys.backward = keys.left = keys.right = keys.turbo = false;
+      rawKeys.forward = rawKeys.backward = rawKeys.left = rawKeys.right = rawKeys.turbo = false;
+      holdKeys.forward = holdKeys.backward = holdKeys.left = holdKeys.right = holdKeys.turbo = false;
+      syncDriveKeys();
+    }
+    function refocusGameCanvas() {
+      const ae = document.activeElement;
+      if (ae && ae !== renderer.domElement && ae !== document.body && typeof ae.blur === 'function') {
+        try { ae.blur(); } catch (_e) {}
+      }
+      try {
+        window.focus();
+        renderer.domElement.focus({ preventScroll: true });
+      } catch (_e) {}
     }
 
     function dismissOnboarding() { document.getElementById('onboarding-hint').classList.add('hidden'); }
@@ -3878,6 +3983,7 @@
         state.mode = state.prevModeBeforePause || 'PLAYING';
         document.getElementById('pause-overlay').classList.remove('open');
         clock.getDelta();
+        refocusGameCanvas();
       }
     }
 
@@ -3980,6 +4086,7 @@
       state.deepZoom = false;
       state.focusedPanelRef = null;
       updateFocusBtnUI();
+      refocusGameCanvas();
     }
 
     function snapCameraToCurrent(focusedPanel = null) {
@@ -4035,6 +4142,7 @@
       updateCVCard(panel.milestoneIdx);
       if (!isAlreadyNear) snapCameraToCurrent(lockFocus ? panel : null);
       sfx.stage();
+      refocusGameCanvas();
     }
 
     function warpToMilestone(idx) {
@@ -4045,14 +4153,11 @@
 
     function stepPanel(delta) {
       dismissOnboarding();
-      let curIdx = tracksidePanels.findIndex(p => getCircularDistT(state.t, p.t) < 0.028);
-      if (curIdx === -1) {
-        curIdx = state.activeMilestoneIdx;
-        if (delta < 0) curIdx = (curIdx - 1 + tracksidePanels.length) % tracksidePanels.length;
-      } else {
-        curIdx = (curIdx + delta + tracksidePanels.length) % tracksidePanels.length;
-      }
-      jumpToPanel(tracksidePanels[curIdx], true, true, true);
+      const baseIdx = (state.mode === 'FOCUSED' && state.focusedPanelRef)
+        ? state.focusedPanelRef.milestoneIdx
+        : state.activeMilestoneIdx;
+      const nextIdx = (baseIdx + delta + tracksidePanels.length) % tracksidePanels.length;
+      jumpToPanel(tracksidePanels[nextIdx], true, true, true);
     }
 
     // Wire UI Buttons
@@ -4131,10 +4236,17 @@
       cvModal.classList.remove('open');
       state.mode = state.prevModeBeforePause || 'PLAYING';
       clock.getDelta();
+      refocusGameCanvas();
     }
     document.getElementById('btn-cv-modal').addEventListener('click', openCVModal);
     document.getElementById('btn-pause-cv').addEventListener('click', openCVModal);
     document.getElementById('btn-close-modal').addEventListener('click', closeCVModal);
+    document.addEventListener('click', (e) => {
+      const btn = e.target && e.target.closest ? e.target.closest('button') : null;
+      if (btn && state.mode !== 'MODAL' && state.mode !== 'PAUSED') {
+        refocusGameCanvas();
+      }
+    });
 
     // Zero-Calibration Arcade Gyro Engine (Real Mobile Racing Standard: Horizon Tilt Steer + Auto-Gas!)
     const mobileGuard = document.getElementById('mobile-guard');
@@ -4331,6 +4443,7 @@
     renderer.domElement.addEventListener('pointerdown', (e) => {
       pDownX = e.clientX;
       pDownY = e.clientY;
+      refocusGameCanvas();
     }, { passive: true });
     renderer.domElement.addEventListener('pointerup', (e) => {
       if (Math.hypot(e.clientX - pDownX, e.clientY - pDownY) > 10) return;
@@ -4386,7 +4499,7 @@
       state.preCutsceneSpeed = Math.min(state.maxSpeed, Math.max(28, state.speed));
       state.speed = state.preCutsceneSpeed;
       state.padBoostTimer = 0;
-      keys.turbo = false;
+      syncDriveKeys();
       state.mode = 'CUTSCENE';
       state.cutscenePanel = panel;
       state.cutsceneTimer = 0;
@@ -4440,9 +4553,10 @@
       state.cutsceneReady = false;
       // Smooth Need for Speed: Most Wanted 1.80s Bullet-Time Bezier Return — ZERO Boost After Panel!
       state.padBoostTimer = 0;
-      keys.turbo = false;
+      syncDriveKeys();
       state.speed = state.preCutsceneSpeed || 32;
       clock.getDelta();
+      refocusGameCanvas();
     }
     nfsmwBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -4452,9 +4566,45 @@
       if (state.mode === 'CUTSCENE' && state.cutsceneReady) closeSpottedCutscene();
     });
 
+    function matchForwardKey(e) { return e.code === 'KeyW' || e.code === 'ArrowUp' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W'; }
+    function matchBackwardKey(e) { return e.code === 'KeyS' || e.code === 'ArrowDown' || e.key === 'ArrowDown' || e.key === 's' || e.key === 'S'; }
+    function matchLeftKey(e) { return e.code === 'KeyA' || e.code === 'ArrowLeft' || e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A'; }
+    function matchRightKey(e) { return e.code === 'KeyD' || e.code === 'ArrowRight' || e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D'; }
+    function matchTurboKey(e) { return e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.key === 'Shift'; }
+
+    function wakeFromPanelForDrive(giveSteerRoll = false) {
+      dismissOnboarding();
+      if (state.mode === 'FOCUSED') {
+        exitPanelFocus();
+        if (giveSteerRoll && Math.abs(state.speed) < 12 && !keys.backward) {
+          state.speed = 16;
+        }
+      } else if (state.mode !== 'TOUR') {
+        state.deepZoom = false;
+      }
+      state.tourDwellTimer = 0;
+      updateTourUI();
+      updateFocusBtnUI();
+    }
+
     window.addEventListener('keydown', (e) => {
+      const isFwd = matchForwardKey(e);
+      const isBack = matchBackwardKey(e);
+      const isLeft = matchLeftKey(e);
+      const isRight = matchRightKey(e);
+      const isTurboKey = matchTurboKey(e);
+      if (e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+      }
+      if (isFwd) rawKeys.forward = true;
+      if (isBack) rawKeys.backward = true;
+      if (isLeft) rawKeys.left = true;
+      if (isRight) rawKeys.right = true;
+      if (isTurboKey) rawKeys.turbo = true;
+      syncDriveKeys();
+
       if (state.mode === 'CUTSCENE') {
-        if ((e.code === 'Space' || e.code === 'Enter') && state.cutsceneReady) {
+        if (state.cutsceneReady && (e.code === 'Space' || e.code === 'Enter' || isFwd || isBack || isLeft || isRight || isTurboKey)) {
           e.preventDefault();
           closeSpottedCutscene();
         }
@@ -4467,27 +4617,22 @@
       }
       if (state.mode === 'PAUSED' || state.mode === 'MODAL') return;
 
-      if (e.code === 'KeyW' || e.code === 'ArrowUp') {
-        dismissOnboarding(); keys.forward = true;
-        if (state.mode === 'FOCUSED') exitPanelFocus();
-        else { state.mode = 'PLAYING'; state.deepZoom = false; }
-        state.tourDwellTimer = 0;
-        updateTourUI(); updateFocusBtnUI();
+      if (isFwd || isBack) {
+        if (state.mode === 'TOUR') state.mode = 'PLAYING';
+        wakeFromPanelForDrive(false);
       }
-      if (e.code === 'KeyS' || e.code === 'ArrowDown') {
-        dismissOnboarding(); keys.backward = true;
-        if (state.mode === 'FOCUSED') exitPanelFocus();
-        else { state.mode = 'PLAYING'; state.deepZoom = false; }
-        state.tourDwellTimer = 0;
-        updateTourUI(); updateFocusBtnUI();
+      if (isLeft || isRight) {
+        wakeFromPanelForDrive(true);
       }
-      if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.left = true;
-      if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.right = true;
-      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
-        keys.turbo = true;
-        if (state.mode === 'FOCUSED') exitPanelFocus();
+      if (isTurboKey) {
+        if (state.mode === 'TOUR') state.mode = 'PLAYING';
+        wakeFromPanelForDrive(false);
       }
-      if (e.code === 'Space') { e.preventDefault(); state.jumpBufferTimer = 0.14; }
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (state.mode === 'FOCUSED') wakeFromPanelForDrive(true);
+        state.jumpBufferTimer = 0.14;
+      }
       if (e.code === 'KeyF') document.getElementById('btn-focus-toggle').click();
       if (e.code === 'KeyC') {
         state.cameraMode = (state.cameraMode + 1) % 3;
@@ -4500,20 +4645,39 @@
     });
 
     window.addEventListener('keyup', (e) => {
-      if (e.code === 'KeyW' || e.code === 'ArrowUp') keys.forward = false;
-      if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.backward = false;
-      if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.left = false;
-      if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.right = false;
-      if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') keys.turbo = false;
+      if (matchForwardKey(e)) rawKeys.forward = false;
+      if (matchBackwardKey(e)) rawKeys.backward = false;
+      if (matchLeftKey(e)) rawKeys.left = false;
+      if (matchRightKey(e)) rawKeys.right = false;
+      if (matchTurboKey(e)) rawKeys.turbo = false;
+      syncDriveKeys();
     });
 
     function bindHold(id, prop) {
       const el = document.getElementById(id);
       if (!el) return;
-      el.addEventListener('pointerdown', (e) => { e.preventDefault(); dismissOnboarding(); keys[prop] = true; });
-      el.addEventListener('pointerup', () => { keys[prop] = false; });
-      el.addEventListener('pointercancel', () => { keys[prop] = false; });
-      el.addEventListener('pointerleave', () => { keys[prop] = false; });
+      const release = () => { holdKeys[prop] = false; syncDriveKeys(); };
+      el.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try { el.setPointerCapture(e.pointerId); } catch (_err) {}
+        holdKeys[prop] = true;
+        syncDriveKeys();
+        if (state.mode === 'CUTSCENE') {
+          if (state.cutsceneReady) closeSpottedCutscene();
+        } else if (state.mode !== 'PAUSED' && state.mode !== 'MODAL') {
+          if (prop === 'forward' || prop === 'backward' || prop === 'turbo') {
+            if (state.mode === 'TOUR') state.mode = 'PLAYING';
+            wakeFromPanelForDrive(false);
+          } else {
+            wakeFromPanelForDrive(true);
+          }
+        }
+        refocusGameCanvas();
+      });
+      el.addEventListener('pointerup', release);
+      el.addEventListener('pointercancel', release);
+      el.addEventListener('lostpointercapture', release);
     }
     bindHold('t-gas', 'forward');
     bindHold('t-brake', 'backward');
@@ -4521,7 +4685,16 @@
     bindHold('t-right', 'right');
     bindHold('t-turbo', 'turbo');
     const tJump = document.getElementById('t-jump');
-    if (tJump) tJump.addEventListener('pointerdown', (e) => { e.preventDefault(); state.jumpBufferTimer = 0.14; });
+    if (tJump) {
+      tJump.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (state.mode === 'CUTSCENE' && state.cutsceneReady) closeSpottedCutscene();
+        else if (state.mode === 'FOCUSED') wakeFromPanelForDrive(true);
+        state.jumpBufferTimer = 0.14;
+        refocusGameCanvas();
+      });
+    }
 
     // ============================================================================
     // 10. ZERO-ALLOCATION 60FPS SIMULATION & RENDER LOOP + CLEAN DISPOSAL
@@ -4643,8 +4816,9 @@
 
       // 2. Acceleration, Turbo, Auto-Gas + Tilt-Back Brake in Mobile Gyro Mode & Snappy ABS Braking!
       const wantsBrake = !isCutscene && (keys.backward || (gyro.active && gyro.braking));
-      const wantsForward = !isCutscene && !wantsBrake && (keys.forward || gyro.active || isTour);
-      const isTurbo = !isCutscene && !wantsBrake && (keys.turbo || state.padBoostTimer > 0) && state.turboCharge > 2 && (wantsForward || Math.abs(state.speed) > 5);
+      const nitroActiveInput = !isCutscene && !wantsBrake && (keys.turbo || state.padBoostTimer > 0) && state.turboCharge > 2;
+      const wantsForward = !isCutscene && !wantsBrake && (keys.forward || nitroActiveInput || gyro.active || isTour);
+      const isTurbo = nitroActiveInput && state.speed >= -1.0;
       if (state.padBoostTimer > 0 && !isCutscene) state.padBoostTimer -= dt;
 
       // NFS Most Wanted Speedbreaker Bullet-Time: slows into 0.025x on entry, ramps smoothly back to 1.0x on return (ZERO boost!)
@@ -5379,10 +5553,17 @@
     }
     window.addEventListener('pagehide', disposeScene);
 
-    window.__setLoadProgress(100, 'Ignition Ready!');
+    try { renderer.compile(scene, camera); } catch (_compileErr) {}
+    clock.getDelta();
     animate();
-    requestAnimationFrame(() => {
-      setTimeout(() => window.__hideLoadingScreen(), 260);
+    await yieldBootFrame(99, 'Ignition Ready!');
+    if (window.__completeBoot) window.__completeBoot();
+    else window.__hideLoadingScreen();
+    })().catch((err) => {
+      console.error('Boot error:', err);
+      if (window.__hideLoadingScreen) window.__hideLoadingScreen();
+      const fb = document.getElementById('boot-fallback');
+      if (fb) fb.classList.add('show');
     });
   </script>
 </body>
