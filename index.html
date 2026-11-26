@@ -2557,13 +2557,23 @@
       const fIdx = uu * FRAME_LUT_SIZE;
       const i0 = Math.floor(fIdx) % FRAME_LUT_SIZE;
       const i1 = (i0 + 1) % FRAME_LUT_SIZE;
-      const alpha = fIdx - Math.floor(fIdx);
+      const s = fIdx - Math.floor(fIdx);
+      const s2 = s * s;
+      const s3 = s2 * s;
+      const h00 = 2 * s3 - 3 * s2 + 1;
+      const h10 = (s3 - 2 * s2 + s) * (frameLUT[i0].dsDu / FRAME_LUT_SIZE);
+      const h01 = -2 * s3 + 3 * s2;
+      const h11 = (s3 - s2) * (frameLUT[i1].dsDu / FRAME_LUT_SIZE);
       const f0 = frameLUT[i0], f1 = frameLUT[i1];
-      outPt.lerpVectors(f0.pt, f1.pt, alpha);
-      outTan.lerpVectors(f0.tan, f1.tan, alpha).normalize();
-      outBin.lerpVectors(f0.bin, f1.bin, alpha).normalize();
-      outNorm.lerpVectors(f0.norm, f1.norm, alpha).normalize();
-      return f0.bankAngle + (f1.bankAngle - f0.bankAngle) * alpha;
+      outPt.set(
+        h00 * f0.pt.x + h10 * f0.tan.x + h01 * f1.pt.x + h11 * f1.tan.x,
+        h00 * f0.pt.y + h10 * f0.tan.y + h01 * f1.pt.y + h11 * f1.tan.y,
+        h00 * f0.pt.z + h10 * f0.tan.z + h01 * f1.pt.z + h11 * f1.tan.z
+      );
+      outTan.lerpVectors(f0.tan, f1.tan, s).normalize();
+      outBin.lerpVectors(f0.bin, f1.bin, s).normalize();
+      outNorm.lerpVectors(f0.norm, f1.norm, s).normalize();
+      return f0.bankAngle + (f1.bankAngle - f0.bankAngle) * s;
     }
 
     function getTrackDsDu(u) {
@@ -2591,11 +2601,15 @@
       return Math.sqrt(minSq);
     }
 
-    function getCircularDistT(tA, tB) {
-      let d = (tA - tB) % 1;
+    function signedCircularDeltaT(u, refU) {
+      let d = (u - refU) % 1;
       if (d > 0.5) d -= 1;
       if (d < -0.5) d += 1;
-      return Math.abs(d);
+      return d;
+    }
+
+    function getCircularDistT(tA, tB) {
+      return Math.abs(signedCircularDeltaT(tA, tB));
     }
 
     // Swept circular crossing test (prevents high-speed tunneling at low FPS!)
@@ -2629,7 +2643,7 @@
       const uSamples = [];
       {
         const loopStep = IS_MOBILE ? 0.00045 : 0.00028;
-        const roadStep = IS_MOBILE ? 0.0020 : 0.0014;
+        const roadStep = IS_MOBILE ? 0.0011 : 0.00075;
         let cu = 0;
         while (cu < 1.0) {
           if (1.0 - cu < roadStep * 0.4) break;
@@ -3614,14 +3628,22 @@
     const skillOrbs = [];
     const bPt = new THREE.Vector3(), bTan = new THREE.Vector3(), bBin = new THREE.Vector3(), bNorm = new THREE.Vector3();
 
+    const RAMP_LEN = 8.4;
+    const RAMP_HALF_LEN = RAMP_LEN * 0.5;
+    const RAMP_WIDTH = 5.0;
+    const RAMP_HALF_WIDTH = RAMP_WIDTH * 0.5;
+    const RAMP_HEIGHT = 1.65;
+    const RAMP_SLOPE_RAD = Math.atan2(RAMP_HEIGHT, RAMP_LEN);
+
     const rampShape = new THREE.Shape();
-    rampShape.moveTo(0, 0);
-    rampShape.lineTo(6.6, 0);
-    rampShape.lineTo(6.6, 1.55);
+    rampShape.moveTo(0, -0.35);
+    rampShape.lineTo(RAMP_LEN, -0.35);
+    rampShape.lineTo(RAMP_LEN, RAMP_HEIGHT);
+    rampShape.lineTo(0, 0.02);
     rampShape.closePath();
-    const rampGeo = new THREE.ExtrudeGeometry(rampShape, { depth: 4.4, bevelEnabled: false });
+    const rampGeo = new THREE.ExtrudeGeometry(rampShape, { depth: RAMP_WIDTH, bevelEnabled: false });
     rampGeo.rotateY(-Math.PI / 2);
-    rampGeo.translate(2.2, 0.04, -3.3);
+    rampGeo.translate(RAMP_HALF_WIDTH, 0, -RAMP_HALF_LEN);
     const rampMat = new THREE.MeshStandardMaterial({
       color: 0x161c2e,
       emissive: 0x220a00,
@@ -3633,17 +3655,17 @@
       polygonOffsetUnits: -2
     });
     const rampEdgeMat = new THREE.MeshBasicMaterial({ color: 0xff6b1a });
-    const rampLipGeo = new THREE.BoxGeometry(4.44, 0.14, 0.22);
-    rampLipGeo.translate(0, 1.58, 3.24);
+    const rampLipGeo = new THREE.BoxGeometry(RAMP_WIDTH + 0.06, 0.15, 0.26);
+    rampLipGeo.translate(0, RAMP_HEIGHT - 0.02, RAMP_HALF_LEN - 0.10);
 
-    // Instanced Launch Ramps & Lips (26 Draw Calls -> 2 Static Draw Calls!)
-    const RAMP_T_LIST = [0.135, 0.20, 0.27, 0.33, 0.40, 0.465, 0.54, 0.605, 0.675, 0.745, 0.815, 0.885, 0.955];
+    // Instanced Launch Ramps placed strictly on open straightaways clear of Lap-1 cutscenes (2 Draw Calls!)
+    const RAMP_T_LIST = [0.158, 0.292, 0.422, 0.556, 0.696, 0.836, 0.968];
     const rampIMesh = new THREE.InstancedMesh(rampGeo, rampMat, RAMP_T_LIST.length);
     const rampLipIMesh = new THREE.InstancedMesh(rampLipGeo, rampEdgeMat, RAMP_T_LIST.length);
     const rampMat4 = new THREE.Matrix4();
     RAMP_T_LIST.forEach((t, idx) => {
       getTrackFrame(t, bPt, bTan, bBin, bNorm);
-      const laneOffset = (idx % 2 === 0 ? 1 : -1) * 3.0;
+      const laneOffset = (idx % 2 === 0 ? 1 : -1) * 2.8;
       dummy.position.copy(bPt).addScaledVector(bBin, laneOffset);
       rampMat4.makeBasis(bBin.clone().negate(), bNorm, bTan);
       dummy.quaternion.setFromRotationMatrix(rampMat4);
@@ -3733,9 +3755,9 @@
     );
     skyRingIMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     jumpRamps.forEach((r, idx) => {
-      const rt = (r.t + 0.0085) % 1;
+      const rt = (r.t + 0.0065) % 1;
       getTrackFrame(rt, bPt, bTan, bBin, bNorm);
-      const pos = bPt.clone().addScaledVector(bBin, r.laneOffset).addScaledVector(bNorm, 5.2);
+      const pos = bPt.clone().addScaledVector(bBin, r.laneOffset).addScaledVector(bNorm, 5.0);
       rampMat4.makeBasis(bBin.clone().negate(), bNorm, bTan);
       const baseQuat = new THREE.Quaternion().setFromRotationMatrix(rampMat4);
       dummy.position.copy(pos);
@@ -4240,6 +4262,11 @@
       reverseAccel: 42,
       reverseDelay: 0,
       brakePitch: 0,
+      groundY: 0,
+      groundSlopePitch: 0,
+      bodyPitch: 0,
+      bodyRoll: 0,
+      bodyYaw: 0,
       friction: 18,
       simTimeScale: 1.0,    // Bullet-time slow-mo near panels without killing car speed!
       deepZoom: false,      // Click panel or press F for close-up reading zoom
@@ -4328,7 +4355,7 @@
       toastTimer = setTimeout(() => toastEl.classList.remove('show'), 1400);
     }
 
-    function executeJump(power = 19.5) {
+    function executeJump(power = 19.5, doFlip = true) {
       state.jumpVel = power;
       state.isGrounded = false;
       state.coyoteTimer = 0;
@@ -4336,12 +4363,20 @@
       if (state.mode === 'FOCUSED') state.mode = 'PLAYING';
       updateFocusBtnUI();
       sfx.jump();
-      state.doingFlip = true;
-      state.flipAngle = 0;
-      state.flipTimer = 0;
-      state.flipDuration = Math.max(0.55, (2 * power / state.gravity) * 0.92);
-      state.flipAxis = (keys.left || keys.right) ? 'z' : 'x';
-      showToast(state.flipAxis === 'z' ? '🌀 360° BARREL ROLL!' : '🔥 360° STUNT FLIP!');
+      if (doFlip) {
+        const disc = power * power + 2 * state.gravity * Math.max(0, state.jumpY);
+        const flightDur = (power + Math.sqrt(disc)) / state.gravity;
+        state.doingFlip = true;
+        state.flipAngle = 0;
+        state.flipTimer = 0;
+        state.flipDuration = Math.max(0.52, flightDur * 0.88);
+        state.flipAxis = (keys.left || keys.right) ? 'z' : 'x';
+        showToast(state.flipAxis === 'z' ? '🌀 360° BARREL ROLL!' : '🔥 360° STUNT FLIP!');
+      } else {
+        state.doingFlip = false;
+        state.flipAngle = 0;
+        showToast('🚀 RAMP LAUNCH!');
+      }
     }
 
     // Build 7-step top stepper dots & cache CV card DOM references (Zero querySelector / offsetWidth reflows!)
@@ -4534,6 +4569,11 @@
       state.laneVel = 0;
       state.jumpY = 0;
       state.jumpVel = 0;
+      state.groundY = 0;
+      state.groundSlopePitch = 0;
+      state.bodyPitch = 0;
+      state.bodyRoll = 0;
+      state.bodyYaw = 0;
       state.isGrounded = true;
       state.doingFlip = false;
       state.flipAngle = 0;
@@ -4602,6 +4642,11 @@
     const chaseCamPos = new THREE.Vector3();
     const chaseLookAt = new THREE.Vector3();
     const chaseCamUp = new THREE.Vector3(0, 1, 0);
+    const smoothCamRel = new THREE.Vector3(0, 4.35, -11.4);
+    const smoothLookRel = new THREE.Vector3(0, 2.1, 26);
+    const _desCamRel = new THREE.Vector3();
+    const _desLookRel = new THREE.Vector3();
+    const _targetCarQuat = new THREE.Quaternion();
     const _cutCamStart = new THREE.Vector3();
     const _cutLookStart = new THREE.Vector3();
     const _cutUpStart = new THREE.Vector3(0, 1, 0);
@@ -4653,6 +4698,10 @@
     function snapCameraToCurrent(focusedPanel = null) {
       getTrackFrame(state.t, _pt, _tan, _bin, _norm);
       _carPos.copy(_pt).addScaledVector(_bin, state.laneOffset);
+      car.root.position.copy(_carPos);
+      _negBin.copy(_bin).negate();
+      _rotMat.makeBasis(_negBin, _norm, _tan);
+      car.root.quaternion.setFromRotationMatrix(_rotMat);
       if (focusedPanel && state.deepZoom) {
         const spec = getPanelCameraSpec();
         smoothCamPos.copy(focusedPanel.worldPos).addScaledVector(focusedPanel.forwardDir, spec.dist);
@@ -4663,6 +4712,8 @@
         chaseCamPos.copy(smoothCamPos);
         chaseLookAt.copy(smoothLookAt);
         chaseCamUp.copy(_camUp);
+        smoothCamRel.subVectors(chaseCamPos, _carPos);
+        smoothLookRel.subVectors(chaseLookAt, _carPos);
         return;
       }
       const fb = focusedPanel ? 1.0 : 0.0;
@@ -4678,6 +4729,8 @@
       chaseCamPos.copy(smoothCamPos);
       chaseLookAt.copy(smoothLookAt);
       chaseCamUp.copy(_camUp);
+      smoothCamRel.subVectors(chaseCamPos, _carPos);
+      smoothLookRel.subVectors(chaseLookAt, _carPos);
     }
 
     function jumpToPanel(panel, lockFocus = true, useDeepZoom = false, keepCarIfNear = false) {
@@ -4692,6 +4745,11 @@
         state.laneOffset = 0;
         state.jumpY = 0;
         state.jumpVel = 0;
+        state.groundY = 0;
+        state.groundSlopePitch = 0;
+        state.bodyPitch = 0;
+        state.bodyRoll = 0;
+        state.bodyYaw = 0;
         state.isGrounded = true;
       }
       state.speed = 0;
@@ -5532,11 +5590,11 @@
       if (isCutscene) {
         // Preserve cruise momentum while bullet-time simDt eases world & car down to 0.025x!
       } else if (state.mode === 'FOCUSED') {
-        state.speed = THREE.MathUtils.lerp(state.speed, 0, dt * 7.5);
+        state.speed = THREE.MathUtils.lerp(state.speed, 0, 1 - Math.exp(-7.5 * dt));
         state.reverseDelay = 0;
       } else if (isTurbo) {
         if (keys.turbo && state.padBoostTimer <= 0) state.turboCharge = Math.max(0, state.turboCharge - 22 * dt);
-        state.speed = THREE.MathUtils.lerp(state.speed, state.turboMaxSpeed, dt * 4.6);
+        state.speed = THREE.MathUtils.lerp(state.speed, state.turboMaxSpeed, 1 - Math.exp(-4.6 * dt));
         state.reverseDelay = 0;
       } else {
         state.turboCharge = Math.min(100, state.turboCharge + 4 * dt);
@@ -5544,7 +5602,7 @@
 
         if (wantsForward) {
           state.reverseDelay = 0;
-          if (state.speed > targetMax) state.speed = THREE.MathUtils.lerp(state.speed, targetMax, dt * 3.5);
+          if (state.speed > targetMax) state.speed = THREE.MathUtils.lerp(state.speed, targetMax, 1 - Math.exp(-3.5 * dt));
           else state.speed = Math.min(targetMax, state.speed + state.accel * dt);
         } else if (wantsBrake) {
           if (state.speed > 0.6) {
@@ -5576,7 +5634,7 @@
       // Dynamic brake light flare & nose-dive pitch (zero extra PointLight shader cost!)
       const isBraking = activeHardBrake || wantsBrake || state.mode === 'FOCUSED';
       car.tailMat.color.setHex(isBraking ? 0xff0033 : 0xa61036);
-      state.brakePitch = THREE.MathUtils.lerp(state.brakePitch, activeHardBrake ? 0.06 : 0, dt * 12);
+      state.brakePitch = THREE.MathUtils.lerp(state.brakePitch, activeHardBrake ? 0.06 : 0, 1 - Math.exp(-12.0 * dt));
 
       // 3. Snappy Arcade Steering (Keyboard, Touch, Gyro Tilt & Guided Tour!)
       const steerLimit = TRACK_WIDTH * 0.40;
@@ -5590,7 +5648,7 @@
           targetLaneVel = (desiredLane - state.laneOffset) * 4.5;
         }
       }
-      state.laneVel = THREE.MathUtils.lerp(state.laneVel, targetLaneVel, dt * 14);
+      state.laneVel = THREE.MathUtils.lerp(state.laneVel, targetLaneVel, 1 - Math.exp(-14.0 * dt));
       state.laneOffset = THREE.MathUtils.clamp(state.laneOffset + state.laneVel * simDt, -steerLimit, steerLimit);
 
       // High-speed drift builds bonus NITRO charge!
@@ -5600,11 +5658,76 @@
       const steerAngle = THREE.MathUtils.clamp(-state.laneVel * 0.022, -0.35, 0.35);
       for (let i = 0; i < car.frontSteerGroups.length; i++) car.frontSteerGroups[i].rotation.y = steerAngle;
 
-      // 4. Advance Track Parameter (True Constant Arc-Length Speed through the 360° Vertical Loop!), Live Lap Timer & Best Lap!
+      // 4. Advance Track Parameter & Physical Ramp Surface / Wall Collision Resolution
       const prevT = state.t;
       const localDsDu = getTrackDsDu(state.t);
       state.t = (state.t + (state.speed * simDt) / localDsDu) % 1;
       if (state.t < 0) state.t += 1;
+
+      let newGroundY = 0;
+      let newSlopePitch = 0;
+      for (let i = 0; i < jumpRamps.length; i++) {
+        const r = jumpRamps[i];
+        let curS = signedCircularDeltaT(state.t, r.t) * localDsDu;
+        const prevS = signedCircularDeltaT(prevT, r.t) * localDsDu;
+        if (Math.abs(curS) > 7.5 && Math.abs(prevS) > 7.5) continue;
+
+        const dLane = state.laneOffset - r.laneOffset;
+        const absLat = Math.abs(dLane);
+        const hAtS = RAMP_HEIGHT * THREE.MathUtils.clamp((curS + RAMP_HALF_LEN) / RAMP_LEN, 0, 1);
+
+        // Solid back wall block when reversing into high rear face of ramp
+        if (state.speed < 0 && curS > RAMP_HALF_LEN - 0.35 && curS < RAMP_HALF_LEN + 0.65 && absLat < RAMP_HALF_WIDTH + 0.95 && state.jumpY < RAMP_HEIGHT - 0.30) {
+          state.t = (r.t + (RAMP_HALF_LEN + 0.66) / localDsDu + 1) % 1;
+          if (state.speed < -6) {
+            state.hitShake = Math.max(state.hitShake, 0.38);
+            sfx.crash();
+          }
+          state.speed = 0;
+          curS = RAMP_HALF_LEN + 0.66;
+        }
+
+        // Solid side wall deflection (prevents clipping laterally into the 1.65m wedge)
+        if (curS > -RAMP_HALF_LEN + 1.0 && curS <= RAMP_HALF_LEN + 0.2 && absLat > RAMP_HALF_WIDTH - 0.15 && absLat < RAMP_HALF_WIDTH + 1.1 && state.jumpY < hAtS - 0.35) {
+          const pushSign = dLane >= 0 ? 1 : -1;
+          state.laneOffset = r.laneOffset + pushSign * (RAMP_HALF_WIDTH + 1.1);
+          if (state.laneVel * pushSign < 0) state.laneVel = 0;
+          continue;
+        }
+
+        // Physical inclined ramp deck support
+        if (curS >= -RAMP_HALF_LEN && curS <= RAMP_HALF_LEN && absLat <= RAMP_HALF_WIDTH + 0.12) {
+          if (hAtS >= newGroundY && state.jumpY <= hAtS + 0.25) {
+            newGroundY = hAtS;
+            newSlopePitch = -RAMP_SLOPE_RAD;
+          }
+        }
+
+        // Exact ramp lip launch (when car tires actually cross curS = +RAMP_HALF_LEN!)
+        if (prevS <= RAMP_HALF_LEN && curS > RAMP_HALF_LEN && absLat <= RAMP_HALF_WIDTH + 0.25 && (state.isGrounded || state.jumpY <= RAMP_HEIGHT + 0.35)) {
+          state.jumpY = Math.max(state.jumpY, RAMP_HEIGHT);
+          if (state.speed > 16 && !isCutscene) {
+            const wantFlip = state.jumpBufferTimer > 0;
+            const launchPower = Math.min(24.0, Math.max(17.5, state.speed * 0.22 + 7.5));
+            executeJump(launchPower, wantFlip);
+          } else if (state.isGrounded) {
+            state.isGrounded = false;
+            state.jumpVel = Math.max(0, state.speed * Math.tan(RAMP_SLOPE_RAD));
+          }
+        }
+      }
+      state.groundY = newGroundY;
+      state.groundSlopePitch = newSlopePitch;
+      if (state.isGrounded) {
+        if (newGroundY > 0) {
+          state.jumpY = newGroundY;
+        } else if (state.jumpY > 0.08) {
+          state.isGrounded = false;
+          state.jumpVel = 0;
+        } else {
+          state.jumpY = 0;
+        }
+      }
 
       // Automatic 360° Vertical Loop Booster Strip Surge!
       if (state.speed > 4 && !isCutscene && crossedTargetT(prevT, state.t, LOOP_U0 + 0.001)) {
@@ -5647,36 +5770,53 @@
         showToast(isNewBest ? `🏆 NEW BEST LAP! ${formatLapTime(finishedTime)}` : `🏁 LAP ${state.lap - 1} · ${formatLapTime(finishedTime)}`);
       }
 
-      // 5. Jump Buffering, Coyote Time, Backflip / Barrel Roll & Landing Squash
+      // 5. Jump Buffering, Coyote Time, Mid-Air Flip & Smooth Additive Landing
       if (state.isGrounded) state.coyoteTimer = 0.08;
-      else state.coyoteTimer = Math.max(0, state.coyoteTimer - dt);
+      else state.coyoteTimer = Math.max(0, state.coyoteTimer - simDt);
 
       if (state.jumpBufferTimer > 0) {
         state.jumpBufferTimer -= dt;
-        if (state.coyoteTimer > 0) executeJump(19.5);
+        if (state.coyoteTimer > 0) {
+          executeJump(19.5, true);
+        } else if (!state.isGrounded && !state.doingFlip && state.jumpY > state.groundY + 0.45 && state.jumpVel > -6) {
+          const disc = state.jumpVel * state.jumpVel + 2 * state.gravity * Math.max(0, state.jumpY - state.groundY);
+          const remDur = (state.jumpVel + Math.sqrt(disc)) / state.gravity;
+          state.jumpBufferTimer = 0;
+          state.doingFlip = true;
+          state.flipAngle = 0;
+          state.flipTimer = 0;
+          state.flipDuration = Math.max(0.45, remDur * 0.88);
+          state.flipAxis = (keys.left || keys.right) ? 'z' : 'x';
+          sfx.jump();
+          showToast(state.flipAxis === 'z' ? '🌀 360° BARREL ROLL!' : '🔥 360° STUNT FLIP!');
+        }
       }
 
       if (!state.isGrounded) {
-        state.jumpY += state.jumpVel * dt;
-        state.jumpVel -= state.gravity * dt;
+        state.jumpY += state.jumpVel * simDt;
+        state.jumpVel -= state.gravity * simDt;
         if (state.doingFlip) {
-          state.flipTimer += dt;
+          state.flipTimer += simDt;
           const fu = Math.min(1, state.flipTimer / Math.max(0.25, state.flipDuration || 0.78));
           state.flipAngle = Math.PI * 2 * (fu * fu * (3 - 2 * fu));
           if (fu >= 1) { state.flipAngle = 0; state.doingFlip = false; }
         }
-        if (state.jumpY <= 0) {
-          state.jumpY = 0; state.jumpVel = 0; state.isGrounded = true;
-          state.doingFlip = false; state.flipAngle = 0;
-          state.squash = 0.24;
+        if (state.jumpY <= state.groundY) {
+          state.jumpY = state.groundY;
+          state.jumpVel = 0;
+          state.isGrounded = true;
+          state.doingFlip = false;
+          state.flipAngle = 0;
+          state.bodyPitch += 0.045;
+          state.squash = 0.22;
           state.turboCharge = Math.min(100, state.turboCharge + 12);
           sfx.land();
           spawnSparks(_carPos, _tan, 12, 8);
         }
       }
-      if (state.squash > 0.001) state.squash = THREE.MathUtils.lerp(state.squash, 0, dt * 12);
+      if (state.squash > 0.001) state.squash = THREE.MathUtils.lerp(state.squash, 0, 1 - Math.exp(-12.0 * dt));
 
-      // 6. Banked Car 3D Pose (Zero Allocations — leans naturally into every corner!)
+      // 6. Banked Car 3D Pose (Smoothed Root Quaternion & Continuous Additive Suspension Pitch/Roll)
       let targetLoopBlend = 0.0;
       if (state.t >= LOOP_U0 && state.t <= LOOP_U1) targetLoopBlend = 1.0;
       else if (state.t >= LOOP_U0 - 0.006 && state.t < LOOP_U0) targetLoopBlend = quinticStep((state.t - (LOOP_U0 - 0.006)) / 0.006);
@@ -5690,24 +5830,33 @@
 
       _negBin.copy(_bin).negate();
       _rotMat.makeBasis(_negBin, _norm, _tan);
-      car.root.quaternion.setFromRotationMatrix(_rotMat);
+      _targetCarQuat.setFromRotationMatrix(_rotMat);
+      car.root.quaternion.slerp(_targetCarQuat, 1 - Math.exp(-36.0 * dt));
 
-      const baseRoll = -state.laneVel * 0.011;
-      car.visual.rotation.z = (state.doingFlip && state.flipAxis === 'z') ? state.flipAngle : baseRoll;
-      car.visual.rotation.y = -state.laneVel * 0.008;
+      const targetRoll = -state.laneVel * 0.011;
+      const targetYaw = -state.laneVel * 0.008;
       const nitroSquatPitch = state.isGrounded ? (-state.nitroKick * 0.032 - (isTurbo ? 0.014 : 0)) : 0;
-      car.visual.rotation.x = (state.doingFlip && state.flipAxis === 'x')
-        ? -state.flipAngle
-        : ((state.isGrounded ? state.brakePitch : -state.jumpVel * 0.022) + nitroSquatPitch);
-      // Living V10 engine idle micro-pulse even when completely stopped!
-      const idleHum = Math.sin(elapsed * 24) * 0.014;
-      car.visual.position.y = state.isGrounded ? idleHum : 0;
+      const airNosePitch = state.isGrounded ? (state.groundSlopePitch + state.brakePitch) : THREE.MathUtils.clamp(-state.jumpVel * 0.014, -0.26, 0.22);
+      const targetPitch = airNosePitch + nitroSquatPitch;
+      const poseAlpha = 1 - Math.exp(-15.0 * dt);
+      state.bodyRoll = THREE.MathUtils.lerp(state.bodyRoll, targetRoll, poseAlpha);
+      state.bodyYaw = THREE.MathUtils.lerp(state.bodyYaw, targetYaw, poseAlpha);
+      state.bodyPitch = THREE.MathUtils.lerp(state.bodyPitch, targetPitch, poseAlpha);
+
+      car.visual.rotation.z = state.bodyRoll + ((state.doingFlip && state.flipAxis === 'z') ? state.flipAngle : 0);
+      car.visual.rotation.y = state.bodyYaw;
+      car.visual.rotation.x = state.bodyPitch - ((state.doingFlip && state.flipAxis === 'x') ? state.flipAngle : 0);
+
+      // Subtle engine idle tremor only when stopped/crawling (eliminates 3.8Hz whole-body high-speed jitter!)
+      const idleStop = Math.max(0, 1.0 - Math.abs(state.speed) / 6);
+      car.visual.position.y = state.isGrounded ? Math.sin(elapsed * 18) * 0.004 * idleStop : 0;
       car.visual.scale.set(1 + state.squash * 0.35, 1 - state.squash, 1);
 
-      const shScale = Math.max(0.35, 1.0 - state.jumpY * 0.08);
-      car.shadowPlane.position.y = -state.jumpY + 0.06 + state.loopCamBlend * 0.08;
+      const airGap = Math.max(0, state.jumpY - state.groundY);
+      const shScale = Math.max(0.35, 1.0 - airGap * 0.08);
+      car.shadowPlane.position.y = -airGap + 0.06 + state.loopCamBlend * 0.08;
       car.shadowPlane.scale.setScalar(shScale);
-      car.shadowPlane.material.opacity = Math.max(0.12, 0.88 - state.jumpY * 0.09);
+      car.shadowPlane.material.opacity = Math.max(0.12, 0.88 - airGap * 0.09);
 
       for (let i = 0; i < car.wheels.length; i++) car.wheels[i].rotation.x += state.speed * simDt * 0.72;
 
@@ -5772,17 +5921,8 @@
       car.underGlow.color.setHex(activeHardBrake ? 0xff0022 : (isTurbo ? 0x00ff77 : 0xff2438));
       car.underGlow.intensity = activeHardBrake ? 5.2 : (isTurbo ? 4.8 : (2.3 + breath * 1.0));
 
-      // 7. Swept Anti-Tunneling Trigger Checks & Batched Instanced Collectibles (Zero Scene-Graph Overhead!)
+      // 7. Hit Shake Decay & Batched Instanced Collectibles (Ramps resolved physically in Step 4!)
       if (state.hitShake > 0) state.hitShake = Math.max(0, state.hitShake - dt * 2.8);
-
-      if (state.speed > 0 && !isCutscene && state.isGrounded) {
-        for (let i = 0; i < jumpRamps.length; i++) {
-          const r = jumpRamps[i];
-          if ((crossedTargetT(prevT, state.t, r.t) || getCircularDistT(state.t, r.t) < 0.0045) && Math.abs(state.laneOffset - r.laneOffset) < 2.6 && state.speed > 18) {
-            executeJump(22.5);
-          }
-        }
-      }
 
       // Batched Instanced NITRO Canisters (1 Draw Call!)
       for (let i = 0; i < nitroCanisters.length; i++) {
@@ -5883,7 +6023,7 @@
         const isFoc = (tp === nearPanel);
         const tgtScale = isFoc ? 1.06 : 1.0;
         _scaleVec.set(tgtScale, tgtScale, 1);
-        tp.screenMesh.scale.lerp(_scaleVec, dt * 6);
+        tp.screenMesh.scale.lerp(_scaleVec, 1 - Math.exp(-6.0 * dt));
         // Smooth anti-gravity hover bob synced to bullet-time world clock (rock-steady while reading!)
         tp.group.position.y = tp.baseY + Math.sin(wElapsed * 2.0 + i * 1.1) * 0.55;
       }
@@ -6068,6 +6208,8 @@
         chaseCamPos.copy(_carPos).addScaledVector(_tan, -11.8).addScaledVector(_norm, 4.35);
         chaseLookAt.copy(_carPos).addScaledVector(_tan, 26).addScaledVector(_norm, 2.05);
         chaseCamUp.copy(upVec).lerp(_norm, 0.42).normalize();
+        smoothCamRel.subVectors(chaseCamPos, _carPos);
+        smoothLookRel.subVectors(chaseLookAt, _carPos);
 
         camera.position.copy(smoothCamPos);
         camera.lookAt(smoothLookAt);
@@ -6093,6 +6235,8 @@
         chaseCamPos.copy(smoothCamPos);
         chaseLookAt.copy(smoothLookAt);
         chaseCamUp.copy(_camUp);
+        smoothCamRel.subVectors(chaseCamPos, _carPos);
+        smoothLookRel.subVectors(chaseLookAt, _carPos);
         camera.position.copy(smoothCamPos);
         camera.lookAt(smoothLookAt);
       } else {
@@ -6130,13 +6274,13 @@
           // Gentle handheld cinema sway when stopped so the scene feels alive!
           const idleFactor = Math.max(0, 1.0 - Math.abs(state.speed) / 8);
           if (idleFactor > 0.05) {
-            _desCam.x += Math.sin(elapsed * 0.9) * 0.18 * idleFactor;
-            _desCam.y += Math.cos(elapsed * 1.2) * 0.12 * idleFactor;
+            _desCam.x += Math.sin(elapsed * 0.9) * 0.14 * idleFactor;
+            _desCam.y += Math.cos(elapsed * 1.2) * 0.09 * idleFactor;
           }
-          if (isTurbo || state.hitShake > 0.01) {
-            const totalShake = (isTurbo ? 0.14 : 0) + state.hitShake * 0.65;
-            _desCam.x += (Math.random() - 0.5) * totalShake;
-            _desCam.y += (Math.random() - 0.5) * totalShake;
+          if (state.nitroBlur > 0.02 || state.hitShake > 0.01) {
+            const vib = state.nitroBlur * 0.022 + state.hitShake * 0.18;
+            _desCam.addScaledVector(_bin, Math.sin(elapsed * 37.0) * vib);
+            _desCam.addScaledVector(_norm, Math.cos(elapsed * 51.0) * vib * 0.75);
           }
           // Curves look-ahead upward along _norm inside the 360° loop so the camera follows the vertical wall!
           _desLook.copy(_carPos)
@@ -6173,8 +6317,13 @@
         chaseCamUp.lerp(_targetCamUp, camUpAlpha);
         if (chaseCamUp.lengthSq() < 0.001) chaseCamUp.copy(_targetCamUp);
         else chaseCamUp.normalize();
-        chaseCamPos.lerp(_desCam, camPosAlpha);
-        chaseLookAt.lerp(_desLook, camLookAlpha);
+        // Damp in car-relative coordinates so browser frame-time deltas never cause car rubber-banding!
+        _desCamRel.subVectors(_desCam, _carPos);
+        _desLookRel.subVectors(_desLook, _carPos);
+        smoothCamRel.lerp(_desCamRel, camPosAlpha);
+        smoothLookRel.lerp(_desLookRel, camLookAlpha);
+        chaseCamPos.copy(_carPos).add(smoothCamRel);
+        chaseLookAt.copy(_carPos).add(smoothLookRel);
 
         if (state.returnSwoopActive) {
           const ru = Math.min(1, state.returnSwoopTimer / Math.max(0.4, state.returnSwoopDur || 1.80));
