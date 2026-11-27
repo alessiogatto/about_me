@@ -1,7 +1,7 @@
 # Alessio Gatto — Interactive 3D CV (`about_me`)
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-00e5ff?style=for-the-badge)](https://alessiogatto.github.io/about_me/)
-[![Three.js](https://img.shields.io/badge/Three.js-r160-ff2a85?style=for-the-badge)](https://threejs.org/)
+[![Three.js](https://img.shields.io/badge/Three.js-r187-ff2a85?style=for-the-badge)](https://threejs.org/)
 [![Single File](https://img.shields.io/badge/Architecture-Single%20HTML-ffd32a?style=for-the-badge)](./index.html)
 
 A playable, single-file **3D Neon Tokyo Expressway driving experience** built with Three.js WebGL that turns my curriculum vitae into an interactive nighttime circuit. Prefer a classic document view? Open the built-in **📄 FULL CV** modal at any time or read [Curriculum_vitae.pdf](./Curriculum_vitae.pdf).
@@ -14,24 +14,23 @@ A playable, single-file **3D Neon Tokyo Expressway driving experience** built wi
 
 - **Rosso Corsa Italian Tricolore Supercar**: Sculpted cockpit, **Verde · Bianco · Rosso** racing stripes, Giallo Modena calipers & fender shields, triple Tricolore exhaust jets, and an illuminated **`I · ALESSIO`** rear EU plate.
 - **74m Helical 360° Vertical Loop**: Seamless $C^2$ clothoid entry and exit built with a 3,600-sample parallel-transport frame lookup table, boosted entrance chevrons, and gimbal-lock-free upside-down chase camera tracking.
-- **Classic Nitro Speed Rush**: Activating Nitro (`Shift` / `🔥 NITRO`) engages a conditional 12-tap WebGL linear-HDR radial zoom motion blur pass (keeping the car sharp in the center while streaking neon signs and skyscrapers outward), crimson 3D taillight light-trail ribbons, lengthened exhaust jets, and dynamic FOV pull-back.
-- **Speedbreaker Milestone Cutscenes**: Spotting each of the 7 CV billboards on Lap 1 smoothly dilates world time into bullet-time (`0.025×`) with a 3D Bezier crane sweep, letterbox bars, and Web Audio Speedbreaker swells—returning cleanly along a Bezier arc with zero velocity hitch.
-- **Click-to-Inspect 3D CV Megaboards & Guided Tour**: Click any 3D roadside billboard (or press `F` / `◀ PREV` / `NEXT ▶` / `1–7`) to whip-zoom straight onto 2K CanvasTextures, toggle **▶ GUIDED TOUR** for hands-free cruising, or open **📄 FULL CV** for instant scanning.
-- **Cross-Device Ready**: Adaptive DPR rendering (`AUTO` / `HIGH` / `LITE` presets), landscape iPad/tablet HUD with physical gravity-verified gyroscope steering & tilt-back braking, touch controls, `es-module-shims` import-map polyfill for older Safari/Android browsers, and an HTML CV fallback if WebGL is unavailable.
+- **Classic Nitro Speed Rush**: Activating Nitro (`Shift` / `🔥`) engages an 8-tap WebGL linear-HDR radial zoom motion blur pass (keeping the car sharp in the center while streaking neon signs and skyscrapers outward), crimson 3D taillight light-trail ribbons, lengthened exhaust jets, and dynamic FOV pull-back.
+- **Speedbreaker Milestone Cutscenes**: Spotting each of the 6 chronological CV billboards on Lap 1 smoothly dilates world time into bullet-time (`0.025×`) with a 3D Bezier crane sweep, a minimal bottom continue pill, and Web Audio Speedbreaker swells—returning cleanly along a Bezier arc with zero velocity hitch.
+- **Click-to-Inspect 3D CV Megaboards & Guided Tour**: Click any 3D roadside billboard (or press `F` / `◀ PREV` / `NEXT ▶` / `1–6`) to hide HUD bars and zoom full-frame onto 2K CanvasTextures, then press `Space` (`▶ CLICK SPACEBAR TO CONTINUE`) or click the bottom pill (or `F`) to resume driving, toggle **▶ GUIDED TOUR** for hands-free cruising, or open **📄 FULL CV** for the complete document and Core Technical Arsenal.
+- **Cross-Device Ready**: Adaptive DPR rendering (`AUTO` / `HIGH` / `LITE` presets), two-thumb split mobile/iPad landscape HUD with focused panel dock & swipe navigation, horizon-verified gyroscope steering & tilt-back braking, `es-module-shims` import-map polyfill, and an HTML CV fallback if WebGL is unavailable.
 
 ---
 
-## Career & Education Milestones (7 Stages)
+## Career & Education Milestones (6 Stages)
 
 | Stage | Timeline | Role / Degree | Highlight |
 | :--- | :--- | :--- | :--- |
-| **01** | Summary | **Profile & Core Technical Arsenal** | Python, Java, SQL/MongoDB, Boomi, TensorFlow, Docker, BI stack |
-| **02** | Jul 2016 | **Liceo Classico "Giacomo Leopardi"** | Classical Studies Diploma · Recanati, Italy |
-| **03** | Oct 2016 – Feb 2020 | **B.Sc. Computing & Automation Engineering (UNIVPM)** | `102/110` · Synthetic optical holography imaging software thesis |
-| **04** | May 2021 – Jul 2021 | **GrottiniLab S.r.l. — Deep Learning Intern** | TensorFlow retail CNN on AWS SageMaker · `30,000+` labeled images |
-| **05** | Mar 2020 – Oct 2021 | **M.Sc. Computing & Automation Engineering (UNIVPM)** | `110/110 Cum Laude` · Deep learning product recognition thesis |
-| **06** | Sep 2021 – Nov 2021 | **GrottiniLab S.r.l. — Deep Learning Engineer** | Rewrote Docker Shelf Management backend (`~10×` speedup) & `~50k` dataset |
-| **07** | Jun 2022 – Present | **Texas Instruments Deutschland GmbH — Application Developer** | Automated SAP customs declarations for Frankfurt PDC (multi-million-dollar savings) & B2B systems |
+| **01** | Jul 2016 | **Liceo Classico "Giacomo Leopardi"** | Classical Studies Diploma · Recanati, Italy |
+| **02** | Oct 2016 – Feb 2020 | **B.Sc. Computing & Automation Engineering (UNIVPM)** | `102/110` · Synthetic optical holography imaging software thesis |
+| **03** | May 2021 – Jul 2021 | **GrottiniLab S.r.l. — Deep Learning Intern** | TensorFlow retail CNN on AWS SageMaker · `30,000+` labeled images |
+| **04** | Mar 2020 – Oct 2021 | **M.Sc. Computing & Automation Engineering (UNIVPM)** | `110/110 Cum Laude` · Deep learning product recognition thesis |
+| **05** | Sep 2021 – Nov 2021 | **GrottiniLab S.r.l. — Deep Learning Engineer** | Rewrote Docker Shelf Management backend (`~10×` speedup) & `~50k` dataset |
+| **06** | Jun 2022 – Present | **Texas Instruments Deutschland GmbH — Application Developer** | Automated SAP customs declarations for Frankfurt PDC (multi-million-dollar savings) & B2B systems |
 
 ---
 
@@ -44,16 +43,16 @@ A playable, single-file **3D Neon Tokyo Expressway driving experience** built wi
 | `W` / `S` or `↑` / `↓` | Accelerate / ABS Brake & Reverse |
 | `A` / `D` or `←` / `→` | Steer & Drift (builds Nitro charge) |
 | `Shift` | Fire **Nitro** (`radial blur + taillight trails`) |
-| `Space` | Jump & 360° Backflip / Barrel Roll (`Space + A/D`) |
-| Click 3D Panel / `F` | Toggle straight-on 3D panel zoom |
-| `1` – `7` / `◀` `▶` | Warp to milestone stage `1–7` / step panels |
+| `Space` | Jump & 360° Backflip / Barrel Roll (`Space + A/D`) · Close open panel (`CLICK SPACEBAR TO CONTINUE`) |
+| Click 3D Panel / Pill (or `F`) | Zoom onto 3D panel / Press `Space` or click bottom pill (or `F`) to close |
+| `1` – `6` / `◀` `▶` | Warp to milestone stage `1–6` / step panels |
 | `G` / `C` / `M` / `P` | Guided Tour / Camera POV / Audio Mute / Pause & FX Preset |
 | `R` | Restart circuit |
 
 ### Mobile & iPad (Landscape)
 
 - **Gyroscope Mode (`🧭 START WITH GYROSCOPE`)**: Auto-accelerates while steering via horizon tilt left/right; tilt upright to brake or tap **🛑**.
-- **Touch Controls Mode (`👆 START WITH TOUCH CONTROLS`)**: Dedicated on-screen steering (`◀` / `▶`), gas (`▲`), brake (`🛑`), **🔥 NITRO**, and **🚀 FLIP** buttons.
+- **Touch Controls Mode (`👆 START WITH TOUCH CONTROLS`)**: Two-thumb layout with steering (`◀` / `▶` + `🎥` POV) on the left and `🛑` Brake, `▲` Gas, `🔥` Nitro, and `🚀` Flip on the right, plus swipeable 3D panel inspection with an optional scrollable text reader.
 
 ---
 
@@ -63,7 +62,7 @@ Everything lives self-contained inside [`index.html`](./index.html) with zero bu
 
 - **Procedural Spline & Mesh Pipeline**: 18-point closed Catmull-Rom circuit with `3600` arc-length divisions, $C^2$ smoothed banking, adaptive highway tessellation, and track-conforming loop booster chevrons.
 - **Draw-Call Optimization**: Static buildings, crowns, spires, beacons, neon ribs, launch ramps, Nitro canisters, sky rings, skill orbs, flying traffic spinners, and Tricolore sparks batched via `THREE.InstancedMesh` and frozen static matrices (`matrixAutoUpdate = false`).
-- **Async Paint-Yielded Preloader**: `requestAnimationFrame` GPU `scaleX` progress bar with shader pre-compilation (`renderer.compile`) across yielded frame checkpoints before fading out.
+- **Async Paint-Yielded Preloader**: `requestAnimationFrame` GPU `scaleX` progress bar with offscreen GPU pipeline pre-warming (`prewarmGPUPipelines`) into both the Nitro HDR render target and main framebuffer across yielded frame checkpoints before fading out.
 - **Zero-Asset Procedural Audio**: Web Audio API synthesizer (`SoundEngine`) for V8/V10 engine pitch, Nitro ignition, Speedbreaker sweeps, stunt jumps, and stage chimes.
 
 ---

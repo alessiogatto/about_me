@@ -20,6 +20,14 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+    .cv-modal-box, .cv-modal-box *, #mobile-stage-sheet, #mobile-stage-sheet * {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    .cv-modal-box button, .cv-modal-box button *, #mobile-stage-sheet button, #mobile-stage-sheet button * {
+      user-select: none;
+      -webkit-user-select: none;
+    }
 
     body, html {
       width: 100%;
@@ -243,7 +251,7 @@
       white-space: nowrap;
     }
 
-    /* Compact 7-Stage Stepper + Integrated Circuit Progress Rail */
+    /* Compact 6-Stage Stepper + Integrated Circuit Progress Rail */
     .stepper-pill {
       display: flex;
       flex-direction: column;
@@ -399,6 +407,7 @@
       white-space: nowrap;
     }
     #toast-banner.show { opacity: 1; transform: translateY(0) scale(1); }
+    body.is-panel-focused #toast-banner { opacity: 0 !important; }
 
     /* MIDDLE SECTION: COMPACT STAGE NAVIGATOR + OPTIONAL TEXT VIEW */
     .mid-section {
@@ -427,7 +436,10 @@
       opacity: 0.88;
     }
     .cv-card:hover { opacity: 1; background: rgba(7, 11, 26, 0.90); }
-    .cv-card.compact .cv-bullets, .cv-card.compact .cv-tags { display: none; }
+    .cv-card.compact .cv-subtitle,
+    .cv-card.compact .cv-impact,
+    .cv-card.compact .cv-bullets,
+    .cv-card.compact .cv-tags { display: none; }
     .cv-card.compact { width: 320px; padding: 9px 12px; }
     .cv-card.zoom-hidden { opacity: 0; pointer-events: none; transform: translateY(10px); }
     @keyframes stagePulseA {
@@ -569,20 +581,6 @@
       box-shadow: 0 0 8px var(--neon-mint);
       animation: pulse 1.2s infinite;
     }
-    .dwell-track {
-      width: 100%;
-      height: 3px;
-      background: rgba(255, 255, 255, 0.14);
-      border-radius: 99px;
-      overflow: hidden;
-      display: none;
-    }
-    .dwell-track.show { display: block; }
-    #dwell-bar {
-      width: 0%;
-      height: 100%;
-      background: linear-gradient(90deg, var(--neon-mint), var(--neon-cyan));
-    }
     @keyframes pulse {
       0%, 100% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.35); opacity: 0.6; }
@@ -702,10 +700,12 @@
     body.is-tablet-ui .right-touch-controls { display: flex; }
     body.is-mobile-ui .controls-row,
     body.is-tablet-ui .controls-row { display: none !important; }
-    @media (pointer: coarse), (max-width: 960px), (max-height: 520px) {
-      .touch-controls,
-      .right-touch-controls { display: flex; }
-      .controls-row { display: none !important; }
+    @media (pointer: coarse) and (hover: none) {
+      body:not(.is-desktop-ui) .touch-controls,
+      body:not(.is-desktop-ui) .right-touch-controls { display: flex; }
+      body:not(.is-desktop-ui) .controls-row { display: none !important; }
+    }
+    @media (max-width: 1020px), (max-height: 560px) {
       #onboarding-hint, .brand-sub { display: none; }
     }
     .touch-btn {
@@ -959,7 +959,9 @@
       pointer-events: none;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 12px max(16px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
     }
     #nfsmw-overlay::before {
       content: '';
@@ -967,7 +969,7 @@
       top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
       pointer-events: none;
-      background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 50%, rgba(3, 6, 16, 0.56) 92%, rgba(0, 229, 255, 0.12) 100%);
+      background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 56%, rgba(3, 6, 16, 0.48) 92%, rgba(0, 229, 255, 0.12) 100%);
       opacity: 0;
       transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1);
       will-change: opacity;
@@ -976,131 +978,35 @@
       opacity: 1;
       transition: opacity 0.42s ease-out;
     }
-    #nfsmw-overlay.active.ready-click {
-      pointer-events: auto;
-      cursor: pointer;
-    }
-    .nfsmw-bar {
+    .nfsmw-pill {
       position: relative;
       z-index: 2;
-      width: 100%;
-      background: linear-gradient(90deg, rgba(4, 7, 18, 0.97), rgba(8, 13, 30, 0.94));
-      padding: 14px 28px;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 18px;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 14px;
+      background: rgba(6, 10, 24, 0.92);
+      border: 1px solid var(--cut-accent);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.78), 0 0 18px rgba(0, 229, 255, 0.22);
+      max-width: calc(100vw - 24px);
       opacity: 0;
-      transition: transform 0.88s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.62s ease;
+      transform: translateY(24px);
+      transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
       will-change: transform, opacity;
       pointer-events: none;
     }
-    #nfsmw-overlay.active .nfsmw-bar {
+    #nfsmw-overlay.active .nfsmw-pill {
       opacity: 1;
-      transition: transform 0.48s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.32s ease;
+      transform: translateY(0);
       pointer-events: auto;
     }
-    .nfsmw-bar-top {
-      border-bottom: 2px solid var(--cut-accent);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
-      padding-top: max(10px, env(safe-area-inset-top));
-      padding-left: max(18px, env(safe-area-inset-left));
-      padding-right: max(18px, env(safe-area-inset-right));
-      transform: translateY(-110%);
-    }
-    .nfsmw-bar-bottom {
-      border-top: 2px solid var(--neon-pink);
-      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.65);
-      padding-bottom: max(10px, env(safe-area-inset-bottom));
-      padding-left: max(18px, env(safe-area-inset-left));
-      padding-right: max(18px, env(safe-area-inset-right));
-      transform: translateY(110%);
-    }
-    #nfsmw-overlay.active .nfsmw-bar-top,
-    #nfsmw-overlay.active .nfsmw-bar-bottom {
-      transform: translateY(0);
-    }
-    .nfsmw-alert {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 900;
-      font-size: 0.92rem;
-      letter-spacing: 2.2px;
-      color: #ffffff;
-      text-transform: uppercase;
-      opacity: 0;
-      transform: translateY(8px);
-      transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
-    }
-    #nfsmw-overlay.active .nfsmw-alert {
-      opacity: 1;
-      transform: translateY(0);
-      transition-delay: 0.07s;
-    }
-    .nfsmw-siren {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: var(--neon-pink);
-      box-shadow: 0 0 14px var(--neon-pink);
-      animation: sirenBlink 0.45s infinite alternate;
-    }
-    @keyframes sirenBlink {
-      0% { background: #ff2a85; box-shadow: 0 0 16px #ff2a85; }
-      100% { background: #00e5ff; box-shadow: 0 0 16px #00e5ff; }
-    }
-    .nfsmw-lap-tag {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 0.72rem;
-      font-weight: 800;
-      letter-spacing: 1.5px;
-      color: var(--neon-gold);
-      border: 1px solid rgba(255, 211, 42, 0.5);
-      background: rgba(255, 211, 42, 0.12);
-      padding: 4px 12px;
-      border-radius: 6px;
-    }
-    .nfsmw-bottom-info {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      min-width: 0;
-      opacity: 0;
-      transform: translateY(8px);
-      transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
-    }
-    #nfsmw-overlay.active .nfsmw-bottom-info {
-      opacity: 1;
-      transform: translateY(0);
-      transition-delay: 0.12s;
-    }
-    .nfsmw-bottom-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.02rem;
-      font-weight: 900;
-      color: #ffffff;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .nfsmw-bottom-sub {
-      font-family: 'Rajdhani', sans-serif;
-      font-size: 0.92rem;
-      font-weight: 700;
-      color: var(--neon-gold);
-      letter-spacing: 0.6px;
-    }
-    .nfsmw-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
+    #nfsmw-overlay.active.ready-click .nfsmw-pill {
+      cursor: pointer;
     }
     #btn-nfsmw-inspect {
-      padding: 11px 14px;
-      font-size: 0.72rem;
+      padding: 9px 13px;
+      font-size: 0.7rem;
       border-color: rgba(0, 229, 255, 0.45);
       color: #88f3ff;
       background: rgba(0, 229, 255, 0.12);
@@ -1117,13 +1023,13 @@
     #btn-nfsmw-proceed {
       position: relative;
       overflow: hidden;
-      min-width: 250px;
-      padding: 12px 22px;
+      min-width: 220px;
+      padding: 9px 18px;
       border-radius: 10px;
       font-family: 'Orbitron', sans-serif;
-      font-size: 0.78rem;
+      font-size: 0.74rem;
       font-weight: 900;
-      letter-spacing: 1.2px;
+      letter-spacing: 1px;
       border: 1px solid rgba(255, 255, 255, 0.22);
       background: rgba(16, 24, 48, 0.9);
       color: #8ba3c7;
@@ -1140,28 +1046,25 @@
       transform-origin: left center;
       background: linear-gradient(90deg, rgba(0, 229, 255, 0.30), rgba(255, 42, 133, 0.36));
       will-change: transform;
+      pointer-events: none;
       z-index: 0;
     }
-    #btn-nfsmw-proceed span { position: relative; z-index: 1; }
+    #btn-nfsmw-proceed span { position: relative; z-index: 1; pointer-events: none; }
     #btn-nfsmw-proceed.ready {
       cursor: pointer;
       color: #ffffff;
       border-color: var(--neon-gold);
       background: linear-gradient(135deg, var(--neon-pink), var(--neon-amber));
       box-shadow: 0 0 24px rgba(255, 42, 133, 0.65), 0 0 12px rgba(255, 211, 42, 0.5);
-      transform: scale(1.03);
     }
-    #btn-nfsmw-proceed.ready:hover { filter: brightness(1.14); transform: scale(1.06); }
+    #btn-nfsmw-proceed.ready:hover { filter: brightness(1.14); transform: scale(1.03); }
 
-    /* Keep 3D Megaboard Unobstructed on Phones During Cutscene (Inspect via #panel-dock / #mobile-stage-sheet) */
-    #nfsmw-mobile-card { display: none !important; }
-
-    /* Mobile & Tablet Focused Panel Inspector Dock + Scrollable Native Text Sheet */
+    /* Focused Panel Floating Bottom Pill (Hides Top & Bottom HUD Bars on All Devices!) */
     #panel-dock {
       display: none;
       position: fixed;
       left: 50%;
-      bottom: max(10px, env(safe-area-inset-bottom));
+      bottom: max(12px, env(safe-area-inset-bottom));
       transform: translateX(-50%);
       z-index: 22;
       align-items: center;
@@ -1174,14 +1077,19 @@
       max-width: calc(100vw - 24px);
       pointer-events: auto;
     }
-    body.is-panel-focused.is-mobile-ui #panel-dock,
-    body.is-panel-focused.is-tablet-ui #panel-dock {
+    body.is-panel-focused #hud {
+      opacity: 0;
+      pointer-events: none !important;
+      transition: opacity 0.22s ease;
+    }
+    body.is-panel-focused #hud * {
+      pointer-events: none !important;
+    }
+    body.is-panel-focused #panel-dock {
       display: flex;
     }
-    body.is-panel-focused.is-mobile-ui .bottom-bar,
-    body.is-panel-focused.is-tablet-ui .bottom-bar,
-    body.is-panel-focused.is-mobile-ui #focus-indicator {
-      display: none !important;
+    body.is-desktop-ui #dock-details {
+      display: none;
     }
     .dock-stage-label {
       font-family: 'Orbitron', sans-serif;
@@ -1257,47 +1165,41 @@
       font-weight: 700;
     }
 
-    /* Compact Phone Responsive HUD (Placed last so it cleanly overrides desktop rules!) */
-    @media (max-width: 960px) and (max-height: 560px), (max-width: 760px) {
-      .gyro-only { display: inline-flex; }
-      #hud { padding: max(7px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(7px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); gap: 6px; }
-      .top-bar { gap: 5px; }
-      .brand-sub, #onboarding-hint { display: none !important; }
-      .stepper-dots { display: none !important; }
-      .step-mini-arrow { display: inline-flex; }
-      .stepper-pill {
-        min-width: 0 !important;
-        padding: 3px 7px;
-        gap: 2px;
-        flex: 1 1 auto;
-        max-width: 245px;
-      }
-      .stepper-caption { font-size: 0.68rem; overflow: hidden; text-overflow: ellipsis; max-width: 155px; }
-      .brand-badge { padding: 5px 8px; flex-shrink: 1; min-width: 0; }
-      .brand-title { font-size: 0.68rem; letter-spacing: 0.5px; white-space: nowrap; }
-      .top-actions { gap: 4px; }
-      .action-btn { padding: 5px 7px; font-size: 0.56rem; gap: 3px; }
-      .mid-section { align-items: flex-end; padding-top: 2px; }
-      .cv-card.compact { width: 100%; max-width: 100%; padding: 7px 10px; gap: 3px; }
-      .cv-title { font-size: 0.78rem; }
-      .cv-subtitle, .cv-card.compact .cv-tags, .cv-card-footer { display: none !important; }
-      .cv-impact { font-size: 0.72rem; padding: 4px 7px; line-height: 1.3; }
-      .bottom-bar { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 8px; }
-      .controls-bar { width: auto; padding: 5px; justify-content: center; }
-      .touch-controls, .right-touch-controls { gap: 5px; }
-      .touch-btn { flex: none; padding: 8px 10px; font-size: 0.72rem; min-height: 46px; min-width: 46px; }
-      .telemetry-cluster { width: auto; padding: 6px 9px; gap: 8px; }
-      .gauges-col { min-width: 82px; gap: 2px; }
-      .speed-box { min-width: 50px; }
-      .speed-val { font-size: 1.24rem; }
-      .nfsmw-bar { padding: 8px 14px; flex-wrap: wrap; gap: 8px; }
-      .nfsmw-alert { font-size: 0.72rem; letter-spacing: 1.2px; }
-      .nfsmw-bottom-title { font-size: 0.84rem; }
-      .nfsmw-bottom-sub { font-size: 0.74rem; }
-      .nfsmw-actions { width: 100%; justify-content: flex-end; }
-      #btn-nfsmw-proceed { min-width: 140px; padding: 9px 12px; font-size: 0.68rem; flex: 1; }
-      #btn-nfsmw-inspect { padding: 9px 12px; font-size: 0.68rem; }
+    /* Compact Smartphone HUD (Strictly scoped to body.is-mobile-ui — never overrides Laptop split-panes!) */
+    body.is-mobile-ui .gyro-only { display: inline-flex; }
+    body.is-mobile-ui #hud { padding: max(7px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(7px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); gap: 6px; }
+    body.is-mobile-ui .top-bar { gap: 5px; }
+    body.is-mobile-ui .brand-sub,
+    body.is-mobile-ui #onboarding-hint { display: none !important; }
+    body.is-mobile-ui .stepper-dots { display: none !important; }
+    body.is-mobile-ui .step-mini-arrow { display: inline-flex; }
+    body.is-mobile-ui .stepper-pill {
+      min-width: 0 !important;
+      padding: 3px 7px;
+      gap: 2px;
+      flex: 1 1 auto;
+      max-width: 245px;
     }
+    body.is-mobile-ui .stepper-caption { font-size: 0.68rem; overflow: hidden; text-overflow: ellipsis; max-width: 155px; }
+    body.is-mobile-ui .brand-badge { padding: 5px 8px; flex-shrink: 1; min-width: 0; }
+    body.is-mobile-ui .brand-title { font-size: 0.68rem; letter-spacing: 0.5px; white-space: nowrap; }
+    body.is-mobile-ui .top-actions { gap: 4px; }
+    body.is-mobile-ui .action-btn { padding: 5px 7px; font-size: 0.56rem; gap: 3px; }
+    body.is-mobile-ui .mid-section { align-items: flex-end; padding-top: 2px; }
+    body.is-mobile-ui #cv-card { display: none !important; }
+    body.is-mobile-ui .bottom-bar { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 8px; }
+    body.is-mobile-ui .controls-bar { width: auto; padding: 5px; justify-content: center; background: rgba(6, 10, 22, 0.58); opacity: 0.94; }
+    body.is-mobile-ui .touch-controls,
+    body.is-mobile-ui .right-touch-controls { gap: 5px; }
+    body.is-mobile-ui .touch-btn { flex: none; padding: 8px 10px; font-size: 0.72rem; min-height: 46px; min-width: 46px; }
+    body.is-mobile-ui .telemetry-cluster { width: auto; padding: 6px 9px; gap: 8px; background: rgba(6, 10, 22, 0.68); }
+    body.is-mobile-ui .gauges-col { min-width: 78px; gap: 2px; }
+    body.is-mobile-ui .speed-box { min-width: 50px; }
+    body.is-mobile-ui .speed-val { font-size: 1.24rem; }
+    body.is-mobile-ui .mobile-hide-stat { display: none !important; }
+    body.is-mobile-ui .nfsmw-pill { padding: 5px 7px; gap: 6px; }
+    body.is-mobile-ui #btn-nfsmw-proceed { min-width: 155px; padding: 8px 13px; font-size: 0.66rem; }
+    body.is-mobile-ui #btn-nfsmw-inspect { padding: 8px 11px; font-size: 0.66rem; }
 
     /* Dedicated iPad & Tablet Landscape HUD (Spacious 768px-1366px Touch Layout!) */
     body.is-tablet-ui #onboarding-hint,
@@ -1312,27 +1214,28 @@
     body.is-tablet-ui .telemetry-cluster { width: auto !important; padding: 9px 14px; }
     body.is-tablet-ui .cv-card.compact { width: 308px; max-width: 38vw; }
 
-    /* Landscape Smartphone Optimization (Ultra-Clean 90%+ Open 3D Highway!) */
-    @media (max-height: 520px) and (orientation: landscape) {
-      #hud { padding: max(6px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); gap: 4px; }
-      .top-bar { gap: 5px; }
-      .brand-title { font-size: 0.72rem; }
-      .action-btn { padding: 5px 8px; font-size: 0.56rem; background: rgba(6, 10, 22, 0.72); }
-      .mid-section { align-items: flex-end; padding-bottom: 2px; }
-      /* Hide floating CV card while driving on phones — inspect via #panel-dock + #mobile-stage-sheet or FULL CV! */
-      body.is-mobile-ui #cv-card { display: none !important; }
-      .bottom-bar { flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 8px; }
-      .controls-bar { width: auto; padding: 4px 6px; opacity: 0.94; background: rgba(6, 10, 22, 0.58); }
-      .touch-controls, .right-touch-controls { width: auto; gap: 5px; }
-      .touch-btn { flex: none; padding: 8px 11px; font-size: 0.72rem; min-height: 46px; min-width: 46px; background: rgba(255, 42, 133, 0.22); }
-      .telemetry-cluster { width: auto; padding: 5px 9px; gap: 8px; background: rgba(6, 10, 22, 0.68); }
-      .gauges-col { min-width: 78px; }
-      .mobile-hide-stat { display: none !important; }
-      .speed-val { font-size: 1.24rem; }
-      .nfsmw-bar { padding: 7px 14px; flex-wrap: nowrap; }
-      .nfsmw-actions { width: auto; }
-      #btn-nfsmw-proceed { width: auto; min-width: 155px; padding: 8px 12px; }
-      #btn-nfsmw-inspect { padding: 8px 12px; }
+    /* Compact Laptop & Split-Pane Window Adjustments (Preserves Keyboard Controls, 6-Dot Stepper & CV Card!) */
+    @media (max-width: 900px) {
+      body.is-desktop-ui #hud { padding: 10px 12px; gap: 8px; }
+      body.is-desktop-ui .top-bar { gap: 8px; }
+      body.is-desktop-ui .brand-badge { padding: 5px 10px; }
+      body.is-desktop-ui .brand-title { font-size: 0.86rem; letter-spacing: 1px; }
+      body.is-desktop-ui .stepper-pill { min-width: 0; padding: 4px 8px; }
+      body.is-desktop-ui .step-btn { width: 22px; height: 20px; font-size: 0.6rem; }
+      body.is-desktop-ui .step-connector { width: 5px; }
+      body.is-desktop-ui .action-btn { padding: 6px 9px; font-size: 0.6rem; }
+      body.is-desktop-ui .cv-card.compact { width: 276px; max-width: 48vw; padding: 8px 10px; }
+      body.is-desktop-ui .nav-pill-btn { padding: 4px 6px; font-size: 0.7rem; }
+      body.is-desktop-ui .controls-bar { padding: 5px 8px; gap: 6px; }
+      body.is-desktop-ui .telemetry-cluster { padding: 7px 11px; gap: 10px; }
+      body.is-desktop-ui .gauges-col { min-width: 112px; }
+      body.is-desktop-ui .speed-val { font-size: 1.55rem; }
+    }
+    @media (max-height: 540px) {
+      body.is-desktop-ui #hud { padding: 8px 14px; gap: 6px; }
+      body.is-desktop-ui .cv-card.compact { padding: 7px 10px; }
+      body.is-desktop-ui .telemetry-cluster { padding: 6px 12px; }
+      body.is-desktop-ui .speed-val { font-size: 1.5rem; }
     }
     .rotate-tip {
       display: none;
@@ -1434,26 +1337,15 @@
       box-shadow: 0 0 8px var(--neon-cyan);
       transform: translate(-50%, -50%);
     }
-    #btn-gyro-zero {
-      background: rgba(255, 211, 42, 0.18);
-      border: 1px solid rgba(255, 211, 42, 0.6);
-      color: #ffe169;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 0.56rem;
-      font-weight: 800;
-      padding: 3px 7px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
   </style>
 
   <!-- Polyfill Import Maps for Older iPads (iPadOS < 16.4) & Older Android Phones (Chrome < 89) -->
-  <script async src="https://cdn.jsdelivr.net/npm/es-module-shims@1.10.0/dist/es-module-shims.js" crossorigin="anonymous"></script>
+  <script async src="https://cdn.jsdelivr.net/npm/es-module-shims@2.8.4/dist/es-module-shims.js" crossorigin="anonymous"></script>
   <script type="importmap">
     {
       "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        "three": "https://cdn.jsdelivr.net/npm/three@0.187.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.187.0/examples/jsm/"
       }
     }
   </script>
@@ -1467,35 +1359,12 @@
 
   <!-- NFS MOST WANTED STYLE FIRST-SIGHT MILESTONE CUT-IN (LAP 1 ONLY) -->
   <div id="nfsmw-overlay">
-    <div class="nfsmw-bar nfsmw-bar-top">
-      <div class="nfsmw-alert">
-        <span class="nfsmw-siren"></span>
-        <span id="nfsmw-stage-label">MILESTONE SPOTTED // 01 / 07</span>
-      </div>
-      <div class="nfsmw-lap-tag">LAP 1 · FIRST DISCOVERY</div>
-    </div>
-    <div id="nfsmw-mobile-card">
-      <div class="nmc-top">
-        <div class="nmc-title" id="nmc-title">Profile &amp; Core Technical Arsenal</div>
-        <div class="nmc-date" id="nmc-date">SUMMARY &amp; SKILLS</div>
-      </div>
-      <div class="nmc-sub" id="nmc-sub">Freising (Munich), Germany</div>
-      <div class="nmc-hero" id="nmc-hero">⚡ PYTHON · JAVA · SAP · TENSORFLOW · DOCKER</div>
-      <div class="nmc-impact" id="nmc-impact">Software &amp; automation engineer focused on efficient algorithms, enterprise B2B systems, and deep learning.</div>
-      <div class="nmc-tags" id="nmc-tags"></div>
-    </div>
-    <div class="nfsmw-bar nfsmw-bar-bottom">
-      <div class="nfsmw-bottom-info">
-        <div class="nfsmw-bottom-title" id="nfsmw-title">Profile &amp; Core Technical Arsenal</div>
-        <div class="nfsmw-bottom-sub" id="nfsmw-hero">⚡ PYTHON · JAVA · SAP · TENSORFLOW · DOCKER</div>
-      </div>
-      <div class="nfsmw-actions">
-        <button id="btn-nfsmw-inspect" class="action-btn" disabled title="Park &amp; Inspect 3D Panel">🔍 INSPECT</button>
-        <button id="btn-nfsmw-proceed" disabled>
-          <div class="nfsmw-btn-fill" id="nfsmw-btn-fill"></div>
-          <span id="nfsmw-btn-text">READ PANEL · 0.5s</span>
-        </button>
-      </div>
+    <div class="nfsmw-pill" id="nfsmw-pill">
+      <button id="btn-nfsmw-inspect" class="action-btn" disabled title="Park &amp; Inspect 3D Panel">🔍 INSPECT</button>
+      <button id="btn-nfsmw-proceed" disabled>
+        <div class="nfsmw-btn-fill" id="nfsmw-btn-fill"></div>
+        <span id="nfsmw-btn-text">LOCKING ON · 0.9s</span>
+      </button>
     </div>
   </div>
 
@@ -1517,7 +1386,7 @@
     <h2>3D Engine Could Not Initialize</h2>
     <p id="fallback-msg">WebGL or the Three.js CDN module could not load. You can still view Alessio Gatto's complete interactive CV below or retry loading the 3D scene.</p>
     <div style="display:flex;gap:12px;">
-      <button class="action-btn primary" onclick="document.getElementById('cv-modal').classList.add('open')">📄 OPEN FULL CV</button>
+      <button class="action-btn primary" id="btn-fallback-cv">📄 OPEN FULL CV</button>
       <button class="action-btn" onclick="location.reload()">↻ RETRY 3D</button>
     </div>
   </div>
@@ -1542,7 +1411,7 @@
       <div class="mobile-guard-actions">
         <button class="action-btn primary" id="btn-mobile-gyro">🧭 START WITH GYROSCOPE</button>
         <button class="action-btn" id="btn-mobile-touch">👆 START WITH TOUCH CONTROLS</button>
-        <button class="action-btn" id="btn-mobile-cv" onclick="document.getElementById('cv-modal').classList.add('open')">📄 READ FULL CV</button>
+        <button class="action-btn" id="btn-mobile-cv">📄 READ FULL CV</button>
       </div>
     </div>
   </div>
@@ -1566,12 +1435,12 @@
         <div class="brand-sub">Application Developer · Texas Instruments</div>
       </div>
 
-      <!-- COMPACT 7-STAGE STEPPER + LIVE CIRCUIT BAR -->
+      <!-- COMPACT 6-STAGE STEPPER + LIVE CIRCUIT BAR -->
       <div class="stepper-pill interactive">
         <div class="stepper-dots" id="stepper-dots"></div>
         <div class="stepper-caption-row">
           <button class="step-mini-arrow" id="btn-m-prev" aria-label="Previous Stage">◀</button>
-          <div class="stepper-caption" id="stepper-caption" title="Tap to Inspect 3D Panel">01 · Profile &amp; Stack</div>
+          <div class="stepper-caption" id="stepper-caption" title="Tap to Inspect 3D Panel">01 · Liceo Leopardi</div>
           <button class="step-mini-arrow" id="btn-m-next" aria-label="Next Stage">▶</button>
         </div>
         <div class="stepper-progress-rail"><div id="circuit-bar"></div></div>
@@ -1602,14 +1471,14 @@
     <div class="mid-section">
       <div class="cv-card compact interactive" id="cv-card">
         <div class="cv-card-top">
-          <span class="cv-stage-badge" id="card-stage">01 / 07 · OVERVIEW</span>
-          <span class="cv-date-label" id="card-date">SUMMARY &amp; SKILLS</span>
+          <span class="cv-stage-badge" id="card-stage">01 / 06 · HIGH SCHOOL</span>
+          <span class="cv-date-label" id="card-date">JULY 2016</span>
         </div>
         <div>
-          <div class="cv-title" id="card-title">Profile &amp; Core Technical Arsenal</div>
-          <div class="cv-subtitle" id="card-subtitle">Freising (Munich), Germany · Italian (Native) · English (C1)</div>
+          <div class="cv-title" id="card-title">Liceo Classico &quot;Giacomo Leopardi&quot;</div>
+          <div class="cv-subtitle" id="card-subtitle">📍 Recanati (Macerata), Italy · Classical Studies Diploma</div>
         </div>
-        <div class="cv-impact" id="card-impact">Full-stack &amp; automation engineer focused on high-impact algorithms, enterprise B2B systems, and deep learning.</div>
+        <div class="cv-impact" id="card-impact">Built structured logic, critical thinking, and disciplined problem-solving before entering university engineering.</div>
         <div class="cv-body-wrap">
           <ul class="cv-bullets" id="card-bullets"></ul>
           <div class="cv-tags" id="card-tags"></div>
@@ -1622,12 +1491,11 @@
         </div>
       </div>
 
-      <div class="focus-indicator interactive" id="focus-indicator" style="cursor:pointer;" title="Click to toggle 3D Panel Zoom (F)">
+      <div class="focus-indicator interactive" id="focus-indicator" style="cursor:pointer;" title="Click bar to close or toggle 3D Panel Zoom">
         <div class="focus-ind-row">
           <span class="pulse-dot"></span>
           <span id="focus-status-text">⚡ GIANT PANEL AHEAD · CLICK TO ZOOM</span>
         </div>
-        <div class="dwell-track" id="dwell-track"><div id="dwell-bar"></div></div>
       </div>
     </div>
 
@@ -1666,10 +1534,6 @@
               <span id="turbo-pct">100%</span>
             </div>
             <div class="gauge-track"><div id="turbo-bar"></div></div>
-            <div class="gauge-row" style="display:none;">
-              <span style="color:#00ff9d">SKILLS</span>
-              <span id="collectibles-text">0 / 21</span>
-            </div>
             <div class="gauge-row mobile-hide-stat" style="margin-top:2px;">
               <span style="color:#ffd32a">LAP</span>
               <span id="lap-text">1</span>
@@ -1696,24 +1560,24 @@
   <!-- MOBILE / TABLET SCROLLABLE NATIVE STAGE READER SHEET -->
   <div id="mobile-stage-sheet" class="interactive">
     <div class="mss-head">
-      <span class="cv-stage-badge" id="mss-stage">01 / 07 · OVERVIEW</span>
-      <span class="cv-date-label" id="mss-date">SUMMARY &amp; SKILLS</span>
+      <span class="cv-stage-badge" id="mss-stage">01 / 06 · HIGH SCHOOL</span>
+      <span class="cv-date-label" id="mss-date">JULY 2016</span>
       <button class="dock-btn" id="btn-mss-close" style="min-height:30px;padding:4px 10px;">✕</button>
     </div>
-    <div class="cv-title" id="mss-title">Profile &amp; Core Technical Arsenal</div>
-    <div class="cv-subtitle" id="mss-sub">Freising (Munich), Germany</div>
-    <div class="cv-impact" id="mss-impact">Software &amp; automation engineer focused on efficient algorithms, enterprise B2B systems, and deep learning.</div>
+    <div class="cv-title" id="mss-title">Liceo Classico &quot;Giacomo Leopardi&quot;</div>
+    <div class="cv-subtitle" id="mss-sub">📍 Recanati (Macerata), Italy · Classical Studies Diploma</div>
+    <div class="cv-impact" id="mss-impact">Built structured logic, critical thinking, and disciplined problem-solving before entering university engineering.</div>
     <ul class="mss-bullets" id="mss-bullets"></ul>
     <div class="cv-tags" id="mss-tags"></div>
   </div>
 
-  <!-- MOBILE / TABLET PANEL INSPECTOR DOCK -->
+  <!-- FLOATING PANEL INSPECTOR PILL -->
   <div id="panel-dock" class="interactive">
     <button class="dock-btn" id="dock-prev" aria-label="Previous Milestone">◀</button>
-    <span class="dock-stage-label" id="dock-stage">01 / 07</span>
+    <span class="dock-stage-label" id="dock-stage">01 / 06</span>
     <button class="dock-btn" id="dock-details">📖 READ TEXT</button>
     <button class="dock-btn" id="dock-next" aria-label="Next Milestone">▶</button>
-    <button class="dock-btn primary" id="dock-drive">▶ DRIVE</button>
+    <button class="dock-btn primary" id="dock-drive">▶ CLICK SPACEBAR TO CONTINUE</button>
   </div>
 
   <!-- FULL CV MODAL -->
@@ -1731,7 +1595,7 @@
             <span>💻 GitHub / GitLab / LinkedIn: <strong>@alessiogatto</strong></span>
           </div>
         </div>
-        <button class="action-btn primary" id="btn-close-modal" onclick="document.getElementById('cv-modal').classList.remove('open')">✕ CLOSE CV</button>
+        <button class="action-btn primary" id="btn-close-modal">✕ CLOSE CV</button>
       </div>
 
       <div class="cv-grid">
@@ -1790,29 +1654,84 @@
 
   <!-- Device Tier Detection (Desktop vs iPad/Tablet vs Phone + Low-End Guard), CDN Boot Watchdog & Loading Bar -->
   <script>
-    (function () {
+    window.__classifyDevice = function () {
       var ua = navigator.userAgent || '';
+      var params = '';
+      try { params = window.location.search || ''; } catch (_e) {}
+      var forceMobile = /[?&]mobile=1\b/i.test(params);
+      var forceTablet = /[?&]tablet=1\b/i.test(params);
+      var forceDesktop = /[?&]desktop=1\b/i.test(params);
+
       var maxTP = navigator.maxTouchPoints || 0;
-      var isIPad = /iPad/i.test(ua) || (/Macintosh/i.test(ua) && maxTP > 1);
-      var isIOS = /iPhone|iPad|iPod/i.test(ua) || isIPad;
-      var isCoarse = Boolean(window.matchMedia && (window.matchMedia('(pointer: coarse)').matches || window.matchMedia('(any-pointer: coarse)').matches || window.matchMedia('(hover: none)').matches));
-      var isTouchDevice = isIPad || /Android|iPhone|iPod|Mobile|webOS|BlackBerry|IEMobile/i.test(ua) || maxTP > 1 || isCoarse;
-      var shortSide = Math.min(window.innerWidth || 800, window.innerHeight || 600);
-      var longSide = Math.max(window.innerWidth || 800, window.innerHeight || 600);
-      var isTablet = isIPad || (isTouchDevice && shortSide >= 600 && longSide >= 900);
-      var isPhone = (isTouchDevice && !isTablet) || shortSide <= 540 || longSide <= 760;
+      var uaDataMobile = Boolean(navigator.userAgentData && navigator.userAgentData.mobile);
+
+      var primaryCoarse = Boolean(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+      var primaryFine = Boolean(window.matchMedia && window.matchMedia('(pointer: fine)').matches);
+      var primaryNoHover = Boolean(window.matchMedia && window.matchMedia('(hover: none)').matches);
+      var canHover = Boolean(window.matchMedia && window.matchMedia('(hover: hover)').matches);
+
+      // macOS has no touchscreens -> Macintosh + maxTouchPoints > 1 uniquely detects iPadOS Desktop-mode Safari
+      var isIPad = !forceDesktop && (/iPad/i.test(ua) || (/Macintosh/i.test(ua) && maxTP > 1));
+      var isIOSPhone = !forceDesktop && /iPhone|iPod/i.test(ua) && !isIPad;
+      var isIOS = isIPad || isIOSPhone;
+      var isAndroid = !forceDesktop && /Android/i.test(ua);
+      var isAndroidPhone = isAndroid && /Mobile/i.test(ua);
+      var isMobileUA = !forceDesktop && (uaDataMobile || isIOSPhone || isAndroidPhone || /webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua));
+
+      // Exclude touch-screen Windows/Linux laptops (primary pointer:fine + hover:hover) from Mobile/Tablet mode
+      var isTouchPrimary = !forceDesktop && (
+        forceMobile ||
+        forceTablet ||
+        isIPad ||
+        isMobileUA ||
+        isAndroid ||
+        (primaryCoarse && primaryNoHover && maxTP > 0 && !(primaryFine && canHover))
+      );
+
+      var vw = window.innerWidth || 1024;
+      var vh = window.innerHeight || 768;
+      var vShort = Math.min(vw, vh);
+      var vLong = Math.max(vw, vh);
+      var scrW = (window.screen && window.screen.width) || vw;
+      var scrH = (window.screen && window.screen.height) || vh;
+      var physShort = Math.min(vShort, Math.min(scrW, scrH));
+
+      var isPhone = false;
+      var isTablet = false;
+      if (forceMobile) {
+        isPhone = true;
+      } else if (forceTablet) {
+        isTablet = true;
+      } else if (!forceDesktop && isTouchPrimary) {
+        if (isIOSPhone || isAndroidPhone || uaDataMobile) {
+          isPhone = true;
+        } else if (isIPad) {
+          isTablet = true;
+        } else if (physShort < 600 || (vShort <= 540 && vLong <= 960)) {
+          isPhone = true;
+        } else {
+          isTablet = true;
+        }
+      }
+
+      var isTouchUI = Boolean(isPhone || isTablet);
       var isLowEnd = Boolean((navigator.deviceMemory && navigator.deviceMemory <= 3) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4));
 
-      window.__DEVICE_INFO = {
+      return {
         isIPad: isIPad,
         isIOS: isIOS,
-        isTouch: isTouchDevice || isPhone,
-        isTablet: isTablet && !isPhone,
+        isTouch: isTouchUI,
+        isTablet: isTablet,
         isPhone: isPhone,
+        isDesktop: !isTouchUI,
         isLowEnd: isLowEnd
       };
-      window.__IS_MOBILE_DEVICE = window.__DEVICE_INFO.isPhone;
-    })();
+    };
+    window.__DEVICE_INFO = window.__classifyDevice();
+    window.__IS_MOBILE_DEVICE = window.__DEVICE_INFO.isPhone;
+    document.body.classList.toggle('is-mobile-ui', window.__DEVICE_INFO.isPhone);
+    document.body.classList.toggle('is-tablet-ui', window.__DEVICE_INFO.isTablet);
+    document.body.classList.toggle('is-desktop-ui', window.__DEVICE_INFO.isDesktop);
     window.__GAME_BOOTED = false;
     (function () {
       var targetPct = 6;
@@ -1895,6 +1814,18 @@
         }
       }, 15000);
     })();
+    (function () {
+      var modalEl = document.getElementById('cv-modal');
+      window.__openCVModal = function () { if (modalEl) modalEl.classList.add('open'); };
+      window.__closeCVModal = function () { if (modalEl) modalEl.classList.remove('open'); };
+      ['btn-fallback-cv', 'btn-rotate-cv', 'btn-mobile-cv'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('click', function (e) { e.preventDefault(); window.__openCVModal(); });
+      });
+      var closeEl = document.getElementById('btn-close-modal');
+      if (closeEl) closeEl.addEventListener('click', function (e) { e.preventDefault(); window.__closeCVModal(); });
+      if (modalEl) modalEl.addEventListener('click', function (e) { if (e.target === modalEl) window.__closeCVModal(); });
+    })();
   </script>
 
   <script type="module">
@@ -1902,6 +1833,7 @@
     import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
     import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
     import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
     import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
     const yieldBootFrame = (pct, label) => new Promise((resolve) => {
@@ -1910,22 +1842,74 @@
     });
 
     (async function bootInteractiveCV() {
-    const DEV = window.__DEVICE_INFO || { isIPad: false, isIOS: false, isTouch: false, isTablet: false, isPhone: false, isLowEnd: false };
+    let DEV = window.__classifyDevice ? window.__classifyDevice() : (window.__DEVICE_INFO || { isIPad: false, isIOS: false, isTouch: false, isTablet: false, isPhone: false, isDesktop: true, isLowEnd: false });
     let IS_PHONE = Boolean(DEV.isPhone);
     let IS_TABLET = Boolean(DEV.isTablet);
-    let IS_TOUCH_UI = Boolean(DEV.isTouch || IS_PHONE || IS_TABLET);
+    let IS_TOUCH_UI = Boolean(IS_PHONE || IS_TABLET);
     const IS_MOBILE = IS_TOUCH_UI; // Used for mobile-safe VRAM & geometry budgets on both phones and iPads!
+    let mobileGuardDismissed = false;
+    const gyro = {
+      active: false,
+      smoothSteerDeg: 0,
+      steer: 0,       // -1 (left) .. +1 (right), 0° = level horizon!
+      braking: false, // Tilt phone upright/back past ~70° to brake (or tap 🛑 button!)
+      listenerAttached: false,
+      receivedEvent: false
+    };
+    let gyroWatchdogTimer = null;
+
+    function updateGyroUI() {
+      document.body.classList.toggle('gyro-active', gyro.active);
+      const btn = document.getElementById('btn-gyro');
+      const lbl = document.getElementById('gyro-label');
+      if (btn) btn.classList.toggle('active-toggle', gyro.active);
+      if (lbl) lbl.textContent = gyro.active ? 'GYRO: ON' : 'GYRO';
+    }
+
+    function disableGyro() {
+      if (gyroWatchdogTimer) {
+        clearTimeout(gyroWatchdogTimer);
+        gyroWatchdogTimer = null;
+      }
+      gyro.active = false;
+      gyro.steer = 0;
+      gyro.smoothSteerDeg = 0;
+      gyro.braking = false;
+      const dotEl = document.getElementById('gyro-steer-dot');
+      if (dotEl) {
+        dotEl.style.left = '50%';
+        dotEl.style.background = '#00e5ff';
+      }
+      updateGyroUI();
+    }
 
     function syncResponsiveBodyClasses() {
-      const shortSide = Math.min(window.innerWidth, window.innerHeight);
-      const longSide = Math.max(window.innerWidth, window.innerHeight);
-      const viewportPhone = shortSide <= 540 || longSide <= 760;
-      const viewportTablet = !viewportPhone && (DEV.isIPad || DEV.isTablet || (DEV.isTouch && shortSide >= 600));
-      IS_PHONE = Boolean(DEV.isPhone || viewportPhone);
-      IS_TABLET = Boolean(!IS_PHONE && viewportTablet);
-      IS_TOUCH_UI = Boolean(IS_PHONE || IS_TABLET || DEV.isTouch);
+      if (window.__classifyDevice) DEV = window.__classifyDevice();
+      window.__DEVICE_INFO = DEV;
+      window.__IS_MOBILE_DEVICE = DEV.isPhone;
+      IS_PHONE = Boolean(DEV.isPhone);
+      IS_TABLET = Boolean(DEV.isTablet);
+      IS_TOUCH_UI = Boolean(IS_PHONE || IS_TABLET);
       document.body.classList.toggle('is-mobile-ui', IS_PHONE);
       document.body.classList.toggle('is-tablet-ui', IS_TABLET);
+      document.body.classList.toggle('is-desktop-ui', !IS_TOUCH_UI);
+      const mgEl = document.getElementById('mobile-guard');
+      if (mgEl) {
+        if (!IS_TOUCH_UI) {
+          mgEl.classList.remove('show');
+          if (gyro.active) disableGyro();
+        } else if (!mobileGuardDismissed) {
+          mgEl.classList.add('show');
+        }
+      }
+      const tourLbl = document.getElementById('tour-label');
+      if (tourLbl && tourLbl.textContent !== 'TOUR: ON') {
+        tourLbl.textContent = IS_PHONE ? 'TOUR' : 'GUIDED TOUR';
+      }
+      const dockDriveBtn = document.getElementById('dock-drive');
+      if (dockDriveBtn) {
+        dockDriveBtn.textContent = IS_TOUCH_UI ? '▶ TAP TO CONTINUE' : '▶ CLICK SPACEBAR TO CONTINUE';
+      }
     }
     syncResponsiveBodyClasses();
 
@@ -1937,34 +1921,16 @@
     // ============================================================================
     const MILESTONES = [
       {
-        id: 1, t: 0.085,
-        shortName: "Profile & Stack",
-        stage: "01 / 07 · OVERVIEW",
-        date: "SUMMARY & SKILLS",
-        title: "Profile & Core Technical Arsenal",
-        subtitle: "📍 Freising (Munich), Germany · Italian (Native) · English (C1)",
-        heroStat: "PYTHON · JAVA · SAP · TENSORFLOW · DOCKER",
-        impact: "Software & automation engineer focused on efficient algorithms, enterprise B2B systems, and deep learning.",
-        color: "#00e5ff", accent: 0x00e5ff,
-        signTop: "01 · OVERVIEW", signMain: "PROFILE & TECH STACK", signSub: "SUMMARY & CORE SKILLS",
-        bullets: [
-          "Focused on clean problem-solving methods, efficient algorithms & data structures, and rapidly learning new technologies.",
-          "Core Stack: Python (TensorFlow, NumPy, scikit-learn, pandas, NetworkX), Java (Spring, Hibernate, JUnit), SQL & MongoDB, Boomi, Docker, Git.",
-          "Analytics & OS: Qlik Sense, Tableau, Microsoft Power BI · Fedora, Ubuntu, macOS, Windows 11, Scrum & LaTeX."
-        ],
-        tags: ["Python", "Java", "SQL / MongoDB", "Boomi", "Docker"]
-      },
-      {
-        id: 2, t: 0.215,
+        id: 1, t: 0.135,
         shortName: "Liceo Leopardi",
-        stage: "02 / 07 · HIGH SCHOOL",
+        stage: "01 / 06 · HIGH SCHOOL",
         date: "JULY 2016",
         title: "Liceo Classico \"Giacomo Leopardi\"",
         subtitle: "📍 Recanati (Macerata), Italy · Classical Studies Diploma",
         heroStat: "CLASSICAL STUDIES · ANALYTICAL FOUNDATIONS",
         impact: "Built structured logic, critical thinking, and disciplined problem-solving before entering university engineering.",
         color: "#ff9f1a", accent: 0xff9f1a,
-        signTop: "02 · HIGH SCHOOL", signMain: "LICEO CLASSICO LEOPARDI", signSub: "JULY 2016",
+        signTop: "01 · HIGH SCHOOL", signMain: "LICEO CLASSICO LEOPARDI", signSub: "JULY 2016",
         bullets: [
           "Completed secondary school specializing in Classical Studies at Liceo Classico 'Giacomo Leopardi' in Recanati, Italy.",
           "Built strong analytical discipline, structured argumentation, and foundational critical thinking before university engineering."
@@ -1972,16 +1938,16 @@
         tags: ["Classical Studies", "Structured Logic", "Recanati, Italy"]
       },
       {
-        id: 3, t: 0.345,
+        id: 2, t: 0.285,
         shortName: "B.Sc. UNIVPM",
-        stage: "03 / 07 · BACHELOR",
+        stage: "02 / 06 · BACHELOR",
         date: "OCT 2016 – FEB 2020",
         title: "B.Sc. Computing & Automation Engineering",
         subtitle: "📍 UNIVPM · Ancona, Italy · Final Vote: 102/110",
         heroStat: "102 / 110 · OPTICAL HOLOGRAPHY THESIS",
         impact: "Engineered imaging acquisition software for a synthetic optical holographic system alongside core CS & algorithms.",
         color: "#00d2ff", accent: 0x00d2ff,
-        signTop: "03 · B.SC. DEGREE", signMain: "UNIVPM · BACHELOR (102/110)", signSub: "OCT 2016 – FEB 2020",
+        signTop: "02 · B.SC. DEGREE", signMain: "UNIVPM · BACHELOR (102/110)", signSub: "OCT 2016 – FEB 2020",
         bullets: [
           "Graduated with 102/110 in Computing & Automation Engineering at Marche Polytechnic University (UNIVPM), Ancona.",
           "Thesis: 'Software development for imaging acquisition in a synthetic optical holographic system' (Supervisor: Dott. Andrea Di Donato).",
@@ -1990,16 +1956,16 @@
         tags: ["Algorithms & Data Structures", "OOP", "SQL", "Optical Holography", "Operating Systems"]
       },
       {
-        id: 4, t: 0.475,
+        id: 3, t: 0.435,
         shortName: "GrottiniLab Intern",
-        stage: "04 / 07 · INTERNSHIP",
+        stage: "03 / 06 · INTERNSHIP",
         date: "MAY 2021 – JULY 2021",
         title: "GrottiniLab S.r.l. — Deep Learning Intern",
         subtitle: "📍 Porto Recanati, Italy · Retail Computer Vision",
         heroStat: "30,000+ LABELED IMAGES · TENSORFLOW CNN",
         impact: "Built a retail shelf-recognition CNN on AWS SageMaker, outperforming legacy SIFT computer vision.",
         color: "#00ff9d", accent: 0x00ff9d,
-        signTop: "04 · INTERNSHIP", signMain: "GROTTINILAB INTERNSHIP", signSub: "MAY 2021 – JULY 2021",
+        signTop: "03 · INTERNSHIP", signMain: "GROTTINILAB INTERNSHIP", signSub: "MAY 2021 – JULY 2021",
         bullets: [
           "Built a TensorFlow Convolutional Neural Network (Python) to recognize product EANs on shelves, outperforming legacy SIFT vision.",
           "Created a 30,000+ labeled product image dataset from shelf photography & barcode scanning, trained on AWS SageMaker.",
@@ -2008,16 +1974,16 @@
         tags: ["TensorFlow", "Python", "CNN", "AWS SageMaker", "30K+ Dataset"]
       },
       {
-        id: 5, t: 0.615,
+        id: 4, t: 0.585,
         shortName: "M.Sc. UNIVPM",
-        stage: "05 / 07 · MASTER",
+        stage: "04 / 06 · MASTER",
         date: "MAR 2020 – OCT 2021",
         title: "M.Sc. Computing & Automation Engineering",
         subtitle: "📍 UNIVPM · Ancona, Italy · 110/110 Cum Laude",
         heroStat: "110 / 110 CUM LAUDE · DEEP LEARNING THESIS",
         impact: "Graduated with highest honors in Computing & Automation Engineering with retail neural-network research.",
         color: "#c850ff", accent: 0xc850ff,
-        signTop: "05 · M.SC. DEGREE", signMain: "UNIVPM · 110 CUM LAUDE", signSub: "MAR 2020 – OCT 2021",
+        signTop: "04 · M.SC. DEGREE", signMain: "UNIVPM · 110 CUM LAUDE", signSub: "MAR 2020 – OCT 2021",
         bullets: [
           "Graduated with highest honors (110/110 Cum Laude) in Computing & Automation Engineering at UNIVPM.",
           "Thesis: 'Development of a neural network for automatic product recognition in the retail environment' (Prof. E. Frontoni, Dr. R. Pietrini).",
@@ -2026,16 +1992,16 @@
         tags: ["110/110 Cum Laude", "Deep Learning", "Big Data", "Computer Graphics", "NoSQL"]
       },
       {
-        id: 6, t: 0.755,
+        id: 5, t: 0.735,
         shortName: "GrottiniLab Engineer",
-        stage: "06 / 07 · ENGINEER",
+        stage: "05 / 06 · ENGINEER",
         date: "SEPT 2021 – NOV 2021",
         title: "GrottiniLab S.r.l. — Deep Learning Engineer",
         subtitle: "📍 Porto Recanati, Italy · Backend Performance & AI",
         heroStat: "~10× FASTER DOCKER BACKEND · 50K+ IMAGES",
         impact: "Rewrote the Shelf Management Docker backend from scratch for ~10× speedup & expanded the CNN dataset to ~50k images.",
         color: "#ff2a85", accent: 0xff2a85,
-        signTop: "06 · FULL ENGINEER", signMain: "GROTTINILAB · 10X SPEEDUP", signSub: "SEPT 2021 – NOV 2021",
+        signTop: "05 · FULL ENGINEER", signMain: "GROTTINILAB · 10X SPEEDUP", signSub: "SEPT 2021 – NOV 2021",
         bullets: [
           "Rewrote from scratch the Docker Container backend of GrottiniLab's Shelf Management App, achieving ~10x time performance gain using optimal algorithms and data structures.",
           "Expanded the retail dataset to ~50,000 labeled images and boosted production neural network recognition accuracy."
@@ -2043,16 +2009,16 @@
         tags: ["10x Speedup", "Docker", "50K+ Images", "Algorithms", "Backend"]
       },
       {
-        id: 7, t: 0.895,
+        id: 6, t: 0.885,
         shortName: "Texas Instruments",
-        stage: "07 / 07 · CURRENT ROLE",
+        stage: "06 / 06 · CURRENT ROLE",
         date: "JUNE 2022 – PRESENT",
         title: "Texas Instruments Deutschland GmbH",
         subtitle: "📍 Freising (Munich), Germany · Application Developer",
         heroStat: "MILLIONS SAVED · SAP CUSTOMS AUTOMATION",
         impact: "Architected automated SAP customs declarations for Frankfurt's new PDC, saving millions long-term alongside B2B automation.",
         color: "#ffd32a", accent: 0xffd32a,
-        signTop: "07 · CURRENT ROLE", signMain: "TEXAS INSTRUMENTS", signSub: "JUNE 2022 – PRESENT",
+        signTop: "06 · CURRENT ROLE", signMain: "TEXAS INSTRUMENTS", signSub: "JUNE 2022 – PRESENT",
         bullets: [
           "Improving B2B infrastructure and reducing manual work via multiple automation projects benefiting internal developers and business users.",
           "Architected an automated SAP customs declaration system for Frankfurt's new Product Distribution Center, saving millions of dollars long-term.",
@@ -2076,8 +2042,10 @@
       }
       unlock() {
         if (this.unlocked) {
-          if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
-          return true;
+          if (this.ctx && (this.ctx.state === 'suspended' || this.ctx.state === 'interrupted')) {
+            this.ctx.resume().catch(() => {});
+          }
+          return Boolean(this.ctx);
         }
         const AC = window.AudioContext || window.webkitAudioContext;
         if (!AC) return false;
@@ -2101,7 +2069,7 @@
           this.engineOsc.start();
 
           this.unlocked = true;
-          if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
+          if (this.ctx.state === 'suspended' || this.ctx.state === 'interrupted') this.ctx.resume().catch(() => {});
           return true;
         } catch (_e) {
           return false;
@@ -2132,6 +2100,9 @@
         g.gain.exponentialRampToValueAtTime(0.001, t + dur);
         o.connect(g);
         g.connect(this.master);
+        o.onended = () => {
+          try { o.disconnect(); g.disconnect(); } catch (_e) {}
+        };
         o.start(t);
         o.stop(t + dur);
       }
@@ -2140,8 +2111,8 @@
       boost() { this.tone(115, 520, 0.3, 'sawtooth', 0.11); }
       orb() { this.tone(540, 1080, 0.13, 'triangle', 0.13); }
       stage() {
-        this.tone(330, 660, 0.15, 'sine', 0.11);
-        setTimeout(() => this.tone(660, 880, 0.18, 'sine', 0.11), 85);
+        this.toneAt(0, 330, 660, 0.15, 'sine', 0.11);
+        this.toneAt(0.085, 660, 880, 0.18, 'sine', 0.11);
       }
       toneAt(delaySec, f1, f2, dur = 0.2, type = 'sine', vol = 0.14, lpfStart = 0, lpfEnd = 0) {
         if (!this.enabled || !this.unlock() || !this.ctx || !this.master) return;
@@ -2154,17 +2125,25 @@
         g.gain.setValueAtTime(0.0001, t);
         g.gain.linearRampToValueAtTime(vol, t + Math.min(0.025, dur * 0.25));
         g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+        let lpfNode = null;
         if (lpfStart > 0 && lpfEnd > 0) {
-          const lpf = this.ctx.createBiquadFilter();
-          lpf.type = 'lowpass';
-          lpf.frequency.setValueAtTime(lpfStart, t);
-          lpf.frequency.exponentialRampToValueAtTime(Math.max(40, lpfEnd), t + dur);
-          o.connect(lpf);
-          lpf.connect(g);
+          lpfNode = this.ctx.createBiquadFilter();
+          lpfNode.type = 'lowpass';
+          lpfNode.frequency.setValueAtTime(lpfStart, t);
+          lpfNode.frequency.exponentialRampToValueAtTime(Math.max(40, lpfEnd), t + dur);
+          o.connect(lpfNode);
+          lpfNode.connect(g);
         } else {
           o.connect(g);
         }
         g.connect(this.master);
+        o.onended = () => {
+          try {
+            o.disconnect();
+            g.disconnect();
+            if (lpfNode) lpfNode.disconnect();
+          } catch (_e) {}
+        };
         o.start(t);
         o.stop(t + dur + 0.02);
       }
@@ -2180,8 +2159,8 @@
         this.toneAt(0.18, 140, 520, 0.85, 'sine', 0.075);
       }
       nitroPickup() {
-        this.tone(440, 880, 0.12, 'sawtooth', 0.11);
-        setTimeout(() => this.tone(880, 1320, 0.16, 'triangle', 0.12), 70);
+        this.toneAt(0, 440, 880, 0.12, 'sawtooth', 0.11);
+        this.toneAt(0.07, 880, 1320, 0.16, 'triangle', 0.12);
       }
       crash() {
         this.tone(140, 34, 0.28, 'sawtooth', 0.2);
@@ -2191,16 +2170,28 @@
           this.ctx.close().catch(() => {});
           this.ctx = null;
         }
+        this.unlocked = false;
+        this.master = null;
+        this.engineOsc = null;
+        this.engineGain = null;
       }
     }
     const sfx = new SoundEngine();
+    const GESTURE_UNLOCK_EVENTS = ['pointerdown', 'touchend', 'click', 'keydown'];
+    function removeGestureUnlockListeners() {
+      for (let i = 0; i < GESTURE_UNLOCK_EVENTS.length; i++) {
+        window.removeEventListener(GESTURE_UNLOCK_EVENTS[i], firstGestureUnlock);
+      }
+    }
     const firstGestureUnlock = () => {
       sfx.unlock();
-      window.removeEventListener('pointerdown', firstGestureUnlock);
-      window.removeEventListener('keydown', firstGestureUnlock);
+      if (sfx.ctx && sfx.ctx.state === 'running') {
+        removeGestureUnlockListeners();
+      }
     };
-    window.addEventListener('pointerdown', firstGestureUnlock, { passive: true });
-    window.addEventListener('keydown', firstGestureUnlock, { passive: true });
+    for (let i = 0; i < GESTURE_UNLOCK_EVENTS.length; i++) {
+      window.addEventListener(GESTURE_UNLOCK_EVENTS[i], firstGestureUnlock, { passive: true });
+    }
 
     // ============================================================================
     // 3. RENDERER, WEBGL1/2 SAFE FALLBACK, STUDIO PBR & ADAPTIVE QUALITY ENGINE
@@ -2214,7 +2205,7 @@
       });
     } catch (_firstErr) {
       try {
-        renderer = new THREE.WebGLRenderer({ antialias: false, precision: 'mediump' });
+        renderer = new THREE.WebGLRenderer({ antialias: false });
       } catch (err) {
         window.__hideLoadingScreen();
         document.getElementById('fallback-msg').textContent = 'WebGL is unavailable on this device or browser. You can still view the full CV below.';
@@ -2223,14 +2214,16 @@
       }
     }
 
-    const IS_WEBGL2 = Boolean(renderer.capabilities && renderer.capabilities.isWebGL2);
+    const IS_WEBGL2 = Boolean(typeof WebGL2RenderingContext !== 'undefined' && renderer.getContext() instanceof WebGL2RenderingContext);
     const MAX_TEX_SIZE = (renderer.capabilities && renderer.capabilities.maxTextureSize) || 4096;
     const IS_LOW_END = Boolean(DEV.isLowEnd || !IS_WEBGL2 || MAX_TEX_SIZE <= 4096);
 
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x090b1a, 0.00066);
 
-    const camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 1.2, 2400);
+    const viewW = Math.max(1, window.innerWidth);
+    const viewH = Math.max(1, window.innerHeight);
+    const camera = new THREE.PerspectiveCamera(58, viewW / viewH, 1.2, 2400);
     // High-Efficiency Crisp Retina DPR:
     // Caps AUTO at 1.65x Retina on Desktop (1.5x on iPad/Phone, 1.15x on Low-End) + Direct Hardware MSAA -> 3x-4x Higher FPS with Razor-Sharp Edges!
     function getTargetDPR(preset) {
@@ -2246,7 +2239,7 @@
     }
     const DEFAULT_MAX_DPR = getTargetDPR('AUTO');
     renderer.setPixelRatio(DEFAULT_MAX_DPR);
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(viewW, viewH);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = IS_TOUCH_UI ? 1.07 : 1.04;
     renderer.domElement.tabIndex = -1;
@@ -2256,14 +2249,23 @@
 
     // Subtle Studio IBL Reflections (skipped on touch/low-end devices to save ~30MB VRAM & boot faster)
     let envRT = null;
-    if (!IS_TOUCH_UI && !IS_LOW_END) {
+    function rebuildStudioEnvironment() {
+      if (IS_TOUCH_UI || IS_LOW_END) return;
+      if (envRT) {
+        try { envRT.dispose(); } catch (_dErr) {}
+        envRT = null;
+      }
       try {
         const pmrem = new THREE.PMREMGenerator(renderer);
-        envRT = pmrem.fromScene(new RoomEnvironment(), 0.04);
+        const roomEnv = new RoomEnvironment();
+        envRT = pmrem.fromScene(roomEnv, 0.04);
         scene.environment = envRT.texture;
+        scene.environmentIntensity = 0.32;
+        roomEnv.dispose();
         pmrem.dispose();
       } catch (_envErr) {}
     }
+    rebuildStudioEnvironment();
 
     // Moody Shinjuku Tokyo Night Lighting (deep shadows + crisp cyan/magenta/amber accents)
     scene.add(new THREE.HemisphereLight(0x5288c4, 0x160a22, IS_TOUCH_UI ? 0.96 : 0.76));
@@ -2301,7 +2303,12 @@
       }
       try {
         const dpr = renderer.getPixelRatio();
-        const rtOpts = (IS_WEBGL2 && !IS_TOUCH_UI) ? { samples: 4 } : {};
+        const rtOpts = {
+          type: THREE.HalfFloatType,
+          minFilter: THREE.LinearFilter,
+          magFilter: THREE.LinearFilter
+        };
+        if (IS_WEBGL2 && !IS_TOUCH_UI) rtOpts.samples = 4;
         const composerRT = new THREE.WebGLRenderTarget(
           Math.max(1, Math.floor(window.innerWidth * dpr)),
           Math.max(1, Math.floor(window.innerHeight * dpr)),
@@ -2315,6 +2322,7 @@
           0.22, 0.30, 0.95
         );
         composer.addPass(bloomPass);
+        composer.addPass(new OutputPass());
         composer.setSize(window.innerWidth, window.innerHeight);
         return true;
       } catch (_fxErr) {
@@ -2446,7 +2454,6 @@
     const trackCurve = new THREE.CatmullRomCurve3(trackControlPoints, true, 'catmullrom', 0.5);
     trackCurve.arcLengthDivisions = 3600;
     trackCurve.updateArcLengths();
-    const TRACK_SEGMENTS = IS_MOBILE ? 980 : 1680;
     const upVec = new THREE.Vector3(0, 1, 0);
 
     // Iconic 74m-Tall Helical 360° Vertical Loop-the-Loop right on the Opening Straightaway!
@@ -2612,17 +2619,21 @@
       return Math.abs(signedCircularDeltaT(tA, tB));
     }
 
-    // Swept circular crossing test (prevents high-speed tunneling at low FPS!)
+    // Swept forward circular crossing test (immune to reverse travel)
     function crossedTargetT(prevT, curT, targetT) {
       if (prevT === curT) return false;
       if (curT > prevT) {
+        if (curT - prevT > 0.5) return false;
         return targetT >= prevT && targetT <= curT;
       }
-      // Wrapped past 1.0 -> 0.0
-      return targetT >= prevT || targetT <= curT;
+      if (prevT - curT > 0.5) {
+        // Wrapped forward past 1.0 -> 0.0
+        return targetT >= prevT || targetT <= curT;
+      }
+      return false;
     }
 
-    function buildTokyoExpressway(curve, segments, width) {
+    function buildTokyoExpressway(width) {
       const group = new THREE.Group();
       const roadPos = [], roadNorm = [], roadUv = [], roadIdx = [];
       const deckPos = [], deckIdx = [];
@@ -2815,11 +2826,14 @@
       ledRGeo.setIndex(ledIdx);
       group.add(new THREE.Mesh(ledRGeo, new THREE.MeshBasicMaterial({ color: 0xff2a85, side: THREE.DoubleSide })));
 
-      // Instanced Highway Support Pillars (anchored cleanly to y = -32, zero pass-throughs)
+      // Instanced Highway Support Pillars + Ground Concrete Pier Footings (anchored cleanly to y = -32)
       const PILLAR_COUNT = 72;
       const pilGeo = new THREE.CylinderGeometry(1.1, 1.6, 1, 10);
       const pilMat = new THREE.MeshStandardMaterial({ color: 0x10172b, metalness: 0.75, roughness: 0.4 });
       const pilIMesh = new THREE.InstancedMesh(pilGeo, pilMat, PILLAR_COUNT);
+      const pierBaseGeo = new THREE.CylinderGeometry(2.6, 3.4, 1.8, 10);
+      const pierBaseMat = new THREE.MeshStandardMaterial({ color: 0x18223a, metalness: 0.65, roughness: 0.45 });
+      const pierBaseIMesh = new THREE.InstancedMesh(pierBaseGeo, pierBaseMat, PILLAR_COUNT);
       const ringGeo = new THREE.TorusGeometry(1.65, 0.16, 8, 18);
       const ringMat = new THREE.MeshBasicMaterial({ color: 0x00e5ff });
       const ringIMesh = new THREE.InstancedMesh(ringGeo, ringMat, PILLAR_COUNT);
@@ -2834,16 +2848,23 @@
           dObj.scale.setScalar(0);
           dObj.updateMatrix();
           pilIMesh.setMatrixAt(i, dObj.matrix);
+          pierBaseIMesh.setMatrixAt(i, dObj.matrix);
           ringIMesh.setMatrixAt(i, dObj.matrix);
           continue;
         }
         getTrackFrame(pu, pPt, pTan, pBin, pNorm);
-        const h = Math.max(4, pPt.y + 32);
-        dObj.position.set(pPt.x, pPt.y - h * 0.5 - 1.5, pPt.z);
+        const h = Math.max(4, pPt.y + 30.8);
+        dObj.position.set(pPt.x, pPt.y - 1.5 - h * 0.5, pPt.z);
         dObj.rotation.set(0, 0, 0);
         dObj.scale.set(1, h, 1);
         dObj.updateMatrix();
         pilIMesh.setMatrixAt(i, dObj.matrix);
+
+        dObj.position.set(pPt.x, -31.05, pPt.z);
+        dObj.rotation.set(0, 0, 0);
+        dObj.scale.set(1, 1, 1);
+        dObj.updateMatrix();
+        pierBaseIMesh.setMatrixAt(i, dObj.matrix);
 
         dObj.position.set(pPt.x, pPt.y - 2.8, pPt.z);
         dObj.rotation.set(Math.PI / 2, 0, 0);
@@ -2852,8 +2873,10 @@
         ringIMesh.setMatrixAt(i, dObj.matrix);
       }
       pilIMesh.instanceMatrix.needsUpdate = true;
+      pierBaseIMesh.instanceMatrix.needsUpdate = true;
       ringIMesh.instanceMatrix.needsUpdate = true;
       group.add(pilIMesh);
+      group.add(pierBaseIMesh);
       group.add(ringIMesh);
 
       // Glowing Neon Orange & Gold Booster Pad + Structural Neon Loop Rings around the 360° Vertical Loop!
@@ -2969,7 +2992,7 @@
     }
 
     await yieldBootFrame(62, 'Building Neon Tokyo Expressway...');
-    scene.add(buildTokyoExpressway(trackCurve, TRACK_SEGMENTS, TRACK_WIDTH));
+    scene.add(buildTokyoExpressway(TRACK_WIDTH));
     await yieldBootFrame(72, 'Constructing Shinjuku Night Skyline...');
 
     // ============================================================================
@@ -3001,8 +3024,9 @@
           varying vec3 vWorldPos;
           void main() {
             float h = normalize(vWorldPos).y;
-            vec3 col = mix(horizonColor, midColor, smoothstep(-0.04, 0.24, h));
+            vec3 col = mix(horizonColor, midColor, smoothstep(-0.02, 0.24, h));
             col = mix(col, topColor, smoothstep(0.24, 0.85, h));
+            col = mix(vec3(0.026, 0.033, 0.082), col, smoothstep(-0.10, 0.02, h));
             gl_FragColor = vec4(col, 1.0);
           }
         `
@@ -3110,12 +3134,144 @@
       scene.add(moonGroup);
     }
 
-    // Subtle Dark Reflective City Ground Grid
-    const floorGrid = new THREE.GridHelper(3400, 170, 0xff2a85, 0x0f1a38);
-    floorGrid.position.y = -32;
-    floorGrid.material.opacity = 0.35;
-    floorGrid.material.transparent = true;
-    scene.add(floorGrid);
+    // Grounded Shinjuku Night City Street-Grid & Illuminated Avenue Floor (y = -32.06)
+    {
+      const gSize = IS_LOW_END ? 512 : 1024;
+      const gScale = gSize / 1024;
+      const gAlbC = document.createElement('canvas');
+      gAlbC.width = gSize; gAlbC.height = gSize;
+      const ga = gAlbC.getContext('2d');
+      const gEmiC = document.createElement('canvas');
+      gEmiC.width = gSize; gEmiC.height = gSize;
+      const ge = gEmiC.getContext('2d');
+
+      ga.save(); ge.save();
+      ga.scale(gScale, gScale);
+      ge.scale(gScale, gScale);
+
+      // Urban blocks & dark courtyards
+      ga.fillStyle = '#050812';
+      ga.fillRect(0, 0, 1024, 1024);
+      ge.fillStyle = '#010308';
+      ge.fillRect(0, 0, 1024, 1024);
+
+      const blocks = [
+        [148, 148, 344, 344],
+        [636, 148, 368, 344],
+        [148, 636, 344, 368],
+        [636, 636, 368, 368]
+      ];
+      blocks.forEach(([bx, by, bw, bh]) => {
+        ga.fillStyle = '#0c1324';
+        ga.fillRect(bx - 16, by - 16, bw + 32, bh + 32);
+        ga.fillStyle = '#060a16';
+        ga.fillRect(bx, by, bw, bh);
+        ga.strokeStyle = 'rgba(0, 229, 255, 0.22)';
+        ga.lineWidth = 3;
+        ga.strokeRect(bx - 14, by - 14, bw + 28, bh + 28);
+      });
+
+      // Orthogonal wet asphalt avenues (x: 0..132 & 508..620, y: 0..132 & 508..620)
+      ga.fillStyle = '#03050b';
+      ga.fillRect(0, 0, 1024, 132);
+      ga.fillRect(0, 508, 1024, 112);
+      ga.fillRect(0, 0, 132, 1024);
+      ga.fillRect(508, 0, 112, 1024);
+
+      // Wet neon pavement sheen patches
+      [[220, 66, '#00e5ff'], [780, 66, '#ff2a85'], [310, 564, '#ffd32a'], [820, 564, '#00e5ff'],
+       [66, 290, '#ff2a85'], [66, 790, '#00e5ff'], [564, 260, '#00e5ff'], [564, 830, '#ff2a85']]
+        .forEach(([px, py, col]) => {
+          const rg = ge.createRadialGradient(px, py, 4, px, py, 74);
+          rg.addColorStop(0, col === '#00e5ff' ? 'rgba(0, 229, 255, 0.24)' : (col === '#ff2a85' ? 'rgba(255, 42, 133, 0.22)' : 'rgba(255, 211, 42, 0.20)'));
+          rg.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          ge.fillStyle = rg;
+          ge.fillRect(px - 80, py - 80, 160, 160);
+        });
+
+      // Dashed avenue centerlines & lane dividers
+      ge.fillStyle = 'rgba(255, 211, 42, 0.55)';
+      for (let d = 160; d < 1000; d += 64) {
+        if (d < 490 || d > 638) {
+          ge.fillRect(d, 64, 30, 4);
+          ge.fillRect(d, 562, 28, 3);
+          ge.fillRect(64, d, 4, 30);
+          ge.fillRect(562, d, 3, 28);
+        }
+      }
+      ge.fillStyle = 'rgba(0, 229, 255, 0.34)';
+      ge.fillRect(0, 128, 1024, 2);
+      ge.fillRect(0, 510, 1024, 2);
+      ge.fillRect(0, 618, 1024, 2);
+      ge.fillRect(128, 0, 2, 1024);
+      ge.fillRect(510, 0, 2, 1024);
+      ge.fillRect(618, 0, 2, 1024);
+
+      // Shibuya/Shinjuku zebra crosswalks at intersections
+      ge.fillStyle = 'rgba(215, 240, 255, 0.42)';
+      [[0, 0, 132, 132], [508, 0, 112, 132], [0, 508, 132, 112], [508, 508, 112, 112]].forEach(([ix, iy, iw, ih]) => {
+        for (let s = 14; s < iw - 14; s += 16) {
+          ge.fillRect(ix + s, iy - 18, 7, 14);
+          ge.fillRect(ix + s, iy + ih + 4, 7, 14);
+        }
+        for (let s = 14; s < ih - 14; s += 16) {
+          ge.fillRect(ix - 18, iy + s, 14, 7);
+          ge.fillRect(ix + iw + 4, iy + s, 14, 7);
+        }
+      });
+
+      // Warm golden-amber streetlamp light pools along sidewalks + miniature traffic light streaks
+      const lampSpots = [210, 340, 455, 700, 835, 955];
+      lampSpots.forEach((pos) => {
+        [[pos, 134], [pos, 506], [pos, 622], [134, pos], [506, pos], [622, pos]].forEach(([lx, ly]) => {
+          const lg = ge.createRadialGradient(lx, ly, 2, lx, ly, 34);
+          lg.addColorStop(0, 'rgba(255, 214, 130, 0.62)');
+          lg.addColorStop(0.45, 'rgba(255, 175, 70, 0.22)');
+          lg.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          ge.fillStyle = lg;
+          ge.beginPath();
+          ge.arc(lx, ly, 34, 0, Math.PI * 2);
+          ge.fill();
+        });
+      });
+
+      // Subtle headlight / taillight avenue light streaks
+      ge.fillStyle = 'rgba(255, 244, 200, 0.72)';
+      ge.fillRect(240, 42, 22, 3); ge.fillRect(740, 540, 20, 3); ge.fillRect(42, 310, 3, 22); ge.fillRect(540, 780, 3, 20);
+      ge.fillStyle = 'rgba(255, 42, 105, 0.72)';
+      ge.fillRect(390, 92, 22, 3); ge.fillRect(860, 588, 20, 3); ge.fillRect(92, 690, 3, 22); ge.fillRect(588, 230, 3, 20);
+
+      ga.restore(); ge.restore();
+
+      const cityGroundTex = new THREE.CanvasTexture(gAlbC);
+      cityGroundTex.wrapS = THREE.RepeatWrapping;
+      cityGroundTex.wrapT = THREE.RepeatWrapping;
+      cityGroundTex.repeat.set(52, 52);
+      cityGroundTex.anisotropy = MAX_ANISO;
+
+      const cityGroundEmiTex = new THREE.CanvasTexture(gEmiC);
+      cityGroundEmiTex.wrapS = THREE.RepeatWrapping;
+      cityGroundEmiTex.wrapT = THREE.RepeatWrapping;
+      cityGroundEmiTex.repeat.set(52, 52);
+      cityGroundEmiTex.anisotropy = MAX_ANISO;
+
+      const cityGroundGeo = new THREE.PlaneGeometry(6800, 6800, 1, 1);
+      cityGroundGeo.rotateX(-Math.PI / 2);
+      const cityGroundMat = new THREE.MeshStandardMaterial({
+        map: cityGroundTex,
+        emissiveMap: cityGroundEmiTex,
+        emissive: 0xffffff,
+        emissiveIntensity: 0.85,
+        envMapIntensity: 0.10,
+        roughness: 0.72,
+        metalness: 0.14
+      });
+      const cityGroundMesh = new THREE.Mesh(cityGroundGeo, cityGroundMat);
+      cityGroundMesh.position.y = -32.06;
+      cityGroundMesh.updateMatrix();
+      cityGroundMesh.matrixAutoUpdate = false;
+      scene.add(cityGroundMesh);
+    }
 
     // High-Definition Power-of-Two Architectural Skyscraper Window Texture (1024x2048 on Desktop, 512x1024 on Mobile)
     const winW = IS_LOW_END ? 256 : (IS_TOUCH_UI ? 512 : 1024);
@@ -3190,6 +3346,56 @@
 
     const B_COUNT = placedBuildings.length;
     const unitBox = new THREE.BoxGeometry(1, 1, 1);
+    function createWallMappedBoxGeo(darkU, darkV) {
+      const g = new THREE.BoxGeometry(1, 1, 1);
+      const uv = g.attributes.uv;
+      for (let vi = 8; vi < 16; vi++) uv.setXY(vi, darkU, darkV);
+      uv.needsUpdate = true;
+      return g;
+    }
+    const podiumBoxGeo = createWallMappedBoxGeo(0.01, 0.98);
+    const towerBoxGeo = createWallMappedBoxGeo(0.004, 0.996);
+    const podiumCanvas = document.createElement('canvas');
+    podiumCanvas.width = 256; podiumCanvas.height = 128;
+    {
+      const pCtx = podiumCanvas.getContext('2d');
+      pCtx.fillStyle = '#070c1a';
+      pCtx.fillRect(0, 0, 256, 128);
+      // Glowing neon architectural canopy band above ground-floor lobby
+      pCtx.fillStyle = '#00e5ff';
+      pCtx.fillRect(0, 14, 256, 5);
+      pCtx.fillStyle = '#ff2a85';
+      pCtx.fillRect(0, 22, 256, 3);
+      // Warm illuminated glass storefront & lobby colonnade bays
+      for (let px = 10; px < 246; px += 30) {
+        pCtx.fillStyle = (px % 60 === 10) ? '#ffe4ad' : '#9eeaff';
+        pCtx.fillRect(px, 38, 20, 78);
+        pCtx.fillStyle = 'rgba(10, 16, 34, 0.55)';
+        pCtx.fillRect(px, 70, 20, 5);
+      }
+    }
+    const podiumTex = new THREE.CanvasTexture(podiumCanvas);
+    podiumTex.wrapS = THREE.RepeatWrapping;
+    podiumTex.wrapT = THREE.ClampToEdgeWrapping;
+    podiumTex.anisotropy = MAX_ANISO;
+
+    const plazaIMesh = new THREE.InstancedMesh(
+      unitBox,
+      new THREE.MeshStandardMaterial({ color: 0x16213a, roughness: 0.52, metalness: 0.45, envMapIntensity: 0.25 }),
+      B_COUNT
+    );
+    const podiumIMesh = new THREE.InstancedMesh(
+      podiumBoxGeo,
+      new THREE.MeshStandardMaterial({
+        color: 0x0d152a,
+        emissiveMap: podiumTex,
+        emissive: 0xffffff,
+        emissiveIntensity: 0.76,
+        roughness: 0.35,
+        metalness: 0.6
+      }),
+      B_COUNT
+    );
     const towerMat = new THREE.MeshStandardMaterial({
       color: 0x0a1022,
       emissiveMap: winTex,
@@ -3198,7 +3404,7 @@
       roughness: 0.42,
       metalness: 0.65
     });
-    const towerIMesh = new THREE.InstancedMesh(unitBox, towerMat, B_COUNT);
+    const towerIMesh = new THREE.InstancedMesh(towerBoxGeo, towerMat, B_COUNT);
     const crownIMesh = new THREE.InstancedMesh(unitBox, new THREE.MeshStandardMaterial({ color: 0x101830, metalness: 0.8, roughness: 0.3 }), B_COUNT);
     const spireIMesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.18, 0.35, 1, 6), new THREE.MeshStandardMaterial({ color: 0x3a4b70, metalness: 0.85 }), B_COUNT);
     const beaconGeo = new THREE.SphereGeometry(0.75, 8, 8);
@@ -3208,6 +3414,19 @@
     const tmpCol = new THREE.Color();
 
     placedBuildings.forEach((b, i) => {
+      // Wide paved sidewalk plaza plinth anchoring building into the city floor
+      dummy.position.set(b.x, -31.72, b.z);
+      dummy.rotation.set(0, 0, 0);
+      dummy.scale.set(b.w + 13.0, 0.55, b.d + 13.0);
+      dummy.updateMatrix();
+      plazaIMesh.setMatrixAt(i, dummy.matrix);
+
+      // Ground-floor illuminated lobby podium
+      dummy.position.set(b.x, -27.64, b.z);
+      dummy.scale.set(b.w + 4.4, 7.6, b.d + 4.4);
+      dummy.updateMatrix();
+      podiumIMesh.setMatrixAt(i, dummy.matrix);
+
       // Main shaft
       dummy.position.set(b.x, -32 + b.h * 0.5, b.z);
       dummy.rotation.set(0, 0, 0);
@@ -3236,18 +3455,20 @@
       dummy.updateMatrix();
       beaconIMesh.setMatrixAt(i, dummy.matrix);
     });
+    plazaIMesh.instanceMatrix.needsUpdate = true;
+    podiumIMesh.instanceMatrix.needsUpdate = true;
     towerIMesh.instanceMatrix.needsUpdate = true;
     crownIMesh.instanceMatrix.needsUpdate = true;
     spireIMesh.instanceMatrix.needsUpdate = true;
     beaconIMesh.instanceMatrix.needsUpdate = true;
+    plazaIMesh.matrixAutoUpdate = false;
+    podiumIMesh.matrixAutoUpdate = false;
     towerIMesh.matrixAutoUpdate = false;
     crownIMesh.matrixAutoUpdate = false;
     spireIMesh.matrixAutoUpdate = false;
     beaconIMesh.matrixAutoUpdate = false;
     skyDome.matrixAutoUpdate = false;
-    floorGrid.updateMatrix();
-    floorGrid.matrixAutoUpdate = false;
-    scene.add(towerIMesh, crownIMesh, spireIMesh, beaconIMesh);
+    scene.add(plazaIMesh, podiumIMesh, towerIMesh, crownIMesh, spireIMesh, beaconIMesh);
 
     // Animated Vertical Tokyo Shinjuku Neon Signs mounted cleanly on building facades
     const TOKYO_GLYPHS = [
@@ -3411,30 +3632,6 @@
       return cy;
     }
 
-    function createGateTex(m) {
-      const c = document.createElement('canvas');
-      c.width = 1024; c.height = 256;
-      const ctx = c.getContext('2d');
-      ctx.fillStyle = '#070a18';
-      ctx.fillRect(0, 0, 1024, 256);
-      ctx.strokeStyle = m.color;
-      ctx.lineWidth = 10;
-      ctx.strokeRect(8, 8, 1008, 240);
-
-      ctx.fillStyle = m.color;
-      ctx.font = '800 26px Orbitron, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${m.signTop}   ·   ${m.signSub}`, 512, 80);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 52px Orbitron, sans-serif';
-      ctx.fillText(m.signMain, 512, 178);
-
-      const tex = new THREE.CanvasTexture(c);
-      tex.anisotropy = Math.min(8, MAX_ANISO);
-      return tex;
-    }
-
     function createPanelTex(m) {
       // Crisp 2K HD Power-of-Two (POT) Canvas Resolution (2048x1024 on Desktop/Retina, 1024x512 on Low-End):
       // Saves 234 MB of GPU VRAM vs 4K so texture caches never thrash while staying 100% tack-sharp in Deep Zoom!
@@ -3552,7 +3749,7 @@
     for (let mIdx = 0; mIdx < MILESTONES.length; mIdx++) {
       const m = MILESTONES[mIdx];
       if (mIdx === 2) await yieldBootFrame(86, 'Uploading 3D Milestone Textures...');
-      else if (mIdx === 5) await yieldBootFrame(91, 'Pre-Loading 2K Panel Mipmaps...');
+      else if (mIdx === 4) await yieldBootFrame(91, 'Pre-Loading 2K Panel Mipmaps...');
       // Pure Clean Floating Megaboard hovering beside the highway (ZERO base, ZERO track collision!)
       const panelT = (m.t + 0.032) % 1;
       const pPt = trackCurve.getPointAt(panelT);
@@ -3659,7 +3856,7 @@
     rampLipGeo.translate(0, RAMP_HEIGHT - 0.02, RAMP_HALF_LEN - 0.10);
 
     // Instanced Launch Ramps placed strictly on open straightaways clear of Lap-1 cutscenes (2 Draw Calls!)
-    const RAMP_T_LIST = [0.158, 0.292, 0.422, 0.556, 0.696, 0.836, 0.968];
+    const RAMP_T_LIST = [0.218, 0.368, 0.518, 0.668, 0.818, 0.968];
     const rampIMesh = new THREE.InstancedMesh(rampGeo, rampMat, RAMP_T_LIST.length);
     const rampLipIMesh = new THREE.InstancedMesh(rampLipGeo, rampEdgeMat, RAMP_T_LIST.length);
     const rampMat4 = new THREE.Matrix4();
@@ -4023,29 +4220,36 @@
         visual.add(lipSeg);
       });
 
-      const rearGrille = new THREE.Mesh(new THREE.BoxGeometry(1.76, 0.34, 0.1), carbonMat);
-      rearGrille.position.set(0, 0.74, -2.56);
+      const rearGrille = new THREE.Mesh(new THREE.BoxGeometry(1.82, 0.36, 0.08), carbonMat);
+      rearGrille.position.set(0, 0.74, -2.66);
       visual.add(rearGrille);
 
       // Illuminated Rear Italian License Plate ("I · ALESSIO") framed cleanly between the twin round taillights!
-      const plateHolder = new THREE.Mesh(new THREE.BoxGeometry(1.04, 0.29, 0.045), carbonMat);
-      plateHolder.position.set(0, 0.74, -2.665);
+      const plateHolder = new THREE.Mesh(new THREE.BoxGeometry(1.04, 0.29, 0.04), carbonMat);
+      plateHolder.position.set(0, 0.74, -2.72);
       visual.add(plateHolder);
 
       const rearPlate = new THREE.Mesh(
         new THREE.PlaneGeometry(0.98, 0.245),
-        new THREE.MeshBasicMaterial({ map: italiaPlateTex, color: 0xf4f7ff, toneMapped: false })
+        new THREE.MeshBasicMaterial({
+          map: italiaPlateTex,
+          color: 0xf4f7ff,
+          toneMapped: false,
+          polygonOffset: true,
+          polygonOffsetFactor: -2,
+          polygonOffsetUnits: -2
+        })
       );
-      rearPlate.position.set(0, 0.74, -2.695);
-      rearPlate.lookAt(0, 1.05, -6.0);
+      rearPlate.position.set(0, 0.74, -2.752);
+      rearPlate.rotation.y = Math.PI;
       visual.add(rearPlate);
 
       const diffuser = new THREE.Mesh(new THREE.BoxGeometry(1.94, 0.26, 0.28), carbonMat);
-      diffuser.position.set(0, 0.34, -2.54);
+      diffuser.position.set(0, 0.34, -2.63);
       visual.add(diffuser);
       for (let fx = -0.7; fx <= 0.7; fx += 0.35) {
         const fin = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.24, 0.36), carbonMat);
-        fin.position.set(fx, 0.34, -2.56);
+        fin.position.set(fx, 0.34, -2.66);
         visual.add(fin);
       }
 
@@ -4071,25 +4275,71 @@
       });
 
       // Signature 458 Swept LED Headlights & Iconic Twin Round Glowing Crimson Ferrari Taillights!
-      const hlMat = new THREE.MeshBasicMaterial({ color: 0xdcfaff });
+      const hlMat = new THREE.MeshBasicMaterial({ color: 0xdcfaff, toneMapped: false });
       [-0.76, 0.76].forEach((hx) => {
         const hl = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.1, 0.14), hlMat);
-        hl.position.set(hx, 0.52, 2.58);
+        hl.position.set(hx, 0.52, 2.66);
         visual.add(hl);
       });
 
-      const tailMat = new THREE.MeshBasicMaterial({ color: 0xff1122 });
-      const tailRingGeo = new THREE.TorusGeometry(0.16, 0.045, 8, 20);
-      const tailCoreGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.08, 16);
-      tailCoreGeo.rotateX(Math.PI / 2);
-      [-0.74, 0.74].forEach((tx) => {
-        const ring = new THREE.Mesh(tailRingGeo, tailMat);
-        ring.position.set(tx, 0.80, -2.59);
-        visual.add(ring);
-        const core = new THREE.Mesh(tailCoreGeo, tailMat);
-        core.position.set(tx, 0.80, -2.57);
-        visual.add(core);
+      const haloCanvas = document.createElement('canvas');
+      haloCanvas.width = 128;
+      haloCanvas.height = 128;
+      const hCtx = haloCanvas.getContext('2d');
+      const hGrad = hCtx.createRadialGradient(64, 64, 4, 64, 64, 64);
+      hGrad.addColorStop(0.0, 'rgba(255,40,70,0.92)');
+      hGrad.addColorStop(0.38, 'rgba(255,20,45,0.42)');
+      hGrad.addColorStop(1.0, 'rgba(255,10,30,0)');
+      hCtx.fillStyle = hGrad;
+      hCtx.fillRect(0, 0, 128, 128);
+      const tailHaloTex = new THREE.CanvasTexture(haloCanvas);
+
+      const tailMat = new THREE.MeshBasicMaterial({ color: 0xee162b, toneMapped: false });
+      const tailCoreMat = new THREE.MeshBasicMaterial({ color: 0xff5544, side: THREE.DoubleSide, toneMapped: false });
+      const tailHaloMat = new THREE.MeshBasicMaterial({
+        map: tailHaloTex,
+        color: 0xff1e38,
+        transparent: true,
+        opacity: 0.32,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        toneMapped: false
       });
+
+      const tailBezelGeo = new THREE.CylinderGeometry(0.20, 0.215, 0.12, 20);
+      tailBezelGeo.rotateX(Math.PI / 2);
+      const tailRingGeo = new THREE.TorusGeometry(0.15, 0.04, 10, 24);
+      const tailCoreGeo = new THREE.CircleGeometry(0.105, 20);
+      tailCoreGeo.rotateY(Math.PI);
+      const tailHaloGeo = new THREE.PlaneGeometry(0.56, 0.56);
+      tailHaloGeo.rotateY(Math.PI);
+
+      [-0.74, 0.74].forEach((tx) => {
+        const bezel = new THREE.Mesh(tailBezelGeo, carbonMat);
+        bezel.position.set(tx, 0.80, -2.66);
+        visual.add(bezel);
+
+        const ring = new THREE.Mesh(tailRingGeo, tailMat);
+        ring.position.set(tx, 0.80, -2.736);
+        visual.add(ring);
+
+        const core = new THREE.Mesh(tailCoreGeo, tailCoreMat);
+        core.position.set(tx, 0.80, -2.732);
+        visual.add(core);
+
+        const halo = new THREE.Mesh(tailHaloGeo, tailHaloMat);
+        halo.position.set(tx, 0.80, -2.748);
+        halo.renderOrder = 3;
+        visual.add(halo);
+      });
+
+      const tailAnchorL = new THREE.Object3D();
+      tailAnchorL.position.set(0.74, 0.80, -2.75);
+      visual.add(tailAnchorL);
+      const tailAnchorR = new THREE.Object3D();
+      tailAnchorR.position.set(-0.74, 0.80, -2.75);
+      visual.add(tailAnchorR);
 
       // 4 Recessed Ferrari 458 Wheels + Classic Yellow Brake Caliper Rings!
       const wheels = [];
@@ -4122,22 +4372,30 @@
 
       // Signature Ferrari 458 TRIPLE-CENTER Chrome Exhausts + Italian Tricolore (Left=Verde · Center=Bianco · Right=Rosso)!
       const flameCones = [];
-      const fConeGeo = new THREE.ConeGeometry(0.16, 2.1, 12);
+      const fConeGeo = new THREE.ConeGeometry(0.105, 1.85, 12);
       fConeGeo.rotateX(-Math.PI / 2);
-      fConeGeo.translate(0, 0, -1.05);
-      // fx = +0.24 is Screen-Left (Verde), 0 is Center (Bianco), -0.24 is Screen-Right (Rosso)
+      fConeGeo.translate(0, 0, -0.925);
+      // fx = +0.26 is Screen-Left (Verde), 0 is Center (Bianco), -0.26 is Screen-Right (Rosso)
       const flameColors = [0x00e65c, 0xffffff, 0xff2233];
-      [0.24, 0, -0.24].forEach((fx, idx) => {
-        const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.105, 0.34, 12), chromeMat);
+      [0.26, 0, -0.26].forEach((fx, idx) => {
+        const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.088, 0.098, 0.34, 14), chromeMat);
         pipe.rotation.x = Math.PI / 2;
-        pipe.position.set(fx, 0.42, -2.58);
+        pipe.position.set(fx, 0.42, -2.68);
         visual.add(pipe);
 
         const cone = new THREE.Mesh(
           fConeGeo,
-          new THREE.MeshBasicMaterial({ color: flameColors[idx], transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending })
+          new THREE.MeshBasicMaterial({
+            color: flameColors[idx],
+            transparent: true,
+            opacity: 0.0,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+            toneMapped: false
+          })
         );
-        cone.position.set(fx, 0.42, -2.68);
+        cone.position.set(fx, 0.42, -2.85);
+        cone.renderOrder = 4;
         visual.add(cone);
         flameCones.push(cone);
       });
@@ -4170,7 +4428,11 @@
       root.add(underGlow);
 
       scene.add(root);
-      return { root, visual, wheels, frontSteerGroups, flameCones, shadowPlane, underGlow, tailMat, engineGlowMat };
+      return {
+        root, visual, wheels, frontSteerGroups, flameCones,
+        shadowPlane, underGlow, tailMat, tailCoreMat, tailHaloMat,
+        tailAnchorL, tailAnchorR, engineGlowMat
+      };
     }
 
     await yieldBootFrame(94, 'Preparing Tricolore Supercar & Shaders...');
@@ -4212,14 +4474,21 @@
       transparent: true,
       opacity: 0,
       depthWrite: false,
-      side: THREE.DoubleSide
+      side: THREE.DoubleSide,
+      toneMapped: false
     });
     const tailTrailMesh = new THREE.Mesh(tailTrailGeo, tailTrailMat);
     tailTrailMesh.frustumCulled = false;
+    tailTrailMesh.renderOrder = 5;
     tailTrailMesh.visible = false;
     scene.add(tailTrailMesh);
     const _tailPosL = new THREE.Vector3();
     const _tailPosR = new THREE.Vector3();
+    const _trailRight = new THREE.Vector3();
+    const _tailColIdle = new THREE.Color(0x9a1026);
+    const _tailColBrake = new THREE.Color(0xff1e38);
+    const _coreColIdle = new THREE.Color(0xc82233);
+    const _coreColBrake = new THREE.Color(0xff8866);
 
     function resetTaillightTrails() {
       trailInitialized = false;
@@ -4230,9 +4499,17 @@
     const SPARK_COUNT = 64;
     const sparkIMesh = new THREE.InstancedMesh(
       new THREE.OctahedronGeometry(0.2, 0),
-      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 }),
+      new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.9,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        toneMapped: false
+      }),
       SPARK_COUNT
     );
+    sparkIMesh.renderOrder = 3;
     sparkIMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     scene.add(sparkIMesh);
     const sparks = [];
@@ -4249,10 +4526,11 @@
     // ============================================================================
     // 9. FINITE GAME STATE MACHINE, PHYSICS, INPUT BUFFERING & CLEAN RESET
     // ============================================================================
-    const trackLength = trackCurve.getLength();
     const state = {
-      mode: 'PLAYING',      // 'PLAYING' | 'FOCUSED' | 'TOUR' | 'PAUSED' | 'MODAL'
+      mode: 'PLAYING',      // 'PLAYING' | 'FOCUSED' | 'TOUR' | 'CUTSCENE' | 'PAUSED' | 'MODAL'
       prevModeBeforePause: 'PLAYING',
+      returnToPauseOverlay: false,
+      focusReturnMode: 'PLAYING',
       t: 0.005,
       speed: 0,
       maxSpeed: 66,
@@ -4292,18 +4570,17 @@
       wasTurbo: false,
       hitShake: 0,
       focusBlend: 0,
-      tourDwellTimer: 0,
-      tourLastDwelledIdx: -1,
       cardCompact: true,
       cameraMode: 0,
       lap: 1,
       lapTime: 0,
+      sectorMask: 0,
+      lapInvalidated: false,
       bestLapTime: (() => {
-        try { const v = parseFloat(localStorage.getItem('cv_best_lap_sec')); return Number.isFinite(v) && v > 5 ? v : null; }
+        try { const v = parseFloat(localStorage.getItem('cv_best_lap_sec')); return Number.isFinite(v) && v > 15 ? v : null; }
         catch (_e) { return null; }
       })(),
       lastLapTenths: -1,
-      orbsCollected: 0,
       activeMilestoneIdx: 0,
       activePanelIdx: -1,
       visitedMilestones: new Set([1]),
@@ -4356,12 +4633,11 @@
     }
 
     function executeJump(power = 19.5, doFlip = true) {
+      if (state.mode === 'FOCUSED' || state.mode === 'CUTSCENE') return;
       state.jumpVel = power;
       state.isGrounded = false;
       state.coyoteTimer = 0;
       state.jumpBufferTimer = 0;
-      if (state.mode === 'FOCUSED') state.mode = 'PLAYING';
-      updateFocusBtnUI();
       sfx.jump();
       if (doFlip) {
         const disc = power * power + 2 * state.gravity * Math.max(0, state.jumpY);
@@ -4490,8 +4766,8 @@
       const visitedCount = state.visitedMilestones.size;
 
       if (lastRenderedCardIdx !== idx || lastRenderedVisitedCount !== visitedCount) {
-        stepperCaptionEl.textContent = `0${idx + 1} · ${m.shortName}  (${visitedCount}/7)`;
-        if (dockStageEl) dockStageEl.textContent = `0${idx + 1} / 07`;
+        stepperCaptionEl.textContent = `0${idx + 1} · ${m.shortName}  (${visitedCount}/${MILESTONES.length})`;
+        if (dockStageEl) dockStageEl.textContent = `0${idx + 1} / 0${MILESTONES.length}`;
         for (let i = 0; i < stepBtnEls.length; i++) {
           const b = stepBtnEls[i];
           b.classList.toggle('active', i === idx);
@@ -4536,7 +4812,7 @@
       const btn = document.getElementById('btn-focus-toggle');
       const isFoc = state.mode === 'FOCUSED';
       btn.classList.toggle('focus-active', isFoc);
-      btn.textContent = isFoc ? '🔍 ZOOMED' : '🔍 ZOOM 3D';
+      btn.textContent = isFoc ? '✕ CLOSE PANEL' : '🔍 ZOOM 3D';
     }
 
     function updateTourUI() {
@@ -4547,7 +4823,18 @@
     }
     updateTourUI();
 
+    const timer = new THREE.Timer();
+    timer.connect(document);
+    function resetFrameTimer() { timer.update(performance.now()); }
+
     function setPaused(paused) {
+      if (paused) {
+        const lsEl = document.getElementById('loading-screen');
+        const loadingActive = Boolean(lsEl && !lsEl.classList.contains('fade-out') && lsEl.style.display !== 'none');
+        const guardOpen = Boolean(mobileGuard && mobileGuard.classList.contains('show'));
+        const portraitLocked = Boolean(IS_TOUCH_UI && window.innerHeight >= window.innerWidth);
+        if (loadingActive || guardOpen || portraitLocked) return;
+      }
       if (paused && state.mode !== 'PAUSED' && state.mode !== 'MODAL') {
         state.prevModeBeforePause = state.mode;
         state.mode = 'PAUSED';
@@ -4557,7 +4844,7 @@
       } else if (!paused && state.mode === 'PAUSED') {
         state.mode = state.prevModeBeforePause || 'PLAYING';
         document.getElementById('pause-overlay').classList.remove('open');
-        clock.getDelta();
+        resetFrameTimer();
         refocusGameCanvas();
       }
     }
@@ -4577,15 +4864,21 @@
       state.isGrounded = true;
       state.doingFlip = false;
       state.flipAngle = 0;
+      state.jumpBufferTimer = 0;
+      state.coyoteTimer = 0;
       state.turboCharge = 100;
       state.padBoostTimer = 0;
       state.focusBlend = 0;
-      state.tourDwellTimer = 0;
-      state.tourLastDwelledIdx = -1;
+      state.deepZoom = false;
+      state.deepZoomBlend = 0;
+      state.focusedPanelRef = null;
+      state.returnToPauseOverlay = false;
+      state.focusReturnMode = 'PLAYING';
       state.lap = 1;
       state.lapTime = 0;
+      state.sectorMask = 0;
+      state.lapInvalidated = false;
       state.lastLapTenths = -1;
-      state.orbsCollected = 0;
       const lapTimeResetEl = document.getElementById('lap-time-text');
       if (lapTimeResetEl) lapTimeResetEl.textContent = '00:00.0';
       state.spottedPanels.clear();
@@ -4597,9 +4890,11 @@
       state.simTimeScale = 1.0;
       document.getElementById('nfsmw-overlay').classList.remove('active', 'ready-click');
       document.getElementById('hud').classList.remove('cutscene-hide');
+      document.body.classList.remove('is-panel-focused');
+      state.lastBodyFocused = false;
+      setMobileSheetOpen(false);
       state.mode = 'PLAYING';
       document.getElementById('pause-overlay').classList.remove('open');
-      document.getElementById('collectibles-text').textContent = `0 / ${SKILL_NAMES.length}`;
       document.getElementById('lap-text').textContent = '1';
       skillOrbs.forEach((o) => { o.collected = false; });
       nitroCanisters.forEach((n) => { n.collected = false; });
@@ -4656,12 +4951,13 @@
     const _bezA = new THREE.Vector3();
     const _bezB = new THREE.Vector3();
 
-    function startCameraReturnSwoop(duration = 1.80) {
+    function startCameraReturnSwoop(duration = 1.80, keepMomentum = true) {
       _exitCamStart.copy(camera.position);
       _exitLookStart.copy(smoothLookAt);
       _exitUpStart.copy(_camUp);
       state.returnStartFov = camera.fov;
       state.returnStartTimeScale = state.simTimeScale;
+      state.returnKeepMomentum = keepMomentum;
       state.returnPanelSide = state.cutscenePanel ? state.cutscenePanel.side : 1;
       state.returnSwoopActive = true;
       state.returnSwoopTimer = 0;
@@ -4670,9 +4966,9 @@
     }
 
     function getPanelCameraSpec() {
-      const fov = IS_PHONE ? 43 : (IS_TABLET ? 45 : 48);
-      const fh = IS_PHONE ? 0.65 : (IS_TABLET ? 0.59 : 0.48);
-      const fw = IS_PHONE ? 0.84 : (IS_TABLET ? 0.82 : 0.80);
+      const fov = IS_PHONE ? 43 : (IS_TABLET ? 45 : 46);
+      const fh = IS_PHONE ? 0.74 : (IS_TABLET ? 0.75 : 0.76);
+      const fw = IS_PHONE ? 0.88 : (IS_TABLET ? 0.86 : 0.85);
       const halfTan = Math.tan(THREE.MathUtils.degToRad(fov * 0.5));
       const asp = Math.max(0.65, camera.aspect || (window.innerWidth / Math.max(1, window.innerHeight)));
       const dH = (14.85 / fh) / (2 * halfTan);
@@ -4680,18 +4976,31 @@
       return {
         fov,
         dist: Math.max(dH, dW),
-        yOffset: IS_PHONE ? -0.85 : (IS_TABLET ? -0.50 : -0.20)
+        yOffset: IS_PHONE ? -0.85 : (IS_TABLET ? -0.68 : -0.62)
       };
     }
 
     function exitPanelFocus() {
       if (state.mode !== 'FOCUSED') return;
+      const closingPanelSide = state.focusedPanelRef ? state.focusedPanelRef.side : 1;
       setMobileSheetOpen(false);
-      state.mode = 'PLAYING';
+      startCameraReturnSwoop(0.48, false);
+      state.returnPanelSide = closingPanelSide;
+      state.returnStartTimeScale = 1.0;
+      state.mode = state.focusReturnMode || 'PLAYING';
       state.deepZoom = false;
+      state.deepZoomBlend = 0;
+      state.focusBlend = 0;
       state.focusedPanelRef = null;
-      if (gyro.active && state.speed < 10) state.speed = 16;
+      getTrackFrame(state.t, _pt, _tan, _bin, _norm);
+      _carPos.copy(_pt).addScaledVector(_bin, state.laneOffset);
+      chaseCamPos.copy(_carPos).addScaledVector(_tan, -11.4).addScaledVector(_norm, 4.35);
+      chaseLookAt.copy(_carPos).addScaledVector(_tan, 26).addScaledVector(_norm, 2.05);
+      smoothCamRel.subVectors(chaseCamPos, _carPos);
+      smoothLookRel.subVectors(chaseLookAt, _carPos);
+      if ((gyro.active || state.mode === 'TOUR') && state.speed < 10) state.speed = 16;
       updateFocusBtnUI();
+      updateTourUI();
       refocusGameCanvas();
     }
 
@@ -4735,14 +5044,26 @@
 
     function jumpToPanel(panel, lockFocus = true, useDeepZoom = false, keepCarIfNear = false) {
       if (state.mode === 'CUTSCENE') return;
+      if (lockFocus && state.mode !== 'FOCUSED') {
+        state.focusReturnMode = (state.mode === 'TOUR') ? 'TOUR' : 'PLAYING';
+      }
       state.returnSwoopActive = false;
       state.simTimeScale = 1.0;
+      state.jumpBufferTimer = 0;
+      state.coyoteTimer = 0;
+      state.padBoostTimer = 0;
+      state.nitroBlur = 0;
+      state.nitroKick = 0;
+      state.wasTurbo = false;
       const isAlreadyNear = keepCarIfNear && getCircularDistT(state.t, panel.t) < 0.06;
       if (!isAlreadyNear) {
         let targetT = panel.t - 0.017;
         if (targetT < 0) targetT += 1;
         state.t = targetT;
         state.laneOffset = 0;
+        state.lapInvalidated = true;
+      }
+      if (!isAlreadyNear || lockFocus) {
         state.jumpY = 0;
         state.jumpVel = 0;
         state.groundY = 0;
@@ -4751,7 +5072,10 @@
         state.bodyRoll = 0;
         state.bodyYaw = 0;
         state.isGrounded = true;
+        state.doingFlip = false;
+        state.flipAngle = 0;
       }
+      if (lockFocus) state.spottedPanels.add(panel.milestone.id);
       state.speed = 0;
       state.mode = lockFocus ? 'FOCUSED' : 'PLAYING';
       state.focusedPanelRef = lockFocus ? panel : null;
@@ -4772,7 +5096,6 @@
     function warpToMilestone(idx) {
       const targetIdx = (idx + MILESTONES.length) % MILESTONES.length;
       jumpToPanel(tracksidePanels[targetIdx], true, true, true);
-      showToast(`⚡ ${MILESTONES[targetIdx].shortName.toUpperCase()}`);
     }
 
     function stepPanel(delta) {
@@ -4812,8 +5135,6 @@
     document.getElementById('btn-tour').addEventListener('click', () => {
       dismissOnboarding();
       state.mode = (state.mode === 'TOUR') ? 'PLAYING' : 'TOUR';
-      state.tourDwellTimer = 0;
-      state.tourLastDwelledIdx = -1;
       updateFocusBtnUI();
       updateTourUI();
       if (state.mode === 'TOUR') showToast('🤖 GUIDED CV TOUR STARTED');
@@ -4825,8 +5146,10 @@
     function applyQualityPreset(nextPreset) {
       qualityPreset = nextPreset;
       if (btnQuality) btnQuality.textContent = `✨ FX: ${qualityPreset}`;
+      const rw = Math.max(1, window.innerWidth);
+      const rh = Math.max(1, window.innerHeight);
       renderer.setPixelRatio(getTargetDPR(qualityPreset));
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(rw, rh);
       if (qualityPreset === 'LITE') {
         usePostFX = false;
         rainLines.visible = false;
@@ -4841,6 +5164,7 @@
         usePostFX = false;
       }
       syncComposerResolution();
+      syncNitroRT();
     }
     if (btnQuality) {
       btnQuality.addEventListener('click', () => {
@@ -4857,7 +5181,12 @@
 
     const cvModal = document.getElementById('cv-modal');
     function openCVModal() {
-      state.prevModeBeforePause = state.mode === 'MODAL' ? 'PLAYING' : state.mode;
+      if (state.mode !== 'MODAL') {
+        state.returnToPauseOverlay = (state.mode === 'PAUSED');
+        if (state.mode !== 'PAUSED') {
+          state.prevModeBeforePause = state.mode;
+        }
+      }
       state.mode = 'MODAL';
       clearAllKeys();
       document.getElementById('pause-overlay').classList.remove('open');
@@ -4866,34 +5195,37 @@
     }
     function closeCVModal() {
       cvModal.classList.remove('open');
+      if (state.returnToPauseOverlay) {
+        state.returnToPauseOverlay = false;
+        state.mode = 'PAUSED';
+        document.getElementById('pause-overlay').classList.add('open');
+        sfx.updateEngine(0, false, false);
+        return;
+      }
       state.mode = state.prevModeBeforePause || 'PLAYING';
-      clock.getDelta();
+      resetFrameTimer();
       refocusGameCanvas();
+    }
+    window.__openCVModal = openCVModal;
+    window.__closeCVModal = closeCVModal;
+    if (cvModal.classList.contains('open')) {
+      state.prevModeBeforePause = 'PLAYING';
+      state.returnToPauseOverlay = false;
+      state.mode = 'MODAL';
     }
     document.getElementById('btn-cv-modal').addEventListener('click', openCVModal);
     document.getElementById('btn-pause-cv').addEventListener('click', openCVModal);
-    document.getElementById('btn-close-modal').addEventListener('click', closeCVModal);
-    const btnRotateCv = document.getElementById('btn-rotate-cv');
-    if (btnRotateCv) btnRotateCv.addEventListener('click', openCVModal);
-    cvModal.addEventListener('click', (e) => { if (e.target === cvModal) closeCVModal(); });
-    document.addEventListener('click', (e) => {
+    const onDocClick = (e) => {
       const btn = e.target && e.target.closest ? e.target.closest('button') : null;
       if (btn && state.mode !== 'MODAL' && state.mode !== 'PAUSED') {
         refocusGameCanvas();
       }
-    });
+    };
+    document.addEventListener('click', onDocClick);
 
     // Zero-Calibration Arcade Gyro Engine (Real Mobile Racing Standard: Horizon Tilt Steer + Auto-Gas!)
     const mobileGuard = document.getElementById('mobile-guard');
     const gyroDotEl = document.getElementById('gyro-steer-dot');
-    const gyro = {
-      active: false,
-      smoothSteerDeg: 0,
-      steer: 0,       // -1 (left) .. +1 (right), 0° = level horizon!
-      braking: false, // Tilt phone upright/back past ~70° to brake (or tap 🛑 button!)
-      listenerAttached: false,
-      receivedEvent: false
-    };
 
     function getScreenAngle() {
       // Prefer legacy window.orientation on iOS/iPadOS when present (-90 vs +90 directly matches Portrait-referenced sensor axes!)
@@ -4974,22 +5306,13 @@
       }
     }
 
-    function updateGyroUI() {
-      document.body.classList.toggle('gyro-active', gyro.active);
-      const btn = document.getElementById('btn-gyro');
-      const lbl = document.getElementById('gyro-label');
-      if (btn) btn.classList.toggle('active-toggle', gyro.active);
-      if (lbl) lbl.textContent = gyro.active ? 'GYRO: ON' : 'GYRO';
-    }
-
     async function enableGyroscope() {
       try {
         if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
           const res = await DeviceMotionEvent.requestPermission();
           if (res !== 'granted') {
             showToast('📱 GYRO PERMISSION DENIED · USING TOUCH');
-            gyro.active = false;
-            updateGyroUI();
+            disableGyro();
             return false;
           }
         }
@@ -4997,38 +5320,40 @@
           window.addEventListener('devicemotion', onDeviceMotion, true);
           gyro.listenerAttached = true;
         }
+        if (gyroWatchdogTimer) clearTimeout(gyroWatchdogTimer);
         gyro.active = true;
         gyro.receivedEvent = false;
         gyro.steer = 0;
         gyro.smoothSteerDeg = 0;
+        gyro.braking = false;
         updateGyroUI();
         showToast('🧭 AUTO-GAS + TILT WHEEL STEERING ON!');
-        setTimeout(() => {
+        gyroWatchdogTimer = setTimeout(() => {
+          gyroWatchdogTimer = null;
           if (gyro.active && !gyro.receivedEvent) {
-            gyro.active = false;
-            updateGyroUI();
+            disableGyro();
             showToast('📱 GYRO NEEDS HTTPS · TOUCH CONTROLS ENABLED');
           }
         }, 1800);
         return true;
       } catch (_e) {
-        gyro.active = false;
-        updateGyroUI();
+        disableGyro();
         showToast('📱 GYRO UNAVAILABLE · USING TOUCH');
         return false;
       }
     }
 
-    window.addEventListener('orientationchange', () => {
+    const onOrientationChange = () => {
       syncResponsiveBodyClasses();
       gyro.steer = 0;
       gyro.smoothSteerDeg = 0;
       gyro.braking = false;
-      if (IS_TOUCH_UI && window.innerHeight > window.innerWidth) {
+      if (IS_TOUCH_UI && window.innerHeight >= window.innerWidth) {
         sfx.updateEngine(0, false, false);
         clearAllKeys();
       }
-    });
+    };
+    window.addEventListener('orientationchange', onOrientationChange);
 
     // Show Gyro / Touch Launch Splash on Smartphones & iPads when ready
     if (IS_TOUCH_UI && mobileGuard) mobileGuard.classList.add('show');
@@ -5037,6 +5362,7 @@
     if (btnMobileGyro) {
       btnMobileGyro.addEventListener('click', async () => {
         sfx.unlock();
+        mobileGuardDismissed = true;
         if (mobileGuard) mobileGuard.classList.remove('show');
         dismissOnboarding();
         await enableGyroscope();
@@ -5046,8 +5372,8 @@
     if (btnMobileTouch) {
       btnMobileTouch.addEventListener('click', () => {
         sfx.unlock();
-        gyro.active = false;
-        updateGyroUI();
+        mobileGuardDismissed = true;
+        disableGyro();
         if (mobileGuard) mobileGuard.classList.remove('show');
         dismissOnboarding();
         showToast('👆 TOUCH CONTROLS READY');
@@ -5057,18 +5383,13 @@
     if (btnGyroHud) {
       btnGyroHud.addEventListener('click', () => {
         if (gyro.active) {
-          gyro.active = false;
-          gyro.steer = 0;
-          gyro.throttle = 0;
-          updateGyroUI();
+          disableGyro();
           showToast('👆 SWITCHED TO TOUCH CONTROLS');
         } else {
           enableGyroscope();
         }
       });
     }
-    const btnMobileCv = document.getElementById('btn-mobile-cv');
-    if (btnMobileCv) btnMobileCv.addEventListener('click', openCVModal);
 
     // Instant Snappy 3D Panel Click / Touch Swipe Navigation + Forgiving Touch Panel Hitbox
     const raycaster = new THREE.Raycaster();
@@ -5140,30 +5461,25 @@
       }
       if (panel) {
         dismissOnboarding();
-        if (state.mode === 'FOCUSED' && state.deepZoom && state.focusedPanelRef === panel) {
-          exitPanelFocus();
-        } else {
+        if (!(state.mode === 'FOCUSED' && state.deepZoom && state.focusedPanelRef === panel)) {
           jumpToPanel(panel, true, true, true);
-          showToast(IS_TOUCH_UI ? '🔍 SWIPE ◀ ▶ OR TAP DRIVE' : '🔍 PANEL ZOOM · CLICK OUTSIDE TO EXIT');
         }
-      } else if (state.mode === 'FOCUSED') {
-        exitPanelFocus();
       }
     });
 
     // Keyboard & Focus-Loss Safety
-    window.addEventListener('blur', () => { clearAllKeys(); sfx.updateEngine(0, false, false); });
-    document.addEventListener('visibilitychange', () => {
+    const onWindowBlur = () => { clearAllKeys(); sfx.updateEngine(0, false, false); };
+    const onVisibilityChange = () => {
       if (document.hidden) { clearAllKeys(); sfx.updateEngine(0, false, false); }
-      else clock.getDelta();
-    });
+      else resetFrameTimer();
+    };
+    window.addEventListener('blur', onWindowBlur);
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
     // NFS Most Wanted First-Sight Cinematic Cut-In Controller (Lap 1 Only!)
     const nfsmwOverlay = document.getElementById('nfsmw-overlay');
+    const nfsmwPill = document.getElementById('nfsmw-pill');
     const nfsmwFlash = document.getElementById('nfsmw-flash');
-    const nfsmwStageEl = document.getElementById('nfsmw-stage-label');
-    const nfsmwTitleEl = document.getElementById('nfsmw-title');
-    const nfsmwHeroEl = document.getElementById('nfsmw-hero');
     const nfsmwBtn = document.getElementById('btn-nfsmw-proceed');
     const nfsmwInspectBtn = document.getElementById('btn-nfsmw-inspect');
     const nfsmwBtnFill = document.getElementById('nfsmw-btn-fill');
@@ -5191,12 +5507,9 @@
       state.cutsceneReady = false;
       updateCVCard(panel.milestoneIdx);
 
-      // Populate tactical cinema bars (3D Megaboard stays unobstructed in the center!)
+      // Minimal bottom pill only — 3D Megaboard stays completely unobstructed!
       nfsmwOverlay.style.setProperty('--cut-accent', panel.milestone.color);
       nfsmwOverlay.classList.remove('ready-click');
-      nfsmwStageEl.textContent = `MILESTONE SPOTTED // ${panel.milestone.stage}`;
-      nfsmwTitleEl.textContent = panel.milestone.title;
-      nfsmwHeroEl.textContent = '⚡ ' + panel.milestone.heroStat;
       nfsmwBtn.disabled = true;
       nfsmwBtn.classList.remove('ready');
       if (nfsmwInspectBtn) {
@@ -5206,7 +5519,7 @@
       nfsmwBtnFill.style.transform = 'scaleX(0)';
       nfsmwBtnText.textContent = IS_TOUCH_UI ? 'LOCKING ON · 0.5s' : 'LOCKING ON · 0.9s';
 
-      // Trigger subtle Speedbreaker rim pulse + staggered letterbox bars + audio swell (Zero layout reflow!)
+      // Trigger subtle Speedbreaker rim pulse + compact continue pill + audio swell (Zero layout reflow!)
       flashToggle = !flashToggle;
       nfsmwFlash.classList.remove(flashToggle ? 'flash-b' : 'flash-a');
       nfsmwFlash.classList.add(flashToggle ? 'flash-a' : 'flash-b');
@@ -5220,9 +5533,25 @@
       const panel = state.cutscenePanel;
       nfsmwOverlay.classList.remove('active', 'ready-click');
       hudEl.classList.remove('cutscene-hide');
+      state.focusReturnMode = state.cutsceneReturnMode || 'PLAYING';
       state.returnSwoopActive = false;
       state.simTimeScale = 1.0;
       state.padBoostTimer = 0;
+      state.jumpBufferTimer = 0;
+      state.coyoteTimer = 0;
+      state.nitroBlur = 0;
+      state.nitroKick = 0;
+      state.wasTurbo = false;
+      state.jumpY = 0;
+      state.jumpVel = 0;
+      state.groundY = 0;
+      state.groundSlopePitch = 0;
+      state.bodyPitch = 0;
+      state.bodyRoll = 0;
+      state.bodyYaw = 0;
+      state.isGrounded = true;
+      state.doingFlip = false;
+      state.flipAngle = 0;
       state.speed = 0;
       state.mode = 'FOCUSED';
       state.focusedPanelRef = panel;
@@ -5234,7 +5563,7 @@
       updateCVCard(panel.milestoneIdx);
       updateFocusBtnUI();
       updateTourUI();
-      clock.getDelta();
+      resetFrameTimer();
       refocusGameCanvas();
     }
 
@@ -5250,7 +5579,7 @@
       state.padBoostTimer = 0;
       syncDriveKeys();
       state.speed = state.preCutsceneSpeed || 32;
-      clock.getDelta();
+      resetFrameTimer();
       refocusGameCanvas();
     }
     if (nfsmwInspectBtn) {
@@ -5263,9 +5592,12 @@
       e.stopPropagation();
       closeSpottedCutscene();
     });
-    nfsmwOverlay.addEventListener('click', () => {
-      if (state.mode === 'CUTSCENE' && state.cutsceneReady) closeSpottedCutscene();
-    });
+    if (nfsmwPill) {
+      nfsmwPill.addEventListener('click', (e) => {
+        if (e.target && e.target.closest && e.target.closest('#btn-nfsmw-inspect')) return;
+        if (state.mode === 'CUTSCENE' && state.cutsceneReady) closeSpottedCutscene();
+      });
+    }
 
     function matchForwardKey(e) { return e.code === 'KeyW' || e.code === 'ArrowUp' || e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W'; }
     function matchBackwardKey(e) { return e.code === 'KeyS' || e.code === 'ArrowDown' || e.key === 'ArrowDown' || e.key === 's' || e.key === 'S'; }
@@ -5273,22 +5605,7 @@
     function matchRightKey(e) { return e.code === 'KeyD' || e.code === 'ArrowRight' || e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D'; }
     function matchTurboKey(e) { return e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.key === 'Shift'; }
 
-    function wakeFromPanelForDrive(giveSteerRoll = false) {
-      dismissOnboarding();
-      if (state.mode === 'FOCUSED') {
-        exitPanelFocus();
-        if (giveSteerRoll && Math.abs(state.speed) < 12 && !keys.backward) {
-          state.speed = 16;
-        }
-      } else if (state.mode !== 'TOUR') {
-        state.deepZoom = false;
-      }
-      state.tourDwellTimer = 0;
-      updateTourUI();
-      updateFocusBtnUI();
-    }
-
-    window.addEventListener('keydown', (e) => {
+    const onKeyDown = (e) => {
       const isFwd = matchForwardKey(e);
       const isBack = matchBackwardKey(e);
       const isLeft = matchLeftKey(e);
@@ -5304,37 +5621,44 @@
       if (isTurboKey) rawKeys.turbo = true;
       syncDriveKeys();
 
-      if (state.mode === 'CUTSCENE') {
-        if (state.cutsceneReady && (e.code === 'Space' || e.code === 'Enter' || isFwd || isBack || isLeft || isRight || isTurboKey)) {
-          e.preventDefault();
-          closeSpottedCutscene();
-        }
+      if (state.mode === 'MODAL') {
+        if (e.code === 'Escape') closeCVModal();
         return;
       }
       if (e.code === 'Escape' || e.code === 'KeyP') {
-        if (state.mode === 'MODAL') { closeCVModal(); return; }
         setPaused(state.mode !== 'PAUSED');
         return;
       }
-      if (state.mode === 'PAUSED' || state.mode === 'MODAL') return;
+      if (state.mode === 'CUTSCENE') {
+        if (e.code === 'Space' || e.key === ' ') {
+          e.preventDefault();
+          if (!e.repeat && state.cutsceneReady) closeSpottedCutscene();
+        }
+        return;
+      }
+      if (state.mode === 'PAUSED') {
+        return;
+      }
 
-      if (isFwd || isBack) {
-        if (state.mode === 'TOUR') state.mode = 'PLAYING';
-        wakeFromPanelForDrive(false);
+      if (isFwd || isBack || isTurboKey) {
+        dismissOnboarding();
+        if (state.mode === 'TOUR') {
+          state.mode = 'PLAYING';
+          updateTourUI();
+        }
       }
       if (isLeft || isRight) {
-        wakeFromPanelForDrive(true);
+        dismissOnboarding();
       }
-      if (isTurboKey) {
-        if (state.mode === 'TOUR') state.mode = 'PLAYING';
-        wakeFromPanelForDrive(false);
-      }
-      if (e.code === 'Space') {
+      if (e.code === 'Space' || e.key === ' ') {
         e.preventDefault();
-        if (state.mode === 'FOCUSED') wakeFromPanelForDrive(true);
-        state.jumpBufferTimer = 0.14;
+        if (state.mode === 'FOCUSED') {
+          if (!e.repeat) exitPanelFocus();
+          return;
+        }
+        if (!e.repeat) state.jumpBufferTimer = 0.14;
       }
-      if (e.code === 'KeyF') document.getElementById('btn-focus-toggle').click();
+      if (e.code === 'KeyF') triggerFocusToggle();
       if (e.code === 'KeyC') {
         state.cameraMode = (state.cameraMode + 1) % 3;
         showToast(['🎥 HERO CHASE POV', '🎥 HOOD / BUMPER POV', '🎥 CINEMA HELI POV'][state.cameraMode]);
@@ -5342,17 +5666,19 @@
       if (e.code === 'KeyM') document.getElementById('btn-sound').click();
       if (e.code === 'KeyG') document.getElementById('btn-tour').click();
       if (e.code === 'KeyR') resetCircuit();
-      if (e.key >= '1' && e.key <= '7') { dismissOnboarding(); warpToMilestone(parseInt(e.key, 10) - 1); }
-    });
+      if (e.key >= '1' && e.key <= String(MILESTONES.length)) { dismissOnboarding(); warpToMilestone(parseInt(e.key, 10) - 1); }
+    };
+    window.addEventListener('keydown', onKeyDown);
 
-    window.addEventListener('keyup', (e) => {
+    const onKeyUp = (e) => {
       if (matchForwardKey(e)) rawKeys.forward = false;
       if (matchBackwardKey(e)) rawKeys.backward = false;
       if (matchLeftKey(e)) rawKeys.left = false;
       if (matchRightKey(e)) rawKeys.right = false;
       if (matchTurboKey(e)) rawKeys.turbo = false;
       syncDriveKeys();
-    });
+    };
+    window.addEventListener('keyup', onKeyUp);
 
     function bindHold(id, prop) {
       const el = document.getElementById(id);
@@ -5369,14 +5695,11 @@
         el.classList.add('pressed');
         holdKeys[prop] = true;
         syncDriveKeys();
-        if (state.mode === 'CUTSCENE') {
-          if (state.cutsceneReady) closeSpottedCutscene();
-        } else if (state.mode !== 'PAUSED' && state.mode !== 'MODAL') {
-          if (prop === 'forward' || prop === 'backward' || prop === 'turbo') {
-            if (state.mode === 'TOUR') state.mode = 'PLAYING';
-            wakeFromPanelForDrive(false);
-          } else {
-            wakeFromPanelForDrive(true);
+        if (state.mode !== 'CUTSCENE' && state.mode !== 'PAUSED' && state.mode !== 'MODAL') {
+          dismissOnboarding();
+          if ((prop === 'forward' || prop === 'backward' || prop === 'turbo') && state.mode === 'TOUR') {
+            state.mode = 'PLAYING';
+            updateTourUI();
           }
         }
         refocusGameCanvas();
@@ -5397,9 +5720,10 @@
         e.preventDefault();
         e.stopPropagation();
         tJump.classList.add('pressed');
-        if (state.mode === 'CUTSCENE' && state.cutsceneReady) closeSpottedCutscene();
-        else if (state.mode === 'FOCUSED') wakeFromPanelForDrive(true);
-        state.jumpBufferTimer = 0.14;
+        if (state.mode !== 'CUTSCENE' && state.mode !== 'FOCUSED' && state.mode !== 'PAUSED' && state.mode !== 'MODAL') {
+          dismissOnboarding();
+          state.jumpBufferTimer = 0.14;
+        }
         refocusGameCanvas();
       });
       tJump.addEventListener('pointerup', clearJumpPress);
@@ -5423,7 +5747,6 @@
     // ============================================================================
     // 10. ZERO-ALLOCATION 60FPS SIMULATION & RENDER LOOP + CLEAN DISPOSAL
     // ============================================================================
-    const clock = new THREE.Clock();
     let rafId = null;
     let sparkCursor = 0;
 
@@ -5433,7 +5756,6 @@
     const turboBarEl = document.getElementById('turbo-bar');
     const turboPctEl = document.getElementById('turbo-pct');
     const circuitBarEl = document.getElementById('circuit-bar');
-    const orbsTextEl = document.getElementById('collectibles-text');
     const lapTextEl = document.getElementById('lap-text');
     const lapTimeEl = document.getElementById('lap-time-text');
     const bestLapEl = document.getElementById('best-lap-text');
@@ -5449,15 +5771,12 @@
     }
     if (state.bestLapTime !== null) bestLapEl.textContent = formatLapTime(state.bestLapTime);
     const focusStatusEl = document.getElementById('focus-status-text');
-    const dwellTrackEl = document.getElementById('dwell-track');
-    const dwellBarEl = document.getElementById('dwell-bar');
     const cvCardEl = document.getElementById('cv-card');
 
     // Lightweight Adaptive Performance Guard (automatically ensures smooth 60FPS on any laptop!)
     let frameCount = 0;
     let fpsAccumTime = 0;
     let fpsAccumFrames = 0;
-    let perfTier = 2; // 2 = Full (1.25 DPR + Half-Res Bloom), 1 = Balanced (1.0 DPR + Half-Res Bloom), 0 = Fast (1.0 DPR Direct Render)
     let lastCamFov = camera.fov;
 
     updateCVCard(0);
@@ -5477,13 +5796,14 @@
       }
     }
 
-    function animate() {
+    function animate(timestamp) {
       rafId = requestAnimationFrame(animate);
+      timer.update(timestamp);
       if (document.hidden || state.mode === 'PAUSED' || state.mode === 'MODAL') {
         sfx.updateEngine(0, false, false);
         return;
       }
-      if (IS_TOUCH_UI && window.innerHeight > window.innerWidth) {
+      if (IS_TOUCH_UI && window.innerHeight >= window.innerWidth) {
         sfx.updateEngine(0, false, false);
         return;
       }
@@ -5492,8 +5812,8 @@
         return;
       }
 
-      const dt = Math.min(clock.getDelta(), 0.05);
-      const elapsed = clock.getElapsedTime();
+      const dt = Math.max(0, Math.min(timer.getDelta(), 0.05));
+      const elapsed = timer.getElapsed();
 
       // 1. Proximity Check to Giant 3D CV Megaboards + Lap 1 First-Sight NFSMW Trigger!
       let nearPanel = null;
@@ -5532,7 +5852,7 @@
               nfsmwInspectBtn.classList.add('ready');
             }
             nfsmwOverlay.classList.add('ready-click');
-            nfsmwBtnText.textContent = IS_TOUCH_UI ? '▶ TAP TO CONTINUE' : '▶ CONTINUE DRIVING (SPACE)';
+            nfsmwBtnText.textContent = IS_TOUCH_UI ? '▶ TAP TO CONTINUE' : '▶ CLICK SPACEBAR TO CONTINUE';
             sfx.stage();
           } else {
             nfsmwBtnText.textContent = `LOCKING ON · ${secsLeft}s`;
@@ -5621,7 +5941,7 @@
           }
         } else {
           state.reverseDelay = 0;
-          if (state.returnSwoopActive && state.returnSwoopTimer < (state.returnSwoopDur || 1.80) * 0.75) {
+          if (state.returnSwoopActive && state.returnKeepMomentum && state.returnSwoopTimer < (state.returnSwoopDur || 1.80) * 0.75) {
             // Hold natural cruise momentum during slow-mo return swoop so mouse players don't stall!
             state.speed = Math.max(state.speed, (state.preCutsceneSpeed || 32) * 0.90);
           } else {
@@ -5631,9 +5951,12 @@
         }
       }
 
-      // Dynamic brake light flare & nose-dive pitch (zero extra PointLight shader cost!)
+      // Dynamic brake light flare & nose-dive pitch (smooth interpolation, zero PointLight shader cost!)
       const isBraking = activeHardBrake || wantsBrake || state.mode === 'FOCUSED';
-      car.tailMat.color.setHex(isBraking ? 0xff0033 : 0xa61036);
+      state.brakeGlow = THREE.MathUtils.lerp(state.brakeGlow || 0, isBraking ? 1 : 0, 1 - Math.exp(-14.0 * dt));
+      car.tailMat.color.copy(_tailColIdle).lerp(_tailColBrake, state.brakeGlow);
+      car.tailCoreMat.color.copy(_coreColIdle).lerp(_coreColBrake, state.brakeGlow);
+      car.tailHaloMat.opacity = 0.24 + state.brakeGlow * 0.48 + state.nitroBlur * 0.28;
       state.brakePitch = THREE.MathUtils.lerp(state.brakePitch, activeHardBrake ? 0.06 : 0, 1 - Math.exp(-12.0 * dt));
 
       // 3. Snappy Arcade Steering (Keyboard, Touch, Gyro Tilt & Guided Tour!)
@@ -5729,14 +6052,24 @@
         }
       }
 
+      let pendingBoostSparks = false;
+      let pendingLandSparks = false;
+
       // Automatic 360° Vertical Loop Booster Strip Surge!
-      if (state.speed > 4 && !isCutscene && crossedTargetT(prevT, state.t, LOOP_U0 + 0.001)) {
+      if (state.speed > 4 && !isCutscene && !isFocused && crossedTargetT(prevT, state.t, LOOP_U0 + 0.001)) {
         state.padBoostTimer = Math.max(state.padBoostTimer, 2.25);
         state.turboCharge = Math.min(100, state.turboCharge + 35);
         state.speed = Math.max(state.speed, 102);
         sfx.boost();
-        spawnSparks(_carPos, _tan, 16, 16);
+        pendingBoostSparks = true;
         showToast('🔥 360° LOOP BOOST! +35% NITRO');
+      }
+
+      // Track sequential lap sector checkpoints (prevents reverse/warp fake Best Laps!)
+      if (!isCutscene && !isFocused && state.speed > 2) {
+        if (state.t >= 0.22 && state.t <= 0.35) state.sectorMask |= 1;
+        if ((state.sectorMask & 1) && state.t >= 0.50 && state.t <= 0.65) state.sectorMask |= 2;
+        if ((state.sectorMask & 2) && state.t >= 0.78 && state.t <= 0.92) state.sectorMask |= 4;
       }
 
       // Lap timer runs while actively driving (pauses cleanly during cutscenes & reading focus!)
@@ -5751,23 +6084,26 @@
 
       if (prevT > 0.92 && state.t < 0.08 && state.speed > 0) {
         const finishedTime = state.lapTime;
-        const isNewBest = finishedTime > 5 && (state.bestLapTime === null || finishedTime < state.bestLapTime);
-        if (isNewBest) {
-          state.bestLapTime = finishedTime;
-          bestLapEl.textContent = formatLapTime(state.bestLapTime);
-          try { localStorage.setItem('cv_best_lap_sec', String(finishedTime.toFixed(2))); } catch (_e) {}
+        if (state.sectorMask === 7) {
+          const isNewBest = !state.lapInvalidated && finishedTime > 15 && (state.bestLapTime === null || finishedTime < state.bestLapTime);
+          if (isNewBest) {
+            state.bestLapTime = finishedTime;
+            bestLapEl.textContent = formatLapTime(state.bestLapTime);
+            try { localStorage.setItem('cv_best_lap_sec', String(finishedTime.toFixed(2))); } catch (_e) {}
+          }
+          state.lap++;
+          lapTextEl.textContent = String(state.lap);
+          // Respawn Nitro Canisters & Sky Rings for fresh Time Attack laps!
+          nitroCanisters.forEach((n) => { n.collected = false; });
+          skyRings.forEach((r) => { r.collected = false; });
+          sfx.stage();
+          showToast(isNewBest ? `🏆 NEW BEST LAP! ${formatLapTime(finishedTime)}` : `🏁 LAP ${state.lap - 1} · ${formatLapTime(finishedTime)}`);
         }
-        state.lap++;
         state.lapTime = 0;
         state.lastLapTenths = -1;
+        state.sectorMask = 0;
+        state.lapInvalidated = false;
         lapTimeEl.textContent = '00:00.0';
-        lapTextEl.textContent = String(state.lap);
-        state.tourLastDwelledIdx = -1;
-        // Respawn Nitro Canisters & Sky Rings for fresh Time Attack laps!
-        nitroCanisters.forEach((n) => { n.collected = false; });
-        skyRings.forEach((r) => { r.collected = false; });
-        sfx.stage();
-        showToast(isNewBest ? `🏆 NEW BEST LAP! ${formatLapTime(finishedTime)}` : `🏁 LAP ${state.lap - 1} · ${formatLapTime(finishedTime)}`);
       }
 
       // 5. Jump Buffering, Coyote Time, Mid-Air Flip & Smooth Additive Landing
@@ -5811,7 +6147,7 @@
           state.squash = 0.22;
           state.turboCharge = Math.min(100, state.turboCharge + 12);
           sfx.land();
-          spawnSparks(_carPos, _tan, 12, 8);
+          pendingLandSparks = true;
         }
       }
       if (state.squash > 0.001) state.squash = THREE.MathUtils.lerp(state.squash, 0, 1 - Math.exp(-12.0 * dt));
@@ -5827,6 +6163,8 @@
 
       _carPos.copy(_pt).addScaledVector(_bin, state.laneOffset).addScaledVector(_norm, state.jumpY + state.loopCamBlend * 0.11);
       car.root.position.copy(_carPos);
+      if (pendingBoostSparks) spawnSparks(_carPos, _tan, 16, 16);
+      if (pendingLandSparks) spawnSparks(_carPos, _tan, 12, 8);
 
       _negBin.copy(_bin).negate();
       _rotMat.makeBasis(_negBin, _norm, _tan);
@@ -5861,30 +6199,47 @@
       for (let i = 0; i < car.wheels.length; i++) car.wheels[i].rotation.x += state.speed * simDt * 0.72;
 
       const speedNorm = Math.min(1, Math.abs(state.speed) / state.maxSpeed);
-      // Subtle Italian Tricolore (Verde · Bianco · Rosso) exhaust flame flicker + long classic NFS Nitro jets!
-      const idleFlicker = 0.14 + Math.sin(elapsed * 28) * 0.05;
-      const flameLen = isTurbo ? (2.35 + Math.sin(elapsed * 55) * 0.42) : Math.max(idleFlicker, speedNorm * 0.55);
-      const italiaFlames = [0x00e65c, 0xffffff, 0xff2233];
+      const isAccelerating = !isCutscene && !isFocused && (wantsForward || isTour || isTurbo);
+      // Throttle-gated Italian Tricolore (Verde · Bianco · Rosso) exhaust jets + NFS Nitro flames
+      const jetBase = isTurbo ? 1.0 : (isAccelerating ? 0.22 + speedNorm * 0.36 : 0);
+      const jetPulse = isTurbo
+        ? (1.0 + Math.sin(elapsed * 18) * 0.14)
+        : (1.0 + Math.sin(elapsed * 12) * 0.08);
+      const targetConeLen = jetBase * jetPulse;
+      const targetConeOpacity = isTurbo ? 0.86 : (isAccelerating ? 0.28 + speedNorm * 0.30 : 0);
       for (let i = 0; i < car.flameCones.length; i++) {
         const fc = car.flameCones[i];
-        fc.visible = true;
-        fc.scale.set(isTurbo ? 1.45 : 0.82, isTurbo ? 1.45 : 0.82, flameLen);
-        fc.material.color.setHex(italiaFlames[i % 3]);
+        const visibleCone = targetConeOpacity > 0.02;
+        fc.visible = visibleCone;
+        if (visibleCone) {
+          const wScale = isTurbo ? 1.12 : 0.72;
+          fc.scale.set(wScale, wScale, Math.max(0.05, targetConeLen));
+          fc.material.opacity = targetConeOpacity;
+        }
       }
 
-      // 3D Crimson Taillight Light-Trail Ribbons during Nitro
+      // 3D Crimson Taillight Light-Trail Ribbons during Nitro (anchored directly to car.visual taillights)
       if (state.nitroBlur > 0.015 && !isCutscene) {
-        _tailPosL.copy(_carPos).addScaledVector(_negBin, 0.74).addScaledVector(_norm, 0.80).addScaledVector(_tan, -2.58);
-        _tailPosR.copy(_carPos).addScaledVector(_negBin, -0.74).addScaledVector(_norm, 0.80).addScaledVector(_tan, -2.58);
+        car.visual.updateMatrixWorld(true);
+        car.tailAnchorL.getWorldPosition(_tailPosL);
+        car.tailAnchorR.getWorldPosition(_tailPosR);
+        _trailRight.set(
+          camera.matrixWorld.elements[0],
+          camera.matrixWorld.elements[1],
+          camera.matrixWorld.elements[2]
+        );
+        if (_trailRight.lengthSq() < 1e-4) _trailRight.copy(_bin);
+        else _trailRight.normalize();
+
         if (!trailInitialized) {
           for (let k = 0; k < TRAIL_SEGS; k++) {
             trailHistL[k].copy(_tailPosL);
             trailHistR[k].copy(_tailPosR);
-            trailHistBin[k].copy(_bin);
+            trailHistBin[k].copy(_trailRight);
           }
           trailInitialized = true;
         } else {
-          if (_tailPosL.distanceToSquared(trailHistL[1]) > 0.42) {
+          if (_tailPosL.distanceToSquared(trailHistL[1]) > 0.015) {
             for (let k = TRAIL_SEGS - 1; k >= 1; k--) {
               trailHistL[k].copy(trailHistL[k - 1]);
               trailHistR[k].copy(trailHistR[k - 1]);
@@ -5893,7 +6248,7 @@
           }
           trailHistL[0].copy(_tailPosL);
           trailHistR[0].copy(_tailPosR);
-          trailHistBin[0].copy(_bin);
+          trailHistBin[0].copy(_trailRight);
         }
         const posAttr = tailTrailGeo.attributes.position;
         const arr = posAttr.array;
@@ -5929,7 +6284,7 @@
         const nc = nitroCanisters[i];
         if (!nc.collected) {
           nc.pos.copy(nc.basePos).addScaledVector(nc.norm, Math.sin(elapsed * 3.8 + i) * 0.32);
-          if (!isCutscene && _carPos.distanceToSquared(nc.pos) < 15.0) {
+          if (!isCutscene && !isFocused && _carPos.distanceToSquared(nc.pos) < 15.0) {
             nc.collected = true;
             dummy.position.set(0, -500, 0);
             dummy.scale.setScalar(0);
@@ -5955,7 +6310,7 @@
         const sr = skyRings[i];
         if (!sr.collected) {
           sr.spinZ += dt * 2.2;
-          if (!isCutscene && state.jumpY > 1.8 && _carPos.distanceToSquared(sr.pos) < 28.0) {
+          if (!isCutscene && !isFocused && state.jumpY > 1.8 && _carPos.distanceToSquared(sr.pos) < 28.0) {
             sr.collected = true;
             dummy.position.set(0, -500, 0);
             dummy.scale.setScalar(0);
@@ -5983,15 +6338,13 @@
         const orb = skillOrbs[i];
         if (!orb.collected) {
           orb.pos.copy(orb.basePos).addScaledVector(orb.norm, 1.55 + Math.sin(elapsed * 3.0 + i) * 0.35);
-          if (_carPos.distanceToSquared(orb.pos) < 13.5) {
+          if (!isCutscene && !isFocused && _carPos.distanceToSquared(orb.pos) < 13.5) {
             orb.collected = true;
             dummy.position.set(0, -500, 0);
             dummy.scale.setScalar(0);
             dummy.updateMatrix();
             orbIMesh.setMatrixAt(i, dummy.matrix);
-            state.orbsCollected++;
             state.turboCharge = Math.min(100, state.turboCharge + 18);
-            orbsTextEl.textContent = `${state.orbsCollected} / ${SKILL_NAMES.length}`;
             sfx.orb();
             showToast(`✨ ${orb.name.toUpperCase()}`);
           } else {
@@ -6024,8 +6377,12 @@
         const tgtScale = isFoc ? 1.06 : 1.0;
         _scaleVec.set(tgtScale, tgtScale, 1);
         tp.screenMesh.scale.lerp(_scaleVec, 1 - Math.exp(-6.0 * dt));
-        // Smooth anti-gravity hover bob synced to bullet-time world clock (rock-steady while reading!)
-        tp.group.position.y = tp.baseY + Math.sin(wElapsed * 2.0 + i * 1.1) * 0.55;
+        // Hold inspected panel completely steady while reading in FOCUSED mode
+        const holdSteady = isFocused && (state.focusedPanelRef === tp || tp === nearPanel);
+        const targetPanelY = holdSteady ? tp.baseY : (tp.baseY + Math.sin(wElapsed * 2.0 + i * 1.1) * 0.55);
+        tp.group.position.y = holdSteady
+          ? THREE.MathUtils.lerp(tp.group.position.y, targetPanelY, 1 - Math.exp(-12.0 * dt))
+          : targetPanelY;
       }
 
       const panelIdx = nearPanel ? nearPanel.milestoneIdx : -1;
@@ -6046,18 +6403,13 @@
         cvCardEl.classList.toggle('zoom-hidden', state.deepZoom);
       }
 
-      const showFocusPill = Boolean((nearPanel && !isTurbo) || state.mode === 'FOCUSED');
+      const showFocusPill = Boolean(nearPanel && !isTurbo && state.mode !== 'FOCUSED');
       if (state.lastShowFocusPill !== showFocusPill) {
         state.lastShowFocusPill = showFocusPill;
         focusIndEl.classList.toggle('active', showFocusPill);
-        dwellTrackEl.classList.remove('show');
       }
       if (showFocusPill) {
-        const nextFocusText = state.deepZoom
-          ? (IS_TOUCH_UI ? '🔍 SWIPE ◀ ▶ STAGES · TAP OUTSIDE TO DRIVE' : '🔍 DEEP ZOOM · CLICK OUTSIDE OR PRESS W TO DRIVE')
-          : (state.mode === 'FOCUSED'
-            ? (IS_TOUCH_UI ? '🔍 FOCUSED · TAP PANEL TO ZOOM MORE' : '🔍 FOCUSED · CLICK PANEL TO ZOOM MORE')
-            : (IS_TOUCH_UI ? '⚡ PANEL AHEAD · TAP TO INSPECT' : '⚡ GIANT PANEL AHEAD · CLICK TO ZOOM'));
+        const nextFocusText = IS_TOUCH_UI ? '⚡ PANEL AHEAD · TAP TO INSPECT' : '⚡ GIANT PANEL AHEAD · CLICK TO ZOOM';
         if (state.lastFocusText !== nextFocusText) {
           state.lastFocusText = nextFocusText;
           focusStatusEl.textContent = nextFocusText;
@@ -6401,7 +6753,7 @@
         }
       }
 
-      if (state.nitroBlur > 0.004 && !isCutscene) {
+      if (state.nitroBlur > 0.004 && !isCutscene && !isFocused) {
         const rt = ensureNitroRT();
         nitroBlurUniforms.uStrength.value = state.nitroBlur;
         const steerShift = THREE.MathUtils.clamp(-state.laneVel * 0.0022, -0.06, 0.06);
@@ -6420,21 +6772,42 @@
     // Resize, WebGL Context Loss & Clean Disposal Lifecycle
     function onResize() {
       syncResponsiveBodyClasses();
-      camera.aspect = window.innerWidth / window.innerHeight;
+      const rw = Math.max(1, window.innerWidth);
+      const rh = Math.max(1, window.innerHeight);
+      camera.aspect = rw / rh;
       camera.updateProjectionMatrix();
       renderer.setPixelRatio(getTargetDPR(qualityPreset));
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(rw, rh);
       syncComposerResolution();
       syncNitroRT();
     }
     window.addEventListener('resize', onResize);
+    const mediaQueryEntries = [];
+    if (window.matchMedia) {
+      ['(pointer: coarse)', '(hover: none)'].forEach((mqStr) => {
+        try {
+          const mq = window.matchMedia(mqStr);
+          if (mq.addEventListener) {
+            mq.addEventListener('change', onResize);
+            mediaQueryEntries.push({ mq, mode: 'event' });
+          } else if (mq.addListener) {
+            mq.addListener(onResize);
+            mediaQueryEntries.push({ mq, mode: 'legacy' });
+          }
+        } catch (_mqErr) {}
+      });
+    }
 
-    renderer.domElement.addEventListener('webglcontextlost', (e) => {
+    const onContextLost = (e) => {
       e.preventDefault();
-      if (rafId) cancelAnimationFrame(rafId);
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
       document.getElementById('fallback-msg').textContent = 'WebGL rendering context was lost. Click Retry 3D or open the Full CV.';
       document.getElementById('boot-fallback').classList.add('show');
-    });
+    };
+    renderer.domElement.addEventListener('webglcontextlost', onContextLost);
     function prewarmGPUPipelines() {
       const culledMeshes = [];
       scene.traverse((obj) => {
@@ -6462,26 +6835,71 @@
       for (let i = 0; i < culledMeshes.length; i++) culledMeshes[i].frustumCulled = true;
     }
 
-    renderer.domElement.addEventListener('webglcontextrestored', () => {
+    const onContextRestored = () => {
       document.getElementById('boot-fallback').classList.remove('show');
       if (nitroRT) { try { nitroRT.dispose(); } catch (_dErr) {} nitroRT = null; }
+      if (bloomPass && bloomPass.dispose) { try { bloomPass.dispose(); } catch (_bErr) {} }
+      bloomPass = null;
+      if (composer) { try { composer.dispose(); } catch (_cErr) {} composer = null; }
+      rebuildStudioEnvironment();
+      if (qualityPreset === 'HIGH' && !IS_LOW_END) usePostFX = ensurePostFX();
       prewarmGPUPipelines();
-      clock.getDelta();
-      animate();
-    });
+      resetFrameTimer();
+      rafId = requestAnimationFrame(animate);
+    };
+    renderer.domElement.addEventListener('webglcontextrestored', onContextRestored);
 
+    const TEX_SLOTS = ['map', 'emissiveMap', 'roughnessMap', 'metalnessMap', 'normalMap', 'alphaMap'];
     function disposeScene() {
-      if (rafId) cancelAnimationFrame(rafId);
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = null;
+      }
+      clearTimeout(toastTimer);
+      if (gyroWatchdogTimer) {
+        clearTimeout(gyroWatchdogTimer);
+        gyroWatchdogTimer = null;
+      }
+      removeGestureUnlockListeners();
       window.removeEventListener('resize', onResize);
+      window.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('keyup', onKeyUp);
+      window.removeEventListener('blur', onWindowBlur);
+      window.removeEventListener('orientationchange', onOrientationChange);
+      window.removeEventListener('pagehide', disposeScene);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      document.removeEventListener('click', onDocClick);
+      if (gyro.listenerAttached) {
+        window.removeEventListener('devicemotion', onDeviceMotion, true);
+        gyro.listenerAttached = false;
+      }
+      mediaQueryEntries.forEach((entry) => {
+        try {
+          if (entry.mode === 'event') entry.mq.removeEventListener('change', onResize);
+          else entry.mq.removeListener(onResize);
+        } catch (_rmErr) {}
+      });
+      renderer.domElement.removeEventListener('webglcontextlost', onContextLost);
+      renderer.domElement.removeEventListener('webglcontextrestored', onContextRestored);
+      timer.dispose();
       sfx.dispose();
+      if (bloomPass && bloomPass.dispose) bloomPass.dispose();
+      if (composer) composer.dispose();
       if (envRT) envRT.dispose();
       if (nitroRT) nitroRT.dispose();
+      nitroQuad.geometry.dispose();
       nitroBlurMat.dispose();
       scene.traverse((obj) => {
         if (obj.geometry) obj.geometry.dispose();
         if (obj.material) {
           const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
-          mats.forEach((m) => { if (m.map) m.map.dispose(); m.dispose(); });
+          mats.forEach((m) => {
+            for (let i = 0; i < TEX_SLOTS.length; i++) {
+              const t = m[TEX_SLOTS[i]];
+              if (t && t.dispose) t.dispose();
+            }
+            m.dispose();
+          });
         }
       });
       renderer.dispose();
@@ -6490,8 +6908,8 @@
 
     await yieldBootFrame(95, 'Pre-Warming Shaders & GPU Buffers...');
     prewarmGPUPipelines();
-    clock.getDelta();
-    animate();
+    resetFrameTimer();
+    rafId = requestAnimationFrame(animate);
     await yieldBootFrame(99, 'Ignition Ready!');
     if (window.__completeBoot) window.__completeBoot();
     else window.__hideLoadingScreen();
