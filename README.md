@@ -17,7 +17,7 @@ A playable, single-file **3D Neon Tokyo Expressway driving experience** built wi
 - **Classic Nitro Speed Rush**: Activating Nitro (`Shift` / `🔥`) engages an 8-tap WebGL linear-HDR radial zoom motion blur pass (keeping the car sharp in the center while streaking neon signs and skyscrapers outward), crimson 3D taillight light-trail ribbons, lengthened exhaust jets, and dynamic FOV pull-back.
 - **Speedbreaker Milestone Cutscenes**: Spotting each of the 6 chronological CV billboards on Lap 1 smoothly dilates world time into bullet-time (`0.025×`) with a 3D Bezier crane sweep, a minimal bottom continue pill, and Web Audio Speedbreaker swells—returning cleanly along a Bezier arc with zero velocity hitch.
 - **Click-to-Inspect 3D CV Megaboards & Guided Tour**: Click any 3D roadside billboard (or press `F` / `◀ PREV` / `NEXT ▶` / `1–6`) to hide HUD bars and zoom full-frame onto 2K CanvasTextures, then press `Space` (`▶ CLICK SPACEBAR TO CONTINUE`) or click the bottom pill (or `F`) to resume driving, toggle **▶ GUIDED TOUR** for hands-free cruising, or open **📄 FULL CV** for the complete document and Core Technical Arsenal.
-- **Cross-Device Ready**: Adaptive DPR rendering (`AUTO` / `HIGH` / `LITE` presets), two-thumb split mobile/iPad landscape HUD with focused panel dock & swipe navigation, horizon-verified gyroscope steering & tilt-back braking, `es-module-shims` import-map polyfill, and an HTML CV fallback if WebGL is unavailable.
+- **Cross-Device Ready**: Adaptive Super Retina DPR rendering (`2.0×–2.5×` on phones, `AUTO` / `HIGH` / `LITE` presets), two-thumb split mobile/iPad landscape HUD with a unified bar-free focused panel pill & swipe navigation, horizon-verified gyroscope steering & tilt-back braking, `es-module-shims` import-map polyfill, and an HTML CV fallback if WebGL is unavailable.
 
 ---
 
@@ -52,7 +52,7 @@ A playable, single-file **3D Neon Tokyo Expressway driving experience** built wi
 ### Mobile & iPad (Landscape)
 
 - **Gyroscope Mode (`🧭 START WITH GYROSCOPE`)**: Auto-accelerates while steering via horizon tilt left/right; tilt upright to brake or tap **🛑**.
-- **Touch Controls Mode (`👆 START WITH TOUCH CONTROLS`)**: Two-thumb layout with steering (`◀` / `▶` + `🎥` POV) on the left and `🛑` Brake, `▲` Gas, `🔥` Nitro, and `🚀` Flip on the right, plus swipeable 3D panel inspection with an optional scrollable text reader.
+- **Touch Controls Mode (`👆 START WITH TOUCH CONTROLS`)**: Two-thumb layout with steering (`◀` / `▶` + `🎥` POV) on the left and `🛑` Brake, `▲` Gas, `🔥` Nitro, and `🚀` Flip on the right, plus swipeable bar-free 3D panel inspection.
 
 ---
 

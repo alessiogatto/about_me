@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>ALESSIO GATTO // INTERACTIVE 3D CV</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -927,8 +930,22 @@
     #load-pct { color: var(--neon-cyan); font-weight: 800; font-variant-numeric: tabular-nums; min-width: 42px; text-align: right; }
 
     /* NFS MOST WANTED STYLE FIRST-SIGHT CINEMATIC CUT-IN (LAP 1 ONLY!) */
-    #hud.cutscene-hide { opacity: 0; pointer-events: none !important; transition: opacity 0.28s ease; }
-    #hud.cutscene-hide * { pointer-events: none !important; }
+    body.is-cutscene #toast-banner { opacity: 0 !important; }
+    body.is-cutscene #hud,
+    #hud.cutscene-hide {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+    body.is-cutscene #hud .top-bar,
+    body.is-cutscene #hud .mid-section,
+    body.is-cutscene #hud .bottom-bar,
+    #hud.cutscene-hide .top-bar,
+    #hud.cutscene-hide .mid-section,
+    #hud.cutscene-hide .bottom-bar {
+      display: none !important;
+      pointer-events: none !important;
+    }
     #nfsmw-flash {
       position: fixed;
       top: 0; right: 0; bottom: 0; left: 0;
@@ -1078,18 +1095,22 @@
       pointer-events: auto;
     }
     body.is-panel-focused #hud {
-      opacity: 0;
+      opacity: 0 !important;
+      visibility: hidden !important;
       pointer-events: none !important;
-      transition: opacity 0.22s ease;
     }
-    body.is-panel-focused #hud * {
+    body.is-panel-focused #hud *,
+    body.is-panel-focused #hud .top-bar,
+    body.is-panel-focused #hud .mid-section,
+    body.is-panel-focused #hud .bottom-bar {
+      display: none !important;
       pointer-events: none !important;
     }
     body.is-panel-focused #panel-dock {
       display: flex;
     }
-    body.is-desktop-ui #dock-details {
-      display: none;
+    #dock-details {
+      display: none !important;
     }
     .dock-stage-label {
       font-family: 'Orbitron', sans-serif;
@@ -1197,9 +1218,13 @@
     body.is-mobile-ui .speed-box { min-width: 50px; }
     body.is-mobile-ui .speed-val { font-size: 1.24rem; }
     body.is-mobile-ui .mobile-hide-stat { display: none !important; }
-    body.is-mobile-ui .nfsmw-pill { padding: 5px 7px; gap: 6px; }
-    body.is-mobile-ui #btn-nfsmw-proceed { min-width: 155px; padding: 8px 13px; font-size: 0.66rem; }
-    body.is-mobile-ui #btn-nfsmw-inspect { padding: 8px 11px; font-size: 0.66rem; }
+    body.is-mobile-ui #nfsmw-overlay { padding-bottom: max(7px, env(safe-area-inset-bottom)); }
+    body.is-mobile-ui .nfsmw-pill { padding: 4px 6px; gap: 5px; border-radius: 11px; }
+    body.is-mobile-ui #btn-nfsmw-proceed { min-width: 142px; padding: 6px 11px; font-size: 0.62rem; }
+    body.is-mobile-ui #btn-nfsmw-inspect { padding: 6px 10px; font-size: 0.62rem; }
+    body.is-mobile-ui #panel-dock { bottom: max(7px, env(safe-area-inset-bottom)); padding: 4px 7px; gap: 5px; border-radius: 11px; }
+    body.is-mobile-ui .dock-btn { min-height: 31px; padding: 5px 10px; font-size: 0.6rem; border-radius: 8px; }
+    body.is-mobile-ui .dock-stage-label { font-size: 0.6rem; padding: 0 4px; }
 
     /* Dedicated iPad & Tablet Landscape HUD (Spacious 768px-1366px Touch Layout!) */
     body.is-tablet-ui #onboarding-hint,
@@ -1715,7 +1740,7 @@
       }
 
       var isTouchUI = Boolean(isPhone || isTablet);
-      var isLowEnd = Boolean((navigator.deviceMemory && navigator.deviceMemory <= 3) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4));
+      var isLowEnd = Boolean((navigator.deviceMemory && navigator.deviceMemory <= 2) || (!isIOS && navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2));
 
       return {
         isIPad: isIPad,
@@ -2201,7 +2226,7 @@
     try {
       renderer = new THREE.WebGLRenderer({
         antialias: !DEV.isLowEnd,
-        powerPreference: IS_TOUCH_UI ? 'default' : 'high-performance'
+        powerPreference: DEV.isLowEnd ? 'default' : 'high-performance'
       });
     } catch (_firstErr) {
       try {
@@ -2216,36 +2241,44 @@
 
     const IS_WEBGL2 = Boolean(typeof WebGL2RenderingContext !== 'undefined' && renderer.getContext() instanceof WebGL2RenderingContext);
     const MAX_TEX_SIZE = (renderer.capabilities && renderer.capabilities.maxTextureSize) || 4096;
-    const IS_LOW_END = Boolean(DEV.isLowEnd || !IS_WEBGL2 || MAX_TEX_SIZE <= 4096);
+    const IS_LOW_END = Boolean(DEV.isLowEnd || !IS_WEBGL2 || MAX_TEX_SIZE < 4096);
 
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x090b1a, 0.00066);
 
-    const viewW = Math.max(1, window.innerWidth);
-    const viewH = Math.max(1, window.innerHeight);
-    const camera = new THREE.PerspectiveCamera(58, viewW / viewH, 1.2, 2400);
+    function getViewportSize() {
+      return {
+        w: Math.max(1, container.clientWidth || window.innerWidth),
+        h: Math.max(1, container.clientHeight || window.innerHeight)
+      };
+    }
+    const initVP = getViewportSize();
+    const camera = new THREE.PerspectiveCamera(58, initVP.w / initVP.h, 1.2, 2400);
     // High-Efficiency Crisp Retina DPR:
-    // Caps AUTO at 1.65x Retina on Desktop (1.5x on iPad/Phone, 1.15x on Low-End) + Direct Hardware MSAA -> 3x-4x Higher FPS with Razor-Sharp Edges!
+    // Delivers Super Retina 2.0x-2.5x on Phones, 1.5x-1.85x on Tablets, and 1.35x-1.65x on Desktop + Hardware MSAA!
     function getTargetDPR(preset) {
       const nativeDpr = window.devicePixelRatio || 1;
-      if (preset === 'LITE') return 1.0;
-      if (IS_LOW_END && preset !== 'HIGH') return Math.min(nativeDpr, 1.15);
+      if (preset === 'LITE') return IS_PHONE ? Math.min(nativeDpr, 1.35) : 1.0;
+      if (IS_LOW_END && preset !== 'HIGH') return Math.min(nativeDpr, IS_PHONE ? 1.5 : 1.2);
       if (preset === 'HIGH') {
-        return Math.min(Math.max(nativeDpr, 1.75), IS_TOUCH_UI ? 2.0 : 2.25);
+        if (IS_PHONE) return Math.min(Math.max(nativeDpr, 2.25), 3.0);
+        if (IS_TABLET) return Math.min(Math.max(nativeDpr, 2.0), 2.25);
+        return Math.min(Math.max(nativeDpr, 1.75), 2.25);
       }
-      // AUTO: Fast Locked 60-120 FPS + Crisp Retina!
-      if (IS_TOUCH_UI) return Math.min(nativeDpr, 1.5);
+      // AUTO: Super Retina 2.0x-2.5x on Phones, 1.5x-1.85x on Tablets, 1.35x-1.65x on Desktop
+      if (IS_PHONE) return Math.min(Math.max(nativeDpr, 2.0), 2.5);
+      if (IS_TABLET) return Math.min(Math.max(nativeDpr, 1.5), 1.85);
       return Math.min(Math.max(nativeDpr, 1.35), 1.65);
     }
     const DEFAULT_MAX_DPR = getTargetDPR('AUTO');
     renderer.setPixelRatio(DEFAULT_MAX_DPR);
-    renderer.setSize(viewW, viewH);
+    renderer.setSize(initVP.w, initVP.h);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = IS_TOUCH_UI ? 1.07 : 1.04;
     renderer.domElement.tabIndex = -1;
     renderer.domElement.style.outline = 'none';
     container.appendChild(renderer.domElement);
-    const MAX_ANISO = Math.min(8, renderer.capabilities.getMaxAnisotropy() || 8);
+    const MAX_ANISO = Math.min(16, renderer.capabilities.getMaxAnisotropy() || 8);
 
     // Subtle Studio IBL Reflections (skipped on touch/low-end devices to save ~30MB VRAM & boot faster)
     let envRT = null;
@@ -2286,12 +2319,13 @@
     function syncComposerResolution() {
       if (!composer) return;
       const dpr = renderer.getPixelRatio();
+      const vp = getViewportSize();
       composer.setPixelRatio(dpr);
-      composer.setSize(window.innerWidth, window.innerHeight);
+      composer.setSize(vp.w, vp.h);
       if (bloomPass) {
         bloomPass.resolution.set(
-          Math.max(1, Math.floor(window.innerWidth * dpr * 0.25)),
-          Math.max(1, Math.floor(window.innerHeight * dpr * 0.25))
+          Math.max(1, Math.floor(vp.w * dpr * 0.25)),
+          Math.max(1, Math.floor(vp.h * dpr * 0.25))
         );
       }
     }
@@ -2303,6 +2337,7 @@
       }
       try {
         const dpr = renderer.getPixelRatio();
+        const vp = getViewportSize();
         const rtOpts = {
           type: THREE.HalfFloatType,
           minFilter: THREE.LinearFilter,
@@ -2310,20 +2345,20 @@
         };
         if (IS_WEBGL2 && !IS_TOUCH_UI) rtOpts.samples = 4;
         const composerRT = new THREE.WebGLRenderTarget(
-          Math.max(1, Math.floor(window.innerWidth * dpr)),
-          Math.max(1, Math.floor(window.innerHeight * dpr)),
+          Math.max(1, Math.floor(vp.w * dpr)),
+          Math.max(1, Math.floor(vp.h * dpr)),
           rtOpts
         );
         composer = new EffectComposer(renderer, composerRT);
         composer.setPixelRatio(dpr);
         composer.addPass(new RenderPass(scene, camera));
         bloomPass = new UnrealBloomPass(
-          new THREE.Vector2(Math.max(1, Math.floor(window.innerWidth * dpr * 0.25)), Math.max(1, Math.floor(window.innerHeight * dpr * 0.25))),
+          new THREE.Vector2(Math.max(1, Math.floor(vp.w * dpr * 0.25)), Math.max(1, Math.floor(vp.h * dpr * 0.25))),
           0.22, 0.30, 0.95
         );
         composer.addPass(bloomPass);
         composer.addPass(new OutputPass());
-        composer.setSize(window.innerWidth, window.innerHeight);
+        composer.setSize(vp.w, vp.h);
         return true;
       } catch (_fxErr) {
         composer = null;
@@ -2387,21 +2422,23 @@
     nitroPostScene.add(nitroQuad);
 
     function getNitroRTDPR() {
-      return Math.min(renderer.getPixelRatio(), IS_LOW_END ? 0.85 : (IS_TOUCH_UI ? 1.0 : 1.25));
+      return Math.min(renderer.getPixelRatio(), IS_LOW_END ? 1.0 : (IS_PHONE ? 1.85 : (IS_TABLET ? 1.45 : 1.35)));
     }
 
     function syncNitroRT() {
       if (!nitroRT) return;
       const dpr = getNitroRTDPR();
+      const vp = getViewportSize();
       nitroRT.setSize(
-        Math.max(1, Math.floor(window.innerWidth * dpr)),
-        Math.max(1, Math.floor(window.innerHeight * dpr))
+        Math.max(1, Math.floor(vp.w * dpr)),
+        Math.max(1, Math.floor(vp.h * dpr))
       );
     }
 
     function ensureNitroRT() {
       if (nitroRT) return nitroRT;
       const dpr = getNitroRTDPR();
+      const vp = getViewportSize();
       const rtOpts = {
         minFilter: THREE.LinearFilter,
         magFilter: THREE.LinearFilter,
@@ -2410,8 +2447,8 @@
         stencilBuffer: false
       };
       nitroRT = new THREE.WebGLRenderTarget(
-        Math.max(1, Math.floor(window.innerWidth * dpr)),
-        Math.max(1, Math.floor(window.innerHeight * dpr)),
+        Math.max(1, Math.floor(vp.w * dpr)),
+        Math.max(1, Math.floor(vp.h * dpr)),
         rtOpts
       );
       nitroBlurUniforms.tDiffuse.value = nitroRT.texture;
@@ -3274,8 +3311,8 @@
     }
 
     // High-Definition Power-of-Two Architectural Skyscraper Window Texture (1024x2048 on Desktop, 512x1024 on Mobile)
-    const winW = IS_LOW_END ? 256 : (IS_TOUCH_UI ? 512 : 1024);
-    const winH = IS_LOW_END ? 512 : (IS_TOUCH_UI ? 1024 : 2048);
+    const winW = IS_LOW_END ? 512 : 1024;
+    const winH = IS_LOW_END ? 1024 : 2048;
     const winCanvas = document.createElement('canvas');
     winCanvas.width = winW; winCanvas.height = winH;
     const wCtx = winCanvas.getContext('2d');
@@ -4849,6 +4886,18 @@
       }
     }
 
+    function syncPanelOverlayDOM() {
+      const isFoc = state.mode === 'FOCUSED';
+      const isCut = state.mode === 'CUTSCENE';
+      state.lastBodyFocused = isFoc;
+      state.lastBodyCutscene = isCut;
+      document.body.classList.toggle('is-panel-focused', isFoc);
+      document.body.classList.toggle('is-cutscene', isCut);
+      const hEl = document.getElementById('hud');
+      if (hEl) hEl.classList.toggle('cutscene-hide', isCut);
+      if (!isFoc && mobileSheetOpen) setMobileSheetOpen(false);
+    }
+
     function resetCircuit() {
       state.t = 0.005;
       state.speed = 0;
@@ -4889,11 +4938,8 @@
       state.returnSwoopTimer = 0;
       state.simTimeScale = 1.0;
       document.getElementById('nfsmw-overlay').classList.remove('active', 'ready-click');
-      document.getElementById('hud').classList.remove('cutscene-hide');
-      document.body.classList.remove('is-panel-focused');
-      state.lastBodyFocused = false;
-      setMobileSheetOpen(false);
       state.mode = 'PLAYING';
+      syncPanelOverlayDOM();
       document.getElementById('pause-overlay').classList.remove('open');
       document.getElementById('lap-text').textContent = '1';
       skillOrbs.forEach((o) => { o.collected = false; });
@@ -4967,23 +5013,23 @@
 
     function getPanelCameraSpec() {
       const fov = IS_PHONE ? 43 : (IS_TABLET ? 45 : 46);
-      const fh = IS_PHONE ? 0.74 : (IS_TABLET ? 0.75 : 0.76);
-      const fw = IS_PHONE ? 0.88 : (IS_TABLET ? 0.86 : 0.85);
+      const fh = IS_PHONE ? 0.80 : (IS_TABLET ? 0.77 : 0.76);
+      const fw = IS_PHONE ? 0.90 : (IS_TABLET ? 0.86 : 0.85);
       const halfTan = Math.tan(THREE.MathUtils.degToRad(fov * 0.5));
-      const asp = Math.max(0.65, camera.aspect || (window.innerWidth / Math.max(1, window.innerHeight)));
+      const vp = getViewportSize();
+      const asp = Math.max(0.65, camera.aspect || (vp.w / vp.h));
       const dH = (14.85 / fh) / (2 * halfTan);
       const dW = (27.0 / fw) / (2 * halfTan * asp);
       return {
         fov,
         dist: Math.max(dH, dW),
-        yOffset: IS_PHONE ? -0.85 : (IS_TABLET ? -0.68 : -0.62)
+        yOffset: IS_PHONE ? -0.52 : (IS_TABLET ? -0.62 : -0.62)
       };
     }
 
     function exitPanelFocus() {
       if (state.mode !== 'FOCUSED') return;
       const closingPanelSide = state.focusedPanelRef ? state.focusedPanelRef.side : 1;
-      setMobileSheetOpen(false);
       startCameraReturnSwoop(0.48, false);
       state.returnPanelSide = closingPanelSide;
       state.returnStartTimeScale = 1.0;
@@ -4992,6 +5038,7 @@
       state.deepZoomBlend = 0;
       state.focusBlend = 0;
       state.focusedPanelRef = null;
+      syncPanelOverlayDOM();
       getTrackFrame(state.t, _pt, _tan, _bin, _norm);
       _carPos.copy(_pt).addScaledVector(_bin, state.laneOffset);
       chaseCamPos.copy(_carPos).addScaledVector(_tan, -11.4).addScaledVector(_norm, 4.35);
@@ -5082,6 +5129,7 @@
       state.focusBlend = lockFocus ? 1.0 : 0.0;
       state.deepZoom = useDeepZoom;
       state.deepZoomBlend = useDeepZoom ? 1.0 : 0.0;
+      syncPanelOverlayDOM();
       updateFocusBtnUI();
       updateTourUI();
       updateCVCard(panel.milestoneIdx);
@@ -5524,7 +5572,7 @@
       nfsmwFlash.classList.remove(flashToggle ? 'flash-b' : 'flash-a');
       nfsmwFlash.classList.add(flashToggle ? 'flash-a' : 'flash-b');
       nfsmwOverlay.classList.add('active');
-      hudEl.classList.add('cutscene-hide');
+      syncPanelOverlayDOM();
       sfx.spotted();
     }
 
@@ -5532,7 +5580,6 @@
       if (state.mode !== 'CUTSCENE' || !state.cutsceneReady || !state.cutscenePanel) return;
       const panel = state.cutscenePanel;
       nfsmwOverlay.classList.remove('active', 'ready-click');
-      hudEl.classList.remove('cutscene-hide');
       state.focusReturnMode = state.cutsceneReturnMode || 'PLAYING';
       state.returnSwoopActive = false;
       state.simTimeScale = 1.0;
@@ -5560,6 +5607,7 @@
       state.deepZoomBlend = 1.0;
       state.cutscenePanel = null;
       state.cutsceneReady = false;
+      syncPanelOverlayDOM();
       updateCVCard(panel.milestoneIdx);
       updateFocusBtnUI();
       updateTourUI();
@@ -5570,11 +5618,11 @@
     function closeSpottedCutscene() {
       if (state.mode !== 'CUTSCENE' || !state.cutsceneReady) return;
       nfsmwOverlay.classList.remove('active', 'ready-click');
-      hudEl.classList.remove('cutscene-hide');
       startCameraReturnSwoop(1.80);
       state.mode = state.cutsceneReturnMode || 'PLAYING';
       state.cutscenePanel = null;
       state.cutsceneReady = false;
+      syncPanelOverlayDOM();
       // Smooth Need for Speed: Most Wanted 1.80s Bullet-Time Bezier Return — ZERO Boost After Panel!
       state.padBoostTimer = 0;
       syncDriveKeys();
@@ -6392,10 +6440,8 @@
       }
 
       // Deduplicated DOM State Updates (Zero redundant style recalcs per frame!)
-      if (state.lastBodyFocused !== isFocused) {
-        state.lastBodyFocused = isFocused;
-        document.body.classList.toggle('is-panel-focused', isFocused);
-        if (!isFocused && mobileSheetOpen) setMobileSheetOpen(false);
+      if (state.lastBodyFocused !== isFocused || state.lastBodyCutscene !== isCutscene) {
+        syncPanelOverlayDOM();
       }
 
       if (state.lastDeepZoom !== state.deepZoom) {
@@ -6772,16 +6818,18 @@
     // Resize, WebGL Context Loss & Clean Disposal Lifecycle
     function onResize() {
       syncResponsiveBodyClasses();
-      const rw = Math.max(1, window.innerWidth);
-      const rh = Math.max(1, window.innerHeight);
-      camera.aspect = rw / rh;
+      const vp = getViewportSize();
+      camera.aspect = vp.w / vp.h;
       camera.updateProjectionMatrix();
       renderer.setPixelRatio(getTargetDPR(qualityPreset));
-      renderer.setSize(rw, rh);
+      renderer.setSize(vp.w, vp.h);
       syncComposerResolution();
       syncNitroRT();
     }
     window.addEventListener('resize', onResize);
+    if (window.visualViewport && window.visualViewport.addEventListener) {
+      window.visualViewport.addEventListener('resize', onResize);
+    }
     const mediaQueryEntries = [];
     if (window.matchMedia) {
       ['(pointer: coarse)', '(hover: none)'].forEach((mqStr) => {
@@ -6862,6 +6910,9 @@
       }
       removeGestureUnlockListeners();
       window.removeEventListener('resize', onResize);
+      if (window.visualViewport && window.visualViewport.removeEventListener) {
+        window.visualViewport.removeEventListener('resize', onResize);
+      }
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
       window.removeEventListener('blur', onWindowBlur);
