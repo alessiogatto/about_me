@@ -31,7 +31,9 @@ jobs:
         run: |
           mkdir -p _site
           cp index.html _site/index.html
-          cp Curriculum_vitae.pdf _site/Curriculum_vitae.pdf
+          if [ -f Curriculum_vitae.pdf ]; then
+            cp Curriculum_vitae.pdf _site/Curriculum_vitae.pdf
+          fi
           touch _site/.nojekyll
       - name: Upload site
         uses: actions/upload-pages-artifact@v3

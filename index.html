@@ -6,7 +6,8 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>ALESSIO GATTO // INTERACTIVE 3D CV</title>
+  <meta name="version" content="1.0" />
+  <title>ALESSIO GATTO // INTERACTIVE 3D CV v1.0</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -180,7 +181,7 @@
       position: fixed;
       top: 0; right: 0; bottom: 0; left: 0;
       inset: 0;
-      z-index: 40;
+      z-index: 80;
       background: rgba(4, 6, 15, 0.92);
       display: none;
       flex-direction: column;
@@ -197,6 +198,15 @@
       letter-spacing: 3px;
       color: #ffffff;
       text-shadow: 0 0 24px rgba(0, 229, 255, 0.6);
+    }
+    .pause-ver {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--neon-cyan);
+      opacity: 0.85;
+      margin-top: -6px;
     }
     .pause-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 
@@ -235,6 +245,20 @@
       padding: 6px 13px;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
     }
+    .brand-title-row { display: flex; align-items: center; gap: 7px; }
+    .ver-pill {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.54rem;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      color: var(--neon-cyan);
+      background: rgba(0, 229, 255, 0.12);
+      border: 1px solid rgba(0, 229, 255, 0.38);
+      white-space: nowrap;
+      line-height: 1.35;
+    }
     .brand-title {
       font-family: 'Orbitron', sans-serif;
       font-weight: 900;
@@ -242,6 +266,7 @@
       letter-spacing: 1.6px;
       background: linear-gradient(90deg, #ffffff, #88f3ff, #ff6b9d);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       line-height: 1.15;
     }
@@ -681,12 +706,14 @@
       letter-spacing: -0.5px;
       background: linear-gradient(180deg, #ffffff 20%, #7ef3ff 100%);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       filter: drop-shadow(0 0 10px rgba(0, 229, 255, 0.35));
     }
     .speed-val.turbo-text {
       background: linear-gradient(180deg, #fff6cc 10%, #ff2a85 100%);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
       filter: drop-shadow(0 0 14px rgba(255, 42, 133, 0.65));
     }
@@ -872,6 +899,7 @@
       letter-spacing: 3px;
       background: linear-gradient(90deg, #ffffff, #8ef4ff, #ff79b0);
       -webkit-background-clip: text;
+      background-clip: text;
       -webkit-text-fill-color: transparent;
     }
     .load-sub {
@@ -1203,6 +1231,8 @@
     }
     body.is-mobile-ui .stepper-caption { font-size: 0.68rem; overflow: hidden; text-overflow: ellipsis; max-width: 155px; }
     body.is-mobile-ui .brand-badge { padding: 5px 8px; flex-shrink: 1; min-width: 0; }
+    body.is-mobile-ui .brand-title-row { gap: 4px; }
+    body.is-mobile-ui .ver-pill { font-size: 0.46rem; padding: 1px 5px; }
     body.is-mobile-ui .brand-title { font-size: 0.68rem; letter-spacing: 0.5px; white-space: nowrap; }
     body.is-mobile-ui .top-actions { gap: 4px; }
     body.is-mobile-ui .action-btn { padding: 5px 7px; font-size: 0.56rem; gap: 3px; }
@@ -1256,7 +1286,7 @@
       body.is-desktop-ui .gauges-col { min-width: 112px; }
       body.is-desktop-ui .speed-val { font-size: 1.55rem; }
     }
-    @media (max-height: 540px) {
+    @media (max-height: 610px) {
       body.is-desktop-ui #hud { padding: 8px 14px; gap: 6px; }
       body.is-desktop-ui .cv-card.compact { padding: 7px 10px; }
       body.is-desktop-ui .telemetry-cluster { padding: 6px 12px; }
@@ -1397,7 +1427,7 @@
   <div id="loading-screen">
     <div class="load-card">
       <div class="load-title">ALESSIO GATTO</div>
-      <div class="load-sub">Interactive 3D CV · Neon Tokyo Expressway</div>
+      <div class="load-sub">Interactive 3D CV · Neon Tokyo Expressway · v1.0</div>
       <div class="load-bar-track"><div id="load-bar-fill"></div></div>
       <div class="load-meta">
         <span id="load-status">Loading 3D Engine...</span>
@@ -1429,7 +1459,10 @@
   <div id="mobile-guard" class="interactive">
     <div class="mobile-guard-card">
       <div class="mobile-guard-icon">📱</div>
-      <div class="brand-title" style="font-size:1.22rem;margin-bottom:-4px;">ALESSIO GATTO</div>
+      <div class="brand-title-row" style="justify-content:center;margin-bottom:-4px;">
+        <div class="brand-title" style="font-size:1.22rem;">ALESSIO GATTO</div>
+        <span class="ver-pill">v1.0</span>
+      </div>
       <h2>Mobile Gyro Drive Ready</h2>
       <p>Hold your phone in <strong>landscape</strong>: auto-accelerates like Asphalt / Real Racing — <strong>tilt left / right</strong> to steer, tap <strong>🛑 Brake</strong>, <strong>🔥 Nitro</strong> &amp; <strong>🚀 Flip</strong>!</p>
       <div class="rotate-tip">🔄 Rotate your phone to Landscape for the best view!</div>
@@ -1444,6 +1477,7 @@
   <!-- PAUSE OVERLAY -->
   <div id="pause-overlay" class="interactive">
     <div class="pause-title">PAUSED</div>
+    <div class="pause-ver">VERSION 1.0</div>
     <div class="pause-actions">
       <button class="action-btn primary" id="btn-resume">▶ RESUME (P)</button>
       <button class="action-btn" id="btn-reset-run">↻ RESTART CIRCUIT (R)</button>
@@ -1456,7 +1490,10 @@
     <!-- SINGLE-ROW TOP BAR -->
     <div class="top-bar">
       <div class="brand-badge interactive">
-        <div class="brand-title">ALESSIO GATTO</div>
+        <div class="brand-title-row">
+          <div class="brand-title">ALESSIO GATTO</div>
+          <span class="ver-pill">v1.0</span>
+        </div>
         <div class="brand-sub">Application Developer · Texas Instruments</div>
       </div>
 
@@ -1688,29 +1725,39 @@
       var forceDesktop = /[?&]desktop=1\b/i.test(params);
 
       var maxTP = navigator.maxTouchPoints || 0;
-      var uaDataMobile = Boolean(navigator.userAgentData && navigator.userAgentData.mobile);
+      var uaData = navigator.userAgentData || null;
+      var uaDataMobile = Boolean(uaData && uaData.mobile === true);
+      var uaPlatform = (uaData && uaData.platform) || navigator.platform || '';
 
       var primaryCoarse = Boolean(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
       var primaryFine = Boolean(window.matchMedia && window.matchMedia('(pointer: fine)').matches);
       var primaryNoHover = Boolean(window.matchMedia && window.matchMedia('(hover: none)').matches);
       var canHover = Boolean(window.matchMedia && window.matchMedia('(hover: hover)').matches);
+      var anyFine = Boolean(window.matchMedia && window.matchMedia('(any-pointer: fine)').matches);
+      var anyHover = Boolean(window.matchMedia && window.matchMedia('(any-hover: hover)').matches);
 
       // macOS has no touchscreens -> Macintosh + maxTouchPoints > 1 uniquely detects iPadOS Desktop-mode Safari
-      var isIPad = !forceDesktop && (/iPad/i.test(ua) || (/Macintosh/i.test(ua) && maxTP > 1));
+      var isIPad = !forceDesktop && (/iPad/i.test(ua) || ((/Macintosh/i.test(ua) || /^Mac/i.test(uaPlatform)) && maxTP > 1));
       var isIOSPhone = !forceDesktop && /iPhone|iPod/i.test(ua) && !isIPad;
       var isIOS = isIPad || isIOSPhone;
-      var isAndroid = !forceDesktop && /Android/i.test(ua);
-      var isAndroidPhone = isAndroid && /Mobile/i.test(ua);
-      var isMobileUA = !forceDesktop && (uaDataMobile || isIOSPhone || isAndroidPhone || /webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua));
+      var isAndroid = !forceDesktop && (/Android/i.test(ua) || /^Android/i.test(uaPlatform));
+      var isAndroidPhone = isAndroid && (/Mobile/i.test(ua) || uaDataMobile);
+      var isMobileUA = !forceDesktop && (uaDataMobile || isIOSPhone || isAndroidPhone || /Windows Phone|IEMobile|WPDesktop|webOS|BlackBerry|Opera Mini/i.test(ua));
 
-      // Exclude touch-screen Windows/Linux laptops (primary pointer:fine + hover:hover) from Mobile/Tablet mode
+      // Windows 10/11 (incl. HP/Dell/Lenovo touch laptops & Edge SM_CONVERTIBLESLATEMODE quirks), macOS, ChromeOS & Desktop Linux are Desktop OSes!
+      var isWindowsDesktop = (/Windows NT/i.test(ua) || /^Win/i.test(uaPlatform)) && !/Windows Phone|IEMobile|WPDesktop/i.test(ua);
+      var isMacDesktop = (/Macintosh|Mac OS X/i.test(ua) || /^Mac/i.test(uaPlatform)) && !isIPad;
+      var isLinuxDesktop = (/CrOS|X11|Linux x86_64|Linux i686/i.test(ua) || /^Linux/i.test(uaPlatform)) && !isAndroid && !isMobileUA;
+      var isDesktopOS = !forceMobile && !forceTablet && !isMobileUA && !isIPad && !isAndroid && (isWindowsDesktop || isMacDesktop || isLinuxDesktop);
+
+      // Exclude all desktop OS laptops AND any machine with a mouse/trackpad (any-pointer:fine + any-hover:hover) from Mobile/Tablet mode
       var isTouchPrimary = !forceDesktop && (
         forceMobile ||
         forceTablet ||
         isIPad ||
         isMobileUA ||
         isAndroid ||
-        (primaryCoarse && primaryNoHover && maxTP > 0 && !(primaryFine && canHover))
+        (!isDesktopOS && primaryCoarse && primaryNoHover && maxTP > 0 && !(primaryFine && canHover) && !(anyFine && anyHover))
       );
 
       var vw = window.innerWidth || 1024;
@@ -1757,6 +1804,7 @@
     document.body.classList.toggle('is-mobile-ui', window.__DEVICE_INFO.isPhone);
     document.body.classList.toggle('is-tablet-ui', window.__DEVICE_INFO.isTablet);
     document.body.classList.toggle('is-desktop-ui', window.__DEVICE_INFO.isDesktop);
+    window.__APP_VERSION = '1.0';
     window.__GAME_BOOTED = false;
     (function () {
       var targetPct = 6;
@@ -5194,10 +5242,9 @@
     function applyQualityPreset(nextPreset) {
       qualityPreset = nextPreset;
       if (btnQuality) btnQuality.textContent = `✨ FX: ${qualityPreset}`;
-      const rw = Math.max(1, window.innerWidth);
-      const rh = Math.max(1, window.innerHeight);
+      const vp = getViewportSize();
       renderer.setPixelRatio(getTargetDPR(qualityPreset));
-      renderer.setSize(rw, rh);
+      renderer.setSize(vp.w, vp.h);
       if (qualityPreset === 'LITE') {
         usePostFX = false;
         rainLines.visible = false;
@@ -5671,6 +5718,17 @@
 
       if (state.mode === 'MODAL') {
         if (e.code === 'Escape') closeCVModal();
+        return;
+      }
+      const lsEl = document.getElementById('loading-screen');
+      const loadingActive = Boolean(lsEl && !lsEl.classList.contains('fade-out') && lsEl.style.display !== 'none');
+      const portraitLocked = Boolean(IS_TOUCH_UI && window.innerHeight >= window.innerWidth);
+      if (loadingActive || portraitLocked) return;
+      if (mobileGuard && mobileGuard.classList.contains('show')) {
+        if ((e.code === 'Enter' || e.code === 'Space' || e.key === ' ') && !e.repeat) {
+          e.preventDefault();
+          if (btnMobileTouch) btnMobileTouch.click();
+        }
         return;
       }
       if (e.code === 'Escape' || e.code === 'KeyP') {
@@ -6832,7 +6890,7 @@
     }
     const mediaQueryEntries = [];
     if (window.matchMedia) {
-      ['(pointer: coarse)', '(hover: none)'].forEach((mqStr) => {
+      ['(pointer: coarse)', '(hover: none)', '(any-pointer: fine)', '(any-hover: hover)'].forEach((mqStr) => {
         try {
           const mq = window.matchMedia(mqStr);
           if (mq.addEventListener) {

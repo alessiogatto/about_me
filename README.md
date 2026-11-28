@@ -3,8 +3,9 @@
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-00e5ff?style=for-the-badge)](https://alessiogatto.github.io/about_me/)
 [![Three.js](https://img.shields.io/badge/Three.js-r187-ff2a85?style=for-the-badge)](https://threejs.org/)
 [![Single File](https://img.shields.io/badge/Architecture-Single%20HTML-ffd32a?style=for-the-badge)](./index.html)
+[![Version](https://img.shields.io/badge/Version-1.0-00ff9d?style=for-the-badge)](./index.html)
 
-A playable, single-file **3D Neon Tokyo Expressway driving experience** built with Three.js WebGL that turns my curriculum vitae into an interactive nighttime circuit. Prefer a classic document view? Open the built-in **📄 FULL CV** modal at any time or read [Curriculum_vitae.pdf](./Curriculum_vitae.pdf).
+A playable, single-file **3D Neon Tokyo Expressway driving experience** built with Three.js WebGL that turns my curriculum vitae into an interactive nighttime circuit. Prefer a classic document view? Open the built-in **📄 FULL CV** modal at any time.
 
 > **Play live:** https://alessiogatto.github.io/about_me/
 
@@ -86,7 +87,6 @@ Pushing to `main` (or `master`) automatically deploys `index.html` to **GitHub P
 ## Repository Contents
 
 - [`index.html`](./index.html) — Complete interactive 3D CV application (HTML, CSS, Three.js scene, WebGL shaders, Web Audio synth, and Full CV modal)
-- [`Curriculum_vitae.pdf`](./Curriculum_vitae.pdf) — Printable PDF version of the CV
 - [`.github/workflows/pages.yml`](./.github/workflows/pages.yml) — GitHub Actions workflow for GitHub Pages deployment
 - [`README.md`](./README.md) — Project documentation
 
